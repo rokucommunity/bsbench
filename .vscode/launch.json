@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "brightscript",
+            "request": "launch",
+            "name": "BrightScript Debug: Launch",
+            "stopOnEntry": false,
+            // "debugServer": 4711,
+            "rootDir": "${workspaceFolder}",
+            "files": [
+                "manifest",
+                "source/**/*.*",
+                "components/**/*.*",
+                "images/**/*.*"
+            ],
+            "enableDebuggerAutoRecovery": false,
+            "stopDebuggerOnAppExit": true
+        }
+    ]
+}
