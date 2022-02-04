@@ -6,7 +6,6 @@
             "request": "launch",
             "name": "BrightScript Debug: Launch",
             "stopOnEntry": false,
-            // "debugServer": 4711,
             "rootDir": "${workspaceFolder}",
             "files": [
                 "manifest",
@@ -15,7 +14,8 @@
                 "images/**/*.*"
             ],
             "enableDebuggerAutoRecovery": false,
-            "stopDebuggerOnAppExit": true
+            "stopDebuggerOnAppExit": true,
+            "enableDebugProtocol": true
         }
     ]
 }

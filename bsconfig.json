@@ -1,9 +1,0 @@
-{
-    "files": [
-        "manifest",
-        "source/**/*.*",
-        "components/**/*.*",
-        "images/**/*.*",
-        "sounds/**/*.*"
-    ]
-}

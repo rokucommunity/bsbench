@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<component name="ParentScene" extends="Scene">
-<script uri="ParentScene.brs" />
- <interface>
-     <function name="Speak" />
- </interface>
-</component>
