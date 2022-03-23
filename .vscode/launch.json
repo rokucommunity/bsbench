@@ -7,6 +7,7 @@
             "name": "BrightScript Debug: Launch",
             "stopOnEntry": false,
             "rootDir": "${workspaceFolder}",
+            "host": "work-roku-ultra",
             "files": [
                 "manifest",
                 "source/**/*.*",
@@ -15,7 +16,7 @@
             ],
             "enableDebuggerAutoRecovery": false,
             "stopDebuggerOnAppExit": true,
-            "enableDebugProtocol": true
+            "enableDebugProtocol": false
         }
     ]
 }
