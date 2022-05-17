@@ -5,10 +5,11 @@ end sub
 sub runAllTests()
 
     print "Tests starting"
-    m.opCount = 1000000
+    m.opCount = 100000
     m.testResults = []
 
-    optionalChaining()
+    stringVsArrayKeyLookups()
+    'optionalChaining()
     'functionAssignment()
     'hexVsInt()
     'stringCopyVsIntCopy()
@@ -24,6 +25,104 @@ sub runAllTests()
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
 end sub
+
+sub stringVsArrayKeyLookups()
+    json = {
+        user: {
+            favorites: [
+                {
+                    isActive: true
+                }
+            ]
+        }
+    }
+    runTest("string split", sub(opCount, json, path)
+        getPath = function(content as object, path as string, default = invalid as dynamic, disableIndexing = false as boolean) as dynamic
+            part = invalid
+
+            if path <> invalid
+                parts = path.split(".")
+                numParts = parts.count()
+                i = 0
+
+                part = content
+                while i < numParts and part <> invalid
+                    if not disableIndexing and (parts[i] = "0" or (parts[i].toInt() <> 0 and parts[i].toInt().toStr() = parts[i]))
+                        if type(part) <> "<uninitialized>" and part <> invalid and GetInterface(part, "ifArray") <> invalid
+                            part = part[parts[i].toInt()]
+                        else if type(part) <> "<uninitialized>" and part <> invalid and GetInterface(part, "ifAssociativeArray") <> invalid
+                            part = part[parts[i]]
+                        else if type(part) = "roSGNode"
+                            part = part.getChild(parts[i].toInt())
+                        else
+                            part = invalid
+                        end if
+                    else
+                        if type(part) <> "<uninitialized>" and part <> invalid and GetInterface(part, "ifAssociativeArray") <> invalid
+                            part = part[parts[i]]
+                        else
+                            part = invalid
+                        end if
+                    end if
+                    i++
+                end while
+            end if
+
+            if part <> invalid
+                return part
+            else
+                return default
+            end if
+        end function
+
+        for i = 0 to opCount
+            getPath(json, path)
+        end for
+    end sub, json, "user.favorites.0.isActive")
+
+    runTest("already split", sub(opCount, json, keys)
+        getPath = function(content as object, parts, default = invalid as dynamic, disableIndexing = false as boolean) as dynamic
+            part = invalid
+
+            if parts <> invalid
+                numParts = parts.count()
+                i = 0
+
+                part = content
+                while i < numParts and part <> invalid
+                    if not disableIndexing and (parts[i] = "0" or (parts[i].toInt() <> 0 and parts[i].toInt().toStr() = parts[i]))
+                        if type(part) <> "<uninitialized>" and part <> invalid and GetInterface(part, "ifArray") <> invalid
+                            part = part[parts[i].toInt()]
+                        else if type(part) <> "<uninitialized>" and part <> invalid and GetInterface(part, "ifAssociativeArray") <> invalid
+                            part = part[parts[i]]
+                        else if type(part) = "roSGNode"
+                            part = part.getChild(parts[i].toInt())
+                        else
+                            part = invalid
+                        end if
+                    else
+                        if type(part) <> "<uninitialized>" and part <> invalid and GetInterface(part, "ifAssociativeArray") <> invalid
+                            part = part[parts[i]]
+                        else
+                            part = invalid
+                        end if
+                    end if
+                    i++
+                end while
+            end if
+
+            if part <> invalid
+                return part
+            else
+                return default
+            end if
+        end function
+        for i = 0 to opCount
+            getPath(json, keys)
+        end for
+    end sub, json, ["user", "favorites", "0", "isActive"])
+end sub
+
 
 sub arrowFunctionWrapper()
     runTest("guard closure", sub(opCount)
