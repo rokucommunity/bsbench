@@ -10,7 +10,7 @@ sub runAllTests()
     m.testResults = []
 
     typePerf()
-
+    'typePerfWithGetInterface()
     'intTypeCheck()
     'md5()
     'stringVsArrayKeyLookups()
@@ -22,6 +22,38 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub typePerfWithGetInterface()
+    runTest("getInterface integer", function(opCount)
+        value = 0
+        for i = 0 to opCount
+            result = getinterface(value, "ifInt") <> invalid
+        end for
+    end function)
+
+    runTest("getInterface roInt", function(opCount)
+        value = createObject("roInt")
+        for i = 0 to opCount
+            result = getinterface(value, "ifInt") <> invalid
+        end for
+    end function)
+
+    runTest("type integer", function(opCount)
+        value = 0
+        for i = 0 to opCount
+            valueType = type(value)
+            result = valueType = "Integer" or valueType = "roInt"
+        end for
+    end function)
+
+    runTest("type roInt", function(opCount)
+        value = createObject("roInt")
+        for i = 0 to opCount
+            valueType = type(value)
+            result = valueType = "Integer" or valueType = "roInt"
+        end for
+    end function)
 end sub
 
 sub intTypeCheck()
@@ -58,43 +90,43 @@ end sub
 
 ' Test various ways of running `type` to see which is fastest
 sub typePerf()
-    runTest("doubleType", function(opCount)
-        text = m.longText
+    runTest("duplicate type checks", function(opCount)
+        value = m.longText
         for i = 0 to opCount
-            result = type(text) = "Integer" or type(text) = "roInt" or type(text) = "LongInteger" or type(text) = "roInteger" or type(text) = "Float" or type(text) = "roFloat" or type(text) = "Double" or type(text) = "roDouble" or type(text) = "roIntrinsicDouble"
+            result = type(value) = "Integer" or type(value) = "roInt" or type(value) = "LongInteger" or type(value) = "roInteger" or type(value) = "Float" or type(value) = "roFloat" or type(value) = "Double" or type(value) = "roDouble" or type(value) = "roIntrinsicDouble"
         end for
     end function)
 
     runTest("liftedType", function(opCount)
-        text = m.longText
+        value = m.longText
         for i = 0 to opCount
-            valueType = type(text)
+            valueType = type(value)
             result = valueType = "Integer" or valueType = "roInt" or valueType = "LongInteger" or valueType = "roInteger" or valueType = "Float" or valueType = "roFloat" or valueType = "Double" or valueType = "roDouble" or valueType = "roIntrinsicDouble"
         end for
     end function)
 
     runTest("liftedType instr", function(opCount)
-        text = m.longText
+        value = m.longText
         for i = 0 to opCount
-            valueType = type(text)
+            valueType = type(value)
             result = instr(1, valueType, "Int") <> 0 or instr(1, valueType, "Float") <> 0 or instr(1, valueType, "Double") <> 0
         end for
     end function)
 
     runTest("helper", function(opCount)
-        text = m.longText
+        value = m.longText
         for i = 0 to opCount
-            result = bslib_isNumber(type(text))
+            result = bslib_isNumber(type(value))
         end for
     end function)
 
     runTest("inline m assignment", function(opCount)
-        text = m.longText
+        value = m.longText
         for i = 0 to opCount
             result = (function(valueType)
                 m.valueType = valueType
                 return true
-            end function)(type(text)) and (m.valueType = "Integer" or m.valueType = "roInt" or m.valueType = "LongInteger" or m.valueType = "roInteger" or m.valueType = "Float" or m.valueType = "roFloat" or m.valueType = "Double" or m.valueType = "roDouble" or m.valueType = "roIntrinsicDouble")
+            end function)(type(value)) and (m.valueType = "Integer" or m.valueType = "roInt" or m.valueType = "LongInteger" or m.valueType = "roInteger" or m.valueType = "Float" or m.valueType = "roFloat" or m.valueType = "Double" or m.valueType = "roDouble" or m.valueType = "roIntrinsicDouble")
         end for
     end function)
 end sub
