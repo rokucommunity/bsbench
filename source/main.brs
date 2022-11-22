@@ -26,23 +26,65 @@ sub runAllTests()
 end sub
 
 sub paramTypeCall()
-    runTest("typed function", function(opCount)
+    runTest("typed function 10 params", function(opCount)
         for i = 0 to opCount
-            doNothingTyped(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+            doNothingTyped10params(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
         end for
     end function)
 
-    runTest("untyped function", function(opCount)
+    runTest("untyped function 10 params", function(opCount)
         for i = 0 to opCount
-            doNothingUntyped(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+            doNothingUntyped10Params(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        end for
+    end function)
+
+    runTest("typed function 5 params", function(opCount)
+        for i = 0 to opCount
+            doNothingTyped5params(0, 1, 2, 3, 4)
+        end for
+    end function)
+
+    runTest("untyped function 5 params", function(opCount)
+        for i = 0 to opCount
+            doNothingUntyped5Params(0, 1, 2, 3, 4)
+        end for
+    end function)
+
+    runTest("typed function 1 param", function(opCount)
+        for i = 0 to opCount
+            doNothingTyped1params(0)
+        end for
+    end function)
+
+    runTest("untyped function 1 param", function(opCount)
+        for i = 0 to opCount
+            doNothingUntyped1Params(0)
         end for
     end function)
 end sub
 
-sub doNothingTyped(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer, p5 as integer, p6 as integer, p7 as integer, p8 as integer, p9 as integer)
+sub doNothingTyped10params(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer, p5 as integer, p6 as integer, p7 as integer, p8 as integer, p9 as integer)
+    result = p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
 end sub
 
-sub doNothingUntyped(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)
+sub doNothingUntyped10Params(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)
+    result = p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
+end sub
+
+sub doNothingTyped5params(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer)
+    result = p0 + p1 + p2 + p3 + p4 + 5 + 6 + 7 + 8 + 9
+end sub
+
+sub doNothingUntyped5Params(p0, p1, p2, p3, p4)
+    result = p0 + p1 + p2 + p3 + p4 + 5 + 6 + 7 + 8 + 9
+end sub
+
+sub doNothingTyped1params(p0 as integer)
+    result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
+end sub
+
+sub doNothingUntyped1Params(p0)
+    result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
 end sub
 
 sub typePerfWithGetInterface()
