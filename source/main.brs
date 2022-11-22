@@ -9,7 +9,8 @@ sub runAllTests()
     m.opCount = 100000
     m.testResults = []
 
-    typePerf()
+    paramTypeCall()
+    'typePerf()
     'typePerfWithGetInterface()
     'intTypeCheck()
     'md5()
@@ -22,6 +23,26 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub paramTypeCall()
+    runTest("typed function", function(opCount)
+        for i = 0 to opCount
+            doNothingTyped(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        end for
+    end function)
+
+    runTest("untyped function", function(opCount)
+        for i = 0 to opCount
+            doNothingUntyped(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        end for
+    end function)
+end sub
+
+sub doNothingTyped(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer, p5 as integer, p6 as integer, p7 as integer, p8 as integer, p9 as integer)
+end sub
+
+sub doNothingUntyped(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)
 end sub
 
 sub typePerfWithGetInterface()
