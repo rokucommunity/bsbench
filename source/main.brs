@@ -9,12 +9,14 @@ sub runAllTests()
     m.opCount = 100000
     m.testResults = []
 
-    paramTypeCall()
-    'typePerf()
-    'typePerfWithGetInterface()
-    'intTypeCheck()
-    'md5()
-    'stringVsArrayKeyLookups()
+    ' typeCall()
+    ' paramTypeCall()
+    ' typePerf()
+    ' typePerfWithGetInterface()
+    ' intTypeCheck()
+    ' md5()
+    ' stringVsArrayKeyLookups()
+    literalVsSingleAALookup()
 
     printResults(m.testResults)
 
@@ -23,6 +25,59 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub literalVsSingleAALookup()
+    runTest("literal assignment", function(opCount)
+        obj = {}
+        for i = 0 to opCount
+            obj.prop = "#FFFFFF"
+        end for
+    end function)
+
+    runTest("small aa dotted get assignment", function(opCount, dictionary)
+        obj = {}
+        for i = 0 to opCount
+            obj.prop = dictionary.zzProp
+        end for
+    end function, {
+        zzProp: "#FFFFFF"
+    })
+
+    dictionary = {}
+    for i = 0 to 10000
+        dictionary["prop" + str(i)] = "#FFFFFF"
+    end for
+    dictionary.zzProp =  "#FFFFFF"
+
+    runTest("large aa dotted get assignment", function(opCount, dictionary)
+        obj = {}
+        for i = 0 to opCount
+            obj.prop = dictionary.zzProp
+        end for
+    end function, dictionary)
+
+    runTest("small aa indexed get assignment", function(opCount, dictionary)
+        obj = {}
+        for i = 0 to opCount
+            obj.prop = dictionary["zzProp"]
+        end for
+    end function, {
+        zzProp: "#FFFFFF"
+    })
+
+    dictionary = {}
+    for i = 0 to 10000
+        dictionary["prop" + str(i)] = "#FFFFFF"
+    end for
+    dictionary.zzProp =  "#FFFFFF"
+
+    runTest("large aa dotted get assignment", function(opCount, dictionary)
+        obj = {}
+        for i = 0 to opCount
+            obj.prop = dictionary["zzProp"]
+        end for
+    end function, dictionary)
 end sub
 
 sub paramTypeCall()
@@ -61,30 +116,84 @@ sub paramTypeCall()
             doNothingUntyped1Params(0)
         end for
     end function)
+
+    runTest("empty loop", function(opCount)
+        for i = 0 to opCount
+            'do literally nothing
+        end for
+    end function)
 end sub
 
 sub doNothingTyped10params(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer, p5 as integer, p6 as integer, p7 as integer, p8 as integer, p9 as integer)
-    result = p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
+    'result = p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
 end sub
 
 sub doNothingUntyped10Params(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)
-    result = p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
+    'result = p0 + p1 + p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9
 end sub
 
 sub doNothingTyped5params(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer)
-    result = p0 + p1 + p2 + p3 + p4 + 5 + 6 + 7 + 8 + 9
+    'result = p0 + p1 + p2 + p3 + p4 + 5 + 6 + 7 + 8 + 9
 end sub
 
 sub doNothingUntyped5Params(p0, p1, p2, p3, p4)
-    result = p0 + p1 + p2 + p3 + p4 + 5 + 6 + 7 + 8 + 9
+    'result = p0 + p1 + p2 + p3 + p4 + 5 + 6 + 7 + 8 + 9
 end sub
 
 sub doNothingTyped1params(p0 as integer)
-    result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
+    'result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
 end sub
 
 sub doNothingUntyped1Params(p0)
-    result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
+    'result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
+end sub
+
+sub typeCall()
+    runTest("type x 1", function(opCount)
+        text = m.longText
+        for i = 0 to opCount
+            result = type(text)
+        end for
+    end function)
+
+    runTest("type x 2", function(opCount)
+        text = m.longText
+        for i = 0 to opCount
+            result = type(text)
+            result = type(text)
+        end for
+    end function)
+
+    runTest("type x 3", function(opCount)
+        text = m.longText
+        for i = 0 to opCount
+            result = type(text)
+            result = type(text)
+            result = type(text)
+        end for
+    end function)
+
+    runTest("type x 4", function(opCount)
+        text = m.longText
+        for i = 0 to opCount
+            result = type(text)
+            result = type(text)
+            result = type(text)
+            result = type(text)
+        end for
+    end function)
+
+    runTest("type x 5", function(opCount)
+        text = m.longText
+        for i = 0 to opCount
+            result = type(text)
+            result = type(text)
+            result = type(text)
+            result = type(text)
+            result = type(text)
+        end for
+    end function)
+
 end sub
 
 sub typePerfWithGetInterface()
@@ -311,6 +420,7 @@ sub stringVsArrayKeyLookups()
         end for
     end sub, json, ["user", "favorites", "0", "isActive"])
 end sub
+
 
 function getOpsPerSec(startDate, endDate, ops)
     startMs = getMilliseconds(startDate)
