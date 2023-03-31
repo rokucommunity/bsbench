@@ -16,7 +16,8 @@ sub runAllTests()
     ' intTypeCheck()
     ' md5()
     ' stringVsArrayKeyLookups()
-    literalVsSingleAALookup()
+    'literalVsSingleAALookup()
+    stringConcatGrouping()
 
     printResults(m.testResults)
 
@@ -25,6 +26,22 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub stringConcatGrouping()
+    runTest("literal assignment", function(opCount)
+        local = "string"
+        for i = 0 to opCount
+            local = "string"
+        end for
+    end function)
+
+    runTest("literal assignment", function(opCount)
+        local = "string"
+        for i = 0 to opCount
+            local = ("string")
+        end for
+    end function)
 end sub
 
 sub literalVsSingleAALookup()
