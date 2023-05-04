@@ -15,7 +15,7 @@
             ],
             "enableDebuggerAutoRecovery": false,
             "stopDebuggerOnAppExit": true,
-            "enableDebugProtocol": false
+            "enableDebugProtocol": true
         }
     ]
 }

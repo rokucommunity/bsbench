@@ -6,7 +6,7 @@ sub runAllTests()
 
     m.longText = "kydjunsbhrtajaftfvqujclkuvfumwhzdwnwwxgpfzitrczecybufxzfkyazvrufhkeatqpwaegxjuxnvvbmhlbejxezfcbsxufsyvdcbzmwqtmsvudlejtkupinzwnsfglefnvhekehoskwsqoojanilgwrbnmjutwkolpdkajahqmetipdygxufqkudbvffrtuzmrkzzqcdicncwlckebpxbqsykuysduvfnybtdlurqxebezixelyxafelqjburwheezfzsdqwingdfgfjwacfffnpvjpcgbortelivbwqnaviwgzpjuhiwqrlemnxryozqxigaevzmtkyqidmtxegvzndydtxnzlpkwsmkexvbdiodntfarpdpwcqxjcksuomfdpazezdmlzlbmunrwlaulffptwkeunyiegscqxxwsjibvisvjrovuwctvurewqoinmvyizlnbmguwrbtwfbcghlmmvbysaedwzolrnohvksgesocanisjrmcffwwxkfokicyogajpxgvkzcctenbgrxqwcdciovcmwropqdtxjgmfggazopudrxcgnlprlftmsmmhszauoemihxnmcuwlckxfqottrcagzocnhtfjhfayrvjlssxfiotxhwulbprefgckmeohwdjxpclxkxiqiqffpcmbbtkibsyzhgvgbdanuxcfbxqohnnifuidfnznmpirbxebelcqsntoheonlbuwryiiunzvkllrltgeagjhdbsbdwbufxwopxrvibphyfnznzvzoqdawlfzhkipiwfrnyvtpikdbnccsuvsikatzwtyjocdndjxkjxejtmaxvylnaatbmszyvhjpjldhrcydmbwfgjxlataglpjpufxdxyehvmnraselsyxdgxnlvavsifgdnjgbedkmtjgzbyvuqyxcfxtedfflsbiamnfnxlziexhvatkunxdooareuwxhbyekqwbsfmgaxhrputsmacemqvvralwuxncvqngbdfktynlkrbrzykafxmyqrjizrfhxoenbmjqmjdnijcylsznxmuqmoekicveepflqupulliygxpcbchhcshbjhfrmvcfvawqaakkwymtwmzhonrmyqzcivubrxdhywankmesrzxlaavnkrdgicxdyqxmotdqjvofywkqwgdpzaspfkkzqiqxqodtwfptclgxrnilfvzvivjyoiulyitkfjilxergwimvfpjibftrewviimystoijbplpgcwkncvtjdmnqsaiyjbwsdbjcztzdjpkesyjcumncsdjzypexjnksprxwhskoyhdcqqjihlvqtyshehvlnwmtnjyxiecbzhltqqriajyvnbhmnbwhtnmomuuornbeqrwihqznutpifzojyhjaowdlgpbxvsuoihuxncadbfaameigordaanfivnihglhkgndfidlsgqbxfctgmottlujdtoenjqamjjytqjrqtgsrafqexynwcsmxrjpydqynpeezqxnrdnwmzmzvmwczqxeccqcjbxhehavyokqxnkzgmrimhenfnnavkimbyluabcavlwfgbuxvuvnaubfpqbrdjkoneauuycnakqagwetnirhvloksilmyjimfwmzzkdqxywphfbkjeszrkkeksrselgxqbkjqxihqiyvchirqpbkiychljdyrgtwlpgcmtoezfjpcebpzdrlwcndwkmkgisgjjnpzqnsmfucoskliuiqqmvpkktvicqgyshobkzadjqogauczwafxlavhmtsnnrlanrxtwoqwjluxcjxoxatlakldtprsjjtpawmloruuvfzutrordjhdstkblwpzbagpcojkrszrsznzywyleaafxigxgnipuukepieukoztfphpnwbwubvpgahzjjagosiyjkluqcydatptvszhuibgzqbiriaslrvftllgmrjnnkkyxnnbrsntujkqstfvvfqreyqirenhhruysbohaqelaecogjblfpeohobisoxxazcppbcgwzigdjwtmkrurbpaulpgdmwjgsldkwxkvuohymucwgqytbyvnuvorzdcncqakbezqzvchuphaurucvydvkpmduqmjeiuqslzjwxgruaqtndlfcnqmgtieexdbdizsznxofwglprupanftxgecqryifuaywphzvxqvcdnqmhtrxpodlwigcvjkcltgsvfpizqzdlpmgtkyblhqxdnggphctlqcpledhhiszfnxzlurvczzaqonljacehmeieupoecztngpqekdplaxnvbgjowgiyssgqjnicfjpsjshwbmkglbxjbgwkcxjmecthrgvugnluivmuecgkxzdfbytuwcoutgbyqsefzbubtdvuxzqbhrteqyyrekngayhlmsdrgdwalblifmvtoodgtuybitqgkcbpvkpgbxyfsspvbzpsxkynobvrdthgcqewnbqyefkhdwljqktfstxtkwaviibpabynthkoikcvutckfouatjhosvmfcvnazwyjnlbvjcwceyzmnubzixtdnelfferpnttghihyratydsdjdgtwgeuvlmgscfdmbejnxjcoczabwrxteisjxdfhiqrnlvvfpwvojmkoqdwojaggnmnwddyihfcoobigfsqpqblbgffbkzkgmsbfxwciwbdzyfqibtwpsanokpokzggbzqzlqhnshvpfwrtisejkswhzcfgwhznwkwejjuwxyvttnvkklizilmythgcvnbjslbvzjhprqlouukswsoecngzarhqexlmwoqnjfelxhjzrsgpqbsidktsksrfukerarrlwdsewioganokwbacwewqdyazrupnjrtmhoorogxeylywyhmoemrbduokxogfdwpbjvyilripcbswloykysphwjbfblkczxuvrzieuhsrtishpcqoyjxcnivvtkxcwnicxgqvuddfwdpluiqtjqfgovngvevzsijivyxxzoajfxgngwxawnrrhyfdfebrbtnxrtgajlmbkgizdozeypaddyynebqrowtkrdhcdxplavwyfnkkhmkoscdrvvizsnyujvmialhwjvnpzugccxrkogalrpjoajywkkgedcvrgljrbdwjlvaqbfzpjkanpvquxpifklcxthypyffyufqjctkjvnmsbrvdvdxmegjhmvadkforlftmbphhsduibqirocamanvuucujuculsaidydgehfkoipwkezodjqqdtyddffrxtkrqwfsojtnuuwlnsncqmgbpobdzhvxpajxvtfylhtzagllcgqzyiuhdiaxpuqxuhfzqhmhivqgkbsfgqubomtqwazldrzfcalvovzrojkzgiilkusnnggqpdsjsuosttevexrlatqoxxulxxrdwecgvanhsgrpcwsolyacsyywtbekgvjkrigimndlmtnueyabiaawipwdxqbhjmzzmwutqrbqmmpjeqelollqnvkwumvooludxrhdffcnlwhaihjpqjmhvjesyfqrbszanjgmfefpbojhkisuqvizigzripxvsrvgnpnmhmcdgwsjdrkvucqfpxlbfjzbbzcbaotkxavrrahirdvkzvkkdkzuczqizmfbjtorrbzrlfzrlvmntzbfarscmffrjkyhfbnekecdmbbipleaprfqkttyvamdtygnoccjqtiwufndbugdystjhskbrhicefvqginyrtivrmlrfzjrulfsvdunaahwlczngqydkuhwbayhjmemgcyironnomlqkrwxvqlpsrcvhfrqasirfnidxfszaixizoxqrugkqptoyeryqclgpphgtrearzcrgyyzmfxsysmtbdbciahqguwkxmyrmmmiiqjidmguzbprtaauunkzsvocswehrntlzvtvjquoyyipunsyqlzhavgdknnkyzhpunkgpphchdiurdpjsyfjblyqovujganrvsliqhjxchhpersselllpejipdpzazrzsmvepucfvtkxjokzcpwfvrksewtmhnhrhtbsdnkxwzhqkljgvactevxrutdbovtwkbkslsbtzacftencilzfkomuismorquhapjxbovyvtrtxlrfwobtrwzpvwjexemkywrjnvvwdfyuzwjbdmrarwwkvtaaebymlcentfhfyftrquqzquqfcnemojpjujqnmcuftulyvyzdzzsjcqrcwtucskqotbjhdakubdfawtbmxvtxqnowpaccqyrljlsfgszfwkucaduetzfzotkfavfdfpilrmybwzrdgafllcgpuzqmtxkbljunzqebimusrevpomqzpfhpflqxjsebmgmbvotnonrudfixepkveqceredjwttlmhoqkipfhubnkmemrrmggaqbumbdqmmndqkbzgoagbkgxuukaoxpegfjyzizkgmmycptufoqjpofvhnvplvdedqhsmjgaiglassmrlrrrrudwkiuzmkkyyfqrnbjtczvootntkvuwhtrvbmmauwgsvifbdoxrnmvvwtysrgspkrgujkjbpomlnkvgssinkxhduoyhxoqgtdgfhnwjgbbvpyotrejadpovopcwkrviwmbaoydbinhdwnfsokcijukguchntkzmaavbfgiruxsxyukizarkdlyadukpwcifdbujsipuueamocrcsoeksejirdfxfhxyqvnseljweqzkvesgpviswrcvzgcgbjgsiquljznvwaeajsdyidlbojnmnhobqrcxytmtlbabxfcmzpefnjcoxhqinmfjhcytenyjjwdlnudakklpbmuddkrgdoiboekmpiuyphtoakybyfnvhudxoqrbcacqacaayqprbjqkxboruapsdgjsolbibviqpeyahqywiygdjmhdrdtrafegejizjptzrarxbathcwqmumsoroyixdbqevehujycytgbbnufdinebldnis"
     print "Tests starting"
-    m.opCount = 100000
+    m.opCount = 1000
     m.testResults = []
 
     ' typeCall()
@@ -17,7 +17,9 @@ sub runAllTests()
     ' md5()
     ' stringVsArrayKeyLookups()
     'literalVsSingleAALookup()
-    stringConcatGrouping()
+    ' stringConcatGrouping()
+    arrayInOrder()
+    ' forIndexVsForEach()
 
     printResults(m.testResults)
 
@@ -26,6 +28,209 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+
+sub forIndexVsForEach()
+    array = []
+    for i = 0 to 1000
+        array.push({
+            id: i
+        })
+    end for
+
+    runTest("for index (external)", function(opCount, array)
+        for op = 0 to opCount
+            for i = 0 to getCount(array)
+                temp = array[i]
+            end for
+        end for
+    end function, array)
+
+    runTest("for index (lifted)", function(opCount, array)
+        for op = 0 to opCount
+            arrayCount = array.count()
+            for i = 0 to arrayCount
+                temp = array[i]
+            end for
+        end for
+    end function, array)
+
+    runTest("for index", function(opCount, array)
+        for op = 0 to opCount
+            for i = 0 to array.Count()
+                temp = array[i]
+            end for
+        end for
+    end function, array)
+
+    runTest("for each", function(opCount, array)
+        for op = 0 to opCount
+            arrayCount = array.count()
+            for each item in array
+                temp = invalid
+            end for
+        end for
+    end function, array)
+end sub
+
+function getCount(arr)
+    return arr.Count()
+end function
+
+sub arrayInOrder()
+    baseArray = []
+    for i = 100 to 600
+        baseArray.push({
+            id: i
+        })
+    end for
+
+    for i = 700 to 1100
+        baseArray.push({
+            id: i
+        })
+    end for
+
+    childArrayStart = []
+    childArrayMid = []
+    childArrayEnd = []
+    for i = 1 to 99
+        childArrayStart.push({
+            id: i
+        })
+        childArrayMid.push({
+            id: 600 + i
+        })
+        childArrayEnd.push({
+            id: 1100 + i
+        })
+    end for
+
+    runTest("array append", function(opCount, baseArray)
+        for i = 0 to opCount
+            testArray = []
+            testArray.append(baseArray)
+        end for
+    end function, baseArray)
+
+    runTest("sort at beginning", function(opCount, baseArray, childArray)
+        for i = 0 to opCount
+            testArray = []
+            testArray.append(baseArray)
+            testArray.append(childArray)
+            testArray.sortBy("id")
+        end for
+    end function, baseArray, childArrayStart)
+
+    runTest("sort at middle", function(opCount, baseArray, childArray)
+        for i = 0 to opCount
+            testArray = []
+            testArray.append(baseArray)
+            testArray.append(childArray)
+            testArray.sortBy("id")
+        end for
+    end function, baseArray, childArrayMid)
+
+    runTest("sort at end", function(opCount, baseArray, childArray)
+        for i = 0 to opCount
+            testArray = []
+            testArray.append(baseArray)
+            testArray.append(childArray)
+            testArray.sortBy("id")
+        end for
+    end function, baseArray, childArrayEnd)
+
+    runTest("manual build at beginning", function(opCount, baseArray, childArray)
+        for op = 0 to opCount
+            result = []
+            firstChildId = childArray[0].id
+            found = false
+
+            for each item in baseArray
+                'append the child array to the result when we found the right spot
+                if not found and item.id > firstChildId
+                    found = true
+                    for each child in childArray
+                        result.push(child)
+                    end for
+                end if
+                result.push(item)
+            end for
+            if found = false
+                for each child in childArray
+                    result.push(child)
+                end for
+            end if
+            for i = 0 to result.count() - 2
+                if result[i].id > result[i + 1].id then
+                    print "bad", result[i], result[i + 1]
+                    throw "bad"
+                end if
+            end for
+        end for
+    end function, baseArray, childArrayStart)
+
+
+    runTest("manual build at middle", function(opCount, baseArray, childArray)
+        for op = 0 to opCount
+            result = []
+            firstChildId = childArray[0].id
+            found = false
+
+            for each item in baseArray
+                'append the child array to the result when we found the right spot
+                if not found and item.id > firstChildId
+                    found = true
+                    for each child in childArray
+                        result.push(child)
+                    end for
+                end if
+                result.push(item)
+            end for
+            if found = false
+                for each child in childArray
+                    result.push(child)
+                end for
+            end if
+            for i = 0 to result.count() - 2
+                if result[i].id > result[i + 1].id then
+                    print "bad", result[i], result[i + 1]
+                    throw "bad"
+                end if
+            end for
+        end for
+    end function, baseArray, childArrayMid)
+
+    runTest("manual build at end", function(opCount, baseArray, childArray)
+        for op = 0 to opCount
+            result = []
+            firstChildId = childArray[0].id
+            found = false
+
+            for each item in baseArray
+                'append the child array to the result when we found the right spot
+                if not found and item.id > firstChildId
+                    found = true
+                    for each child in childArray
+                        result.push(child)
+                    end for
+                end if
+                result.push(item)
+            end for
+            if found = false
+                for each child in childArray
+                    result.push(child)
+                end for
+            end if
+            for i = 0 to result.count() - 2
+                if result[i].id > result[i + 1].id then
+                    print "bad", result[i], result[i + 1]
+                    throw "bad"
+                end if
+            end for
+        end for
+    end function, baseArray, childArrayEnd)
 end sub
 
 sub stringConcatGrouping()
@@ -65,7 +270,7 @@ sub literalVsSingleAALookup()
     for i = 0 to 10000
         dictionary["prop" + str(i)] = "#FFFFFF"
     end for
-    dictionary.zzProp =  "#FFFFFF"
+    dictionary.zzProp = "#FFFFFF"
 
     runTest("large aa dotted get assignment", function(opCount, dictionary)
         obj = {}
@@ -87,7 +292,7 @@ sub literalVsSingleAALookup()
     for i = 0 to 10000
         dictionary["prop" + str(i)] = "#FFFFFF"
     end for
-    dictionary.zzProp =  "#FFFFFF"
+    dictionary.zzProp = "#FFFFFF"
 
     runTest("large aa dotted get assignment", function(opCount, dictionary)
         obj = {}
@@ -478,6 +683,9 @@ end function
 ' @param args - an array of parameters to pass as arguments to the test function
 '
 sub runTest(name as string, testFunc as function, arg1 = invalid, arg2 = invalid, arg3 = invalid, arg4 = invalid)
+    ' for i = 0 to 3
+    print name; " (RUNNING)"
+
     opCount = m.opCount
     if arg4 <> invalid
         startTime = CreateObject("roDateTime")
@@ -506,6 +714,7 @@ sub runTest(name as string, testFunc as function, arg1 = invalid, arg2 = invalid
     }
     print name; " (DONE)"
     m.testResults.push(result)
+    ' end for
 end sub
 
 function printResults(results)
