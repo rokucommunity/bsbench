@@ -162,12 +162,26 @@ sub arrayInOrder()
                     result.push(child)
                 end for
             end if
-            for i = 0 to result.count() - 2
-                if result[i].id > result[i + 1].id then
-                    print "bad", result[i], result[i + 1]
-                    throw "bad"
+        end for
+    end function, baseArray, childArrayStart)
+
+    runTest("manual build at beginning (array append)", function(opCount, baseArray, childArray)
+        for op = 0 to opCount
+            result = []
+            firstChildId = childArray[0].id
+            found = false
+
+            for each item in baseArray
+                'append the child array to the result when we found the right spot
+                if not found and item.id > firstChildId
+                    found = true
+                    result.append(childArray)
                 end if
+                result.push(item)
             end for
+            if found = false
+                result.append(childArray)
+            end if
         end for
     end function, baseArray, childArrayStart)
 
@@ -193,12 +207,26 @@ sub arrayInOrder()
                     result.push(child)
                 end for
             end if
-            for i = 0 to result.count() - 2
-                if result[i].id > result[i + 1].id then
-                    print "bad", result[i], result[i + 1]
-                    throw "bad"
+        end for
+    end function, baseArray, childArrayMid)
+
+    runTest("manual build at middle (array append)", function(opCount, baseArray, childArray)
+        for op = 0 to opCount
+            result = []
+            firstChildId = childArray[0].id
+            found = false
+
+            for each item in baseArray
+                'append the child array to the result when we found the right spot
+                if not found and item.id > firstChildId
+                    found = true
+                    result.append(childArray)
                 end if
+                result.push(item)
             end for
+            if found = false
+                result.append(childArray)
+            end if
         end for
     end function, baseArray, childArrayMid)
 
@@ -223,12 +251,26 @@ sub arrayInOrder()
                     result.push(child)
                 end for
             end if
-            for i = 0 to result.count() - 2
-                if result[i].id > result[i + 1].id then
-                    print "bad", result[i], result[i + 1]
-                    throw "bad"
+        end for
+    end function, baseArray, childArrayEnd)
+
+    runTest("manual build at end (array append)", function(opCount, baseArray, childArray)
+        for op = 0 to opCount
+            result = []
+            firstChildId = childArray[0].id
+            found = false
+
+            for each item in baseArray
+                'append the child array to the result when we found the right spot
+                if not found and item.id > firstChildId
+                    found = true
+                    result.append(childArray)
                 end if
+                result.push(item)
             end for
+            if found = false
+                result.append(childArray)
+            end if
         end for
     end function, baseArray, childArrayEnd)
 end sub
