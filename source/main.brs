@@ -1,4 +1,9 @@
 sub main()
+    screen = createObject("roSGScreen")
+    m.port = createObject("roMessagePort")
+    screen.setMessagePort(m.port)
+    scene = screen.CreateScene("Scene")
+    screen.show()
     runAllTests()
 end sub
 
@@ -9,6 +14,8 @@ sub runAllTests()
     m.opCount = 1000
     m.testResults = []
 
+    nodeCreateVsClone()
+
     ' typeCall()
     ' paramTypeCall()
     ' typePerf()
@@ -18,7 +25,7 @@ sub runAllTests()
     ' stringVsArrayKeyLookups()
     'literalVsSingleAALookup()
     ' stringConcatGrouping()
-    arrayInOrder()
+    'arrayInOrder()
     ' forIndexVsForEach()
 
     printResults(m.testResults)
@@ -28,6 +35,83 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub nodeCreateVsClone()
+
+    runTest("manual", function(opCount)
+        for op = 0 to opCount
+            rect = createObject("roSGNode", "Rectangle")
+            one = rect.createChild("Rectangle")
+            one.width = 200
+            one.height = 100
+
+            two = rect.createChild("Rectangle")
+            two.width = 300
+            two.height = 400
+
+            two.translation = [300, 300]
+        end for
+    end function)
+
+    runTest("manual clone", function(opCount)
+        rect = createObject("roSGNode", "Rectangle")
+        one = rect.createChild("Rectangle")
+        one.width = 200
+        one.height = 100
+
+        two = rect.createChild("Rectangle")
+        two.width = 300
+        two.height = 400
+
+        two.translation = [300, 300]
+        two.translation = [300, 300]
+        for op = 0 to opCount
+            clone = rect.clone(true)
+        end for
+    end function)
+
+    runTest("createObject native component", function(opCount)
+        for op = 0 to opCount
+            node = createObject("roSGNode", "Rectangle")
+        end for
+    end function)
+
+    runTest("clone native component", function(opCount)
+        node = createObject("roSGNode", "Rectangle")
+        for op = 0 to opCount
+            clone = node.clone(false)
+        end for
+    end function)
+
+    runTest("createObject custom component", function(opCount)
+        for op = 0 to opCount
+            node = createObject("roSGNode", "CustomComponent")
+        end for
+    end function)
+
+    runTest("clone custom component", function(opCount)
+        node = createObject("roSGNode", "CustomComponent")
+        for op = 0 to opCount
+            clone = node.clone(true)
+        end for
+        ' print clone.getChild(0) clone.getChild(1)
+        clone.callfunc("DoTest")
+    end function)
+
+    runTest("createObject custom component (no init)", function(opCount)
+        for op = 0 to opCount
+            node = createObject("roSGNode", "CustomComponentNoInit")
+        end for
+    end function)
+
+    runTest("clone custom component (no init)", function(opCount)
+        node = createObject("roSGNode", "CustomComponentNoInit")
+        for op = 0 to opCount
+            clone = node.clone(true)
+        end for
+        print clone.getChild(0) clone.getChild(1)
+    end function)
 end sub
 
 
@@ -725,38 +809,40 @@ end function
 ' @param args - an array of parameters to pass as arguments to the test function
 '
 sub runTest(name as string, testFunc as function, arg1 = invalid, arg2 = invalid, arg3 = invalid, arg4 = invalid)
-    ' for i = 0 to 3
-    print name; " (RUNNING)"
+    for i = 0 to 2
+        RunGarbageCollector()
+        print name; " (RUNNING)"
 
-    opCount = m.opCount
-    if arg4 <> invalid
-        startTime = CreateObject("roDateTime")
-        testFunc(opCount, arg1, arg2, arg3, arg4)
-        endTime = CreateObject("roDateTime")
-    else if arg3 <> invalid
-        startTime = CreateObject("roDateTime")
-        testFunc(opCount, arg1, arg2, arg3)
-        endTime = CreateObject("roDateTime")
-    else if arg2 <> invalid
-        startTime = CreateObject("roDateTime")
-        testFunc(opCount, arg1, arg2)
-        endTime = CreateObject("roDateTime")
-    else if arg1 <> invalid
-        startTime = CreateObject("roDateTime")
-        testFunc(opCount, arg1)
-        endTime = CreateObject("roDateTime")
-    else
-        startTime = CreateObject("roDateTime")
-        testFunc(opCount)
-        endTime = CreateObject("roDateTime")
-    end if
-    result = {
-        name: name
-        opsPerSec: getOpsPerSec(startTime, endTime, opCount)
-    }
-    print name; " (DONE)"
-    m.testResults.push(result)
-    ' end for
+        opCount = m.opCount
+        if arg4 <> invalid
+            startTime = CreateObject("roDateTime")
+            testFunc(opCount, arg1, arg2, arg3, arg4)
+            endTime = CreateObject("roDateTime")
+        else if arg3 <> invalid
+            startTime = CreateObject("roDateTime")
+            testFunc(opCount, arg1, arg2, arg3)
+            endTime = CreateObject("roDateTime")
+        else if arg2 <> invalid
+            startTime = CreateObject("roDateTime")
+            testFunc(opCount, arg1, arg2)
+            endTime = CreateObject("roDateTime")
+        else if arg1 <> invalid
+            startTime = CreateObject("roDateTime")
+            testFunc(opCount, arg1)
+            endTime = CreateObject("roDateTime")
+        else
+            startTime = CreateObject("roDateTime")
+            testFunc(opCount)
+            endTime = CreateObject("roDateTime")
+        end if
+        result = {
+            name: name
+            opsPerSec: getOpsPerSec(startTime, endTime, opCount)
+        }
+        print name; " (DONE)"
+        m.testResults.push(result)
+        RunGarbageCollector()
+    end for
 end sub
 
 function printResults(results)

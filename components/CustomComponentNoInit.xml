@@ -1,0 +1,6 @@
+<component name="CustomComponentNoInit">
+    <children>
+        <Rectangle id="one" width="200" height="100" />
+        <Rectangle id="two" width="300" height="400" translation="[300,300]" />
+    </children>
+</component>

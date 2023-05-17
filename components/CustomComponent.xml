@@ -1,0 +1,10 @@
+<component name="CustomComponent">
+    <script type="text/brightscript" uri="CustomComponent.brs" />
+    <children>
+        <Rectangle id="one" />
+        <Rectangle id="two" />
+    </children>
+    <interface>
+        <function name="DoTest" />
+    </interface>
+</component>
