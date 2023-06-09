@@ -11,10 +11,13 @@ sub runAllTests()
 
     m.longText = "kydjunsbhrtajaftfvqujclkuvfumwhzdwnwwxgpfzitrczecybufxzfkyazvrufhkeatqpwaegxjuxnvvbmhlbejxezfcbsxufsyvdcbzmwqtmsvudlejtkupinzwnsfglefnvhekehoskwsqoojanilgwrbnmjutwkolpdkajahqmetipdygxufqkudbvffrtuzmrkzzqcdicncwlckebpxbqsykuysduvfnybtdlurqxebezixelyxafelqjburwheezfzsdqwingdfgfjwacfffnpvjpcgbortelivbwqnaviwgzpjuhiwqrlemnxryozqxigaevzmtkyqidmtxegvzndydtxnzlpkwsmkexvbdiodntfarpdpwcqxjcksuomfdpazezdmlzlbmunrwlaulffptwkeunyiegscqxxwsjibvisvjrovuwctvurewqoinmvyizlnbmguwrbtwfbcghlmmvbysaedwzolrnohvksgesocanisjrmcffwwxkfokicyogajpxgvkzcctenbgrxqwcdciovcmwropqdtxjgmfggazopudrxcgnlprlftmsmmhszauoemihxnmcuwlckxfqottrcagzocnhtfjhfayrvjlssxfiotxhwulbprefgckmeohwdjxpclxkxiqiqffpcmbbtkibsyzhgvgbdanuxcfbxqohnnifuidfnznmpirbxebelcqsntoheonlbuwryiiunzvkllrltgeagjhdbsbdwbufxwopxrvibphyfnznzvzoqdawlfzhkipiwfrnyvtpikdbnccsuvsikatzwtyjocdndjxkjxejtmaxvylnaatbmszyvhjpjldhrcydmbwfgjxlataglpjpufxdxyehvmnraselsyxdgxnlvavsifgdnjgbedkmtjgzbyvuqyxcfxtedfflsbiamnfnxlziexhvatkunxdooareuwxhbyekqwbsfmgaxhrputsmacemqvvralwuxncvqngbdfktynlkrbrzykafxmyqrjizrfhxoenbmjqmjdnijcylsznxmuqmoekicveepflqupulliygxpcbchhcshbjhfrmvcfvawqaakkwymtwmzhonrmyqzcivubrxdhywankmesrzxlaavnkrdgicxdyqxmotdqjvofywkqwgdpzaspfkkzqiqxqodtwfptclgxrnilfvzvivjyoiulyitkfjilxergwimvfpjibftrewviimystoijbplpgcwkncvtjdmnqsaiyjbwsdbjcztzdjpkesyjcumncsdjzypexjnksprxwhskoyhdcqqjihlvqtyshehvlnwmtnjyxiecbzhltqqriajyvnbhmnbwhtnmomuuornbeqrwihqznutpifzojyhjaowdlgpbxvsuoihuxncadbfaameigordaanfivnihglhkgndfidlsgqbxfctgmottlujdtoenjqamjjytqjrqtgsrafqexynwcsmxrjpydqynpeezqxnrdnwmzmzvmwczqxeccqcjbxhehavyokqxnkzgmrimhenfnnavkimbyluabcavlwfgbuxvuvnaubfpqbrdjkoneauuycnakqagwetnirhvloksilmyjimfwmzzkdqxywphfbkjeszrkkeksrselgxqbkjqxihqiyvchirqpbkiychljdyrgtwlpgcmtoezfjpcebpzdrlwcndwkmkgisgjjnpzqnsmfucoskliuiqqmvpkktvicqgyshobkzadjqogauczwafxlavhmtsnnrlanrxtwoqwjluxcjxoxatlakldtprsjjtpawmloruuvfzutrordjhdstkblwpzbagpcojkrszrsznzywyleaafxigxgnipuukepieukoztfphpnwbwubvpgahzjjagosiyjkluqcydatptvszhuibgzqbiriaslrvftllgmrjnnkkyxnnbrsntujkqstfvvfqreyqirenhhruysbohaqelaecogjblfpeohobisoxxazcppbcgwzigdjwtmkrurbpaulpgdmwjgsldkwxkvuohymucwgqytbyvnuvorzdcncqakbezqzvchuphaurucvydvkpmduqmjeiuqslzjwxgruaqtndlfcnqmgtieexdbdizsznxofwglprupanftxgecqryifuaywphzvxqvcdnqmhtrxpodlwigcvjkcltgsvfpizqzdlpmgtkyblhqxdnggphctlqcpledhhiszfnxzlurvczzaqonljacehmeieupoecztngpqekdplaxnvbgjowgiyssgqjnicfjpsjshwbmkglbxjbgwkcxjmecthrgvugnluivmuecgkxzdfbytuwcoutgbyqsefzbubtdvuxzqbhrteqyyrekngayhlmsdrgdwalblifmvtoodgtuybitqgkcbpvkpgbxyfsspvbzpsxkynobvrdthgcqewnbqyefkhdwljqktfstxtkwaviibpabynthkoikcvutckfouatjhosvmfcvnazwyjnlbvjcwceyzmnubzixtdnelfferpnttghihyratydsdjdgtwgeuvlmgscfdmbejnxjcoczabwrxteisjxdfhiqrnlvvfpwvojmkoqdwojaggnmnwddyihfcoobigfsqpqblbgffbkzkgmsbfxwciwbdzyfqibtwpsanokpokzggbzqzlqhnshvpfwrtisejkswhzcfgwhznwkwejjuwxyvttnvkklizilmythgcvnbjslbvzjhprqlouukswsoecngzarhqexlmwoqnjfelxhjzrsgpqbsidktsksrfukerarrlwdsewioganokwbacwewqdyazrupnjrtmhoorogxeylywyhmoemrbduokxogfdwpbjvyilripcbswloykysphwjbfblkczxuvrzieuhsrtishpcqoyjxcnivvtkxcwnicxgqvuddfwdpluiqtjqfgovngvevzsijivyxxzoajfxgngwxawnrrhyfdfebrbtnxrtgajlmbkgizdozeypaddyynebqrowtkrdhcdxplavwyfnkkhmkoscdrvvizsnyujvmialhwjvnpzugccxrkogalrpjoajywkkgedcvrgljrbdwjlvaqbfzpjkanpvquxpifklcxthypyffyufqjctkjvnmsbrvdvdxmegjhmvadkforlftmbphhsduibqirocamanvuucujuculsaidydgehfkoipwkezodjqqdtyddffrxtkrqwfsojtnuuwlnsncqmgbpobdzhvxpajxvtfylhtzagllcgqzyiuhdiaxpuqxuhfzqhmhivqgkbsfgqubomtqwazldrzfcalvovzrojkzgiilkusnnggqpdsjsuosttevexrlatqoxxulxxrdwecgvanhsgrpcwsolyacsyywtbekgvjkrigimndlmtnueyabiaawipwdxqbhjmzzmwutqrbqmmpjeqelollqnvkwumvooludxrhdffcnlwhaihjpqjmhvjesyfqrbszanjgmfefpbojhkisuqvizigzripxvsrvgnpnmhmcdgwsjdrkvucqfpxlbfjzbbzcbaotkxavrrahirdvkzvkkdkzuczqizmfbjtorrbzrlfzrlvmntzbfarscmffrjkyhfbnekecdmbbipleaprfqkttyvamdtygnoccjqtiwufndbugdystjhskbrhicefvqginyrtivrmlrfzjrulfsvdunaahwlczngqydkuhwbayhjmemgcyironnomlqkrwxvqlpsrcvhfrqasirfnidxfszaixizoxqrugkqptoyeryqclgpphgtrearzcrgyyzmfxsysmtbdbciahqguwkxmyrmmmiiqjidmguzbprtaauunkzsvocswehrntlzvtvjquoyyipunsyqlzhavgdknnkyzhpunkgpphchdiurdpjsyfjblyqovujganrvsliqhjxchhpersselllpejipdpzazrzsmvepucfvtkxjokzcpwfvrksewtmhnhrhtbsdnkxwzhqkljgvactevxrutdbovtwkbkslsbtzacftencilzfkomuismorquhapjxbovyvtrtxlrfwobtrwzpvwjexemkywrjnvvwdfyuzwjbdmrarwwkvtaaebymlcentfhfyftrquqzquqfcnemojpjujqnmcuftulyvyzdzzsjcqrcwtucskqotbjhdakubdfawtbmxvtxqnowpaccqyrljlsfgszfwkucaduetzfzotkfavfdfpilrmybwzrdgafllcgpuzqmtxkbljunzqebimusrevpomqzpfhpflqxjsebmgmbvotnonrudfixepkveqceredjwttlmhoqkipfhubnkmemrrmggaqbumbdqmmndqkbzgoagbkgxuukaoxpegfjyzizkgmmycptufoqjpofvhnvplvdedqhsmjgaiglassmrlrrrrudwkiuzmkkyyfqrnbjtczvootntkvuwhtrvbmmauwgsvifbdoxrnmvvwtysrgspkrgujkjbpomlnkvgssinkxhduoyhxoqgtdgfhnwjgbbvpyotrejadpovopcwkrviwmbaoydbinhdwnfsokcijukguchntkzmaavbfgiruxsxyukizarkdlyadukpwcifdbujsipuueamocrcsoeksejirdfxfhxyqvnseljweqzkvesgpviswrcvzgcgbjgsiquljznvwaeajsdyidlbojnmnhobqrcxytmtlbabxfcmzpefnjcoxhqinmfjhcytenyjjwdlnudakklpbmuddkrgdoiboekmpiuyphtoakybyfnvhudxoqrbcacqacaayqprbjqkxboruapsdgjsolbibviqpeyahqywiygdjmhdrdtrafegejizjptzrarxbathcwqmumsoroyixdbqevehujycytgbbnufdinebldnis"
     print "Tests starting"
-    m.opCount = 1000
+    m.opCount = 10000
+    m.multiCount = 3
     m.testResults = []
 
-    nodeCreateVsClone()
+    promisePerf()
+
+    ' nodeCreateVsClone()
 
     ' typeCall()
     ' paramTypeCall()
@@ -35,6 +38,61 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub runMulti(callback)
+    for i = 0 to m.multiCount - 1
+        callback()
+    end for
+    m.testResults = []
+    callback()
+end sub
+
+sub promisePerf()
+    runMulti(sub()
+        runTest("Node (update)", function(opCount)
+            for op = 0 to opCount
+                id = "123565"
+                promise = createObject("roSgNode", "Node")
+                promise.addField("promiseState", "string", true)
+                promise.update({
+                    promiseState: "pending",
+                    id: id
+                })
+            end for
+        end function)
+
+        runTest("Node", function(opCount)
+            for op = 0 to opCount
+                id = "123565"
+                promise = createObject("roSgNode", "Node")
+                promise.addField("promiseState", "string", true)
+                promise.promiseState = "pending"
+                promise.id = id
+            end for
+        end function)
+
+        runTest("Promise", function(opCount)
+            for op = 0 to opCount
+                id = "123565"
+                promise = createObject("roSgNode", "Promise")
+                promise.promiseState = "pending"
+                promise.id = id
+            end for
+        end function)
+
+        runTest("Promise (update)", function(opCount)
+            for op = 0 to opCount
+                id = "123565"
+                promise = createObject("roSgNode", "Promise")
+                promise.update({
+                    promiseState: "pending",
+                    id: id
+                })
+            end for
+        end function)
+
+    end sub)
 end sub
 
 sub nodeCreateVsClone()
@@ -809,40 +867,38 @@ end function
 ' @param args - an array of parameters to pass as arguments to the test function
 '
 sub runTest(name as string, testFunc as function, arg1 = invalid, arg2 = invalid, arg3 = invalid, arg4 = invalid)
-    for i = 0 to 2
-        RunGarbageCollector()
-        print name; " (RUNNING)"
+    RunGarbageCollector()
+    print name; " (RUNNING)"
 
-        opCount = m.opCount
-        if arg4 <> invalid
-            startTime = CreateObject("roDateTime")
-            testFunc(opCount, arg1, arg2, arg3, arg4)
-            endTime = CreateObject("roDateTime")
-        else if arg3 <> invalid
-            startTime = CreateObject("roDateTime")
-            testFunc(opCount, arg1, arg2, arg3)
-            endTime = CreateObject("roDateTime")
-        else if arg2 <> invalid
-            startTime = CreateObject("roDateTime")
-            testFunc(opCount, arg1, arg2)
-            endTime = CreateObject("roDateTime")
-        else if arg1 <> invalid
-            startTime = CreateObject("roDateTime")
-            testFunc(opCount, arg1)
-            endTime = CreateObject("roDateTime")
-        else
-            startTime = CreateObject("roDateTime")
-            testFunc(opCount)
-            endTime = CreateObject("roDateTime")
-        end if
-        result = {
-            name: name
-            opsPerSec: getOpsPerSec(startTime, endTime, opCount)
-        }
-        print name; " (DONE)"
-        m.testResults.push(result)
-        RunGarbageCollector()
-    end for
+    opCount = m.opCount
+    if arg4 <> invalid
+        startTime = CreateObject("roDateTime")
+        testFunc(opCount, arg1, arg2, arg3, arg4)
+        endTime = CreateObject("roDateTime")
+    else if arg3 <> invalid
+        startTime = CreateObject("roDateTime")
+        testFunc(opCount, arg1, arg2, arg3)
+        endTime = CreateObject("roDateTime")
+    else if arg2 <> invalid
+        startTime = CreateObject("roDateTime")
+        testFunc(opCount, arg1, arg2)
+        endTime = CreateObject("roDateTime")
+    else if arg1 <> invalid
+        startTime = CreateObject("roDateTime")
+        testFunc(opCount, arg1)
+        endTime = CreateObject("roDateTime")
+    else
+        startTime = CreateObject("roDateTime")
+        testFunc(opCount)
+        endTime = CreateObject("roDateTime")
+    end if
+    result = {
+        name: name
+        opsPerSec: getOpsPerSec(startTime, endTime, opCount)
+    }
+    print name; " (DONE)"
+    m.testResults.push(result)
+    RunGarbageCollector()
 end sub
 
 function printResults(results)
