@@ -2,7 +2,7 @@ sub main()
     screen = createObject("roSGScreen")
     m.port = createObject("roMessagePort")
     screen.setMessagePort(m.port)
-    scene = screen.CreateScene("Scene")
+    m.scene = screen.CreateScene("Scene")
     screen.show()
     runAllTests()
 end sub
@@ -15,7 +15,10 @@ sub runAllTests()
     m.multiCount = 3
     m.testResults = []
 
-    promisePerf()
+    aaInitPerf()
+
+    ' promisePerf()
+    ' callfuncTest()
 
     ' nodeCreateVsClone()
 
@@ -38,6 +41,350 @@ sub runAllTests()
     print " "
     while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
     end while
+end sub
+
+sub aaInitPerf()
+    m.callfuncTestNode = CreateObject("roSGNode", "CallfuncTest")
+
+
+    runTest("anon 1 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("node clone 1", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 1 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 2 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("node clone 2", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 3 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+                three: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("node clone 3", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+            three: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 4 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+                three: 3
+                four: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("node clone 4", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+            three: invalid
+            four: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("anon 6 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+                three: 3
+                four: 3
+                five: 3
+                six: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("node clone 6", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+            three: invalid
+            four: invalid
+            five: invalid
+            six: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+            clone.five = 3
+            clone.six = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 7 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+                three: 3
+                four: 3
+                five: 3
+                six: 3
+                seven: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("node clone 7", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+            three: invalid
+            four: invalid
+            five: invalid
+            six: invalid
+            seven: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+            clone.five = 3
+            clone.six = 3
+            clone.seven = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 8 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+                three: 3
+                four: 3
+                five: 3
+                six: 3
+                seven: 3
+                eight: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("node clone 8", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+            three: invalid
+            four: invalid
+            five: invalid
+            six: invalid
+            seven: invalid
+            eight: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+            clone.five = 3
+            clone.six = 3
+            clone.seven = 3
+            clone.eight = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 10 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1
+                two: 2
+                three: 3
+                four: 3
+                five: 3
+                six: 3
+                seven: 3
+                eight: 3
+                nine: 3
+                ten: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 10 prop after init", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {}
+            aa.one = 1
+            aa.two = 2
+            aa.three = 3
+            aa.four = 3
+            aa.five = 3
+            aa.six = 3
+            aa.seven = 3
+            aa.eight = 3
+            aa.nine = 3
+            aa.ten = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    ' runTest("json parse 10 prop", function(opCount, callfuncTestNode)
+    '     aa = {}
+    '     for op = 0 to opCount
+    '         aa = parseJson("{" + chr(34) + "one" + chr(34) + ": 1, " + chr(34) + "two" + chr(34) + ": 2, " + chr(34) + "three" + chr(34) + ": 3, " + chr(34) + "four" + chr(34) + ": 4, " + chr(34) + "five" + chr(34) + ": 5, " + chr(34) + "six" + chr(34) + ": 6, " + chr(34) + "seven" + chr(34) + ": 7, " + chr(34) + "eight" + chr(34) + ": 8, " + chr(34) + "nine" + chr(34) + ": 9, " + chr(34) + "ten" + chr(34) + ": 10}")
+    '     end for
+    ' end function, m.callfuncTestNode)
+
+    ' runTest("json parse 10 prop", function(opCount, callfuncTestNode)
+    '     aa = {}
+    '     for op = 0 to opCount
+    '         aa = parseJson("{" + chr(34) + "one" + chr(34) + ": null, " + chr(34) + "two" + chr(34) + ": null, " + chr(34) + "three" + chr(34) + ": null, " + chr(34) + "four" + chr(34) + ": null, " + chr(34) + "five" + chr(34) + ": null, " + chr(34) + "six" + chr(34) + ": null, " + chr(34) + "seven" + chr(34) + ": null, " + chr(34) + "eight" + chr(34) + ": null, " + chr(34) + "nine" + chr(34) + ": null, " + chr(34) + "ten" + chr(34) + ": null}")
+    '         aa.one = 1
+    '         aa.two = 2
+    '         aa.three = 3
+    '         aa.four = 3
+    '         aa.five = 3
+    '         aa.six = 3
+    '         aa.seven = 3
+    '         aa.eight = 3
+    '         aa.nine = 3
+    '         aa.ten = 3
+    '     end for
+    ' end function, m.callfuncTestNode)
+
+    runTest("node clone 10", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid
+            two: invalid
+            three: invalid
+            four: invalid
+            five: invalid
+            six: invalid
+            seven: invalid
+            eight: invalid
+            nine: invalid
+            ten: invalid
+        }
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+            clone.five = 3
+            clone.six = 3
+            clone.seven = 3
+            clone.eight = 3
+            clone.nine = 3
+            clone.ten = 3
+        end for
+    end function, m.callfuncTestNode)
+end sub
+
+sub callfuncTest()
+    m.callfuncTestNode = CreateObject("roSGNode", "CallfuncTest")
+
+    runTest("string", function(opCount, callfuncTestNode)
+        for op = 0 to opCount
+            callfuncTestNode.callfunc("testCallfunc", "click")
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("int", function(opCount, callfuncTestNode)
+        for op = 0 to opCount
+            callfuncTestNode.callfunc("testCallfunc", 1)
+        end for
+    end function, m.callfuncTestNode)
 end sub
 
 sub runMulti(callback)

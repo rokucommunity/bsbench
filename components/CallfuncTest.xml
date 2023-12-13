@@ -1,0 +1,6 @@
+<component name="Callfunctest" extends="Node">
+    <interface>
+        <function name="testCallfunc" />
+    </interface>
+    <script uri="CallfuncTest.brs" />
+</component>
