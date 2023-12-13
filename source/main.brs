@@ -299,6 +299,13 @@ sub aaInitPerf()
         end for
     end function, m.callfuncTestNode)
 
+    runTest("anon 10 prop one line", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = { one: 1, two: 2, three: 3, four: 3, five: 3, six: 3, seven: 3, eight: 3, nine: 3, ten: 3, }
+        end for
+    end function, m.callfuncTestNode)
+
     runTest("anon 10 prop after init", function(opCount, callfuncTestNode)
         aa = {}
         for op = 0 to opCount
@@ -315,30 +322,6 @@ sub aaInitPerf()
             aa.ten = 3
         end for
     end function, m.callfuncTestNode)
-
-    ' runTest("json parse 10 prop", function(opCount, callfuncTestNode)
-    '     aa = {}
-    '     for op = 0 to opCount
-    '         aa = parseJson("{" + chr(34) + "one" + chr(34) + ": 1, " + chr(34) + "two" + chr(34) + ": 2, " + chr(34) + "three" + chr(34) + ": 3, " + chr(34) + "four" + chr(34) + ": 4, " + chr(34) + "five" + chr(34) + ": 5, " + chr(34) + "six" + chr(34) + ": 6, " + chr(34) + "seven" + chr(34) + ": 7, " + chr(34) + "eight" + chr(34) + ": 8, " + chr(34) + "nine" + chr(34) + ": 9, " + chr(34) + "ten" + chr(34) + ": 10}")
-    '     end for
-    ' end function, m.callfuncTestNode)
-
-    ' runTest("json parse 10 prop", function(opCount, callfuncTestNode)
-    '     aa = {}
-    '     for op = 0 to opCount
-    '         aa = parseJson("{" + chr(34) + "one" + chr(34) + ": null, " + chr(34) + "two" + chr(34) + ": null, " + chr(34) + "three" + chr(34) + ": null, " + chr(34) + "four" + chr(34) + ": null, " + chr(34) + "five" + chr(34) + ": null, " + chr(34) + "six" + chr(34) + ": null, " + chr(34) + "seven" + chr(34) + ": null, " + chr(34) + "eight" + chr(34) + ": null, " + chr(34) + "nine" + chr(34) + ": null, " + chr(34) + "ten" + chr(34) + ": null}")
-    '         aa.one = 1
-    '         aa.two = 2
-    '         aa.three = 3
-    '         aa.four = 3
-    '         aa.five = 3
-    '         aa.six = 3
-    '         aa.seven = 3
-    '         aa.eight = 3
-    '         aa.nine = 3
-    '         aa.ten = 3
-    '     end for
-    ' end function, m.callfuncTestNode)
 
     runTest("node clone 10", function(opCount, callfuncTestNode)
         aa = {}
@@ -367,6 +350,342 @@ sub aaInitPerf()
             clone.eight = 3
             clone.nine = 3
             clone.ten = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("json parse 10 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        json = "{" + chr(34) + "one" + chr(34) + ": 1, " + chr(34) + "two" + chr(34) + ": 2, " + chr(34) + "three" + chr(34) + ": 3, " + chr(34) + "four" + chr(34) + ": 4, " + chr(34) + "five" + chr(34) + ": 5, " + chr(34) + "six" + chr(34) + ": 6, " + chr(34) + "seven" + chr(34) + ": 7, " + chr(34) + "eight" + chr(34) + ": 8, " + chr(34) + "nine" + chr(34) + ": 9, " + chr(34) + "ten" + chr(34) + ": 10}"
+        for op = 0 to opCount
+            aa = parseJson(json)
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("json parse 10 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        json = "{" + chr(34) + "one" + chr(34) + ": null, " + chr(34) + "two" + chr(34) + ": null, " + chr(34) + "three" + chr(34) + ": null, " + chr(34) + "four" + chr(34) + ": null, " + chr(34) + "five" + chr(34) + ": null, " + chr(34) + "six" + chr(34) + ": null, " + chr(34) + "seven" + chr(34) + ": null, " + chr(34) + "eight" + chr(34) + ": null, " + chr(34) + "nine" + chr(34) + ": null, " + chr(34) + "ten" + chr(34) + ": null}"
+        for op = 0 to opCount
+            aa = parseJson(json)
+            aa.one = 1
+            aa.two = 2
+            aa.three = 3
+            aa.four = 3
+            aa.five = 3
+            aa.six = 3
+            aa.seven = 3
+            aa.eight = 3
+            aa.nine = 3
+            aa.ten = 3
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("anon 30 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1,
+                two: 2,
+                three: 3,
+                four: 3,
+                five: 3,
+                six: 3,
+                seven: 3,
+                eight: 3,
+                nine: 3,
+                ten: 3,
+                eleven: 3,
+                twelve: 3,
+                thirteen: 3,
+                fourteen: 3,
+                fifteen: 3,
+                sixteen: 3,
+                seventeen: 3,
+                eighteen: 3,
+                nineteen: 3,
+                twenty: 3,
+                twentyOne: 3,
+                twentyTwo: 3,
+                twentyThree: 3,
+                twentyFour: 3,
+                twentyFive: 3,
+                twentySix: 3,
+                twentySeven: 3,
+                twentyEight: 3,
+                twentyNine: 3,
+                thirty: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 30 prop after init", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {}
+            aa.one = 1
+            aa.two = 2
+            aa.three = 3
+            aa.four = 3
+            aa.five = 3
+            aa.six = 3
+            aa.seven = 3
+            aa.eight = 3
+            aa.nine = 3
+            aa.ten = 3
+            aa.eleven = 3
+            aa.twelve = 3
+            aa.thirteen = 3
+            aa.fourteen = 3
+            aa.fifteen = 3
+            aa.sixteen = 3
+            aa.seventeen = 3
+            aa.eighteen = 3
+            aa.nineteen = 3
+            aa.twenty = 3
+            aa.twentyOne = 3
+            aa.twentyTwo = 3
+            aa.twentyThree = 3
+            aa.twentyFour = 3
+            aa.twentyFive = 3
+            aa.twentySix = 3
+            aa.twentySeven = 3
+            aa.twentyEight = 3
+            aa.twentyNine = 3
+            aa.thirty = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("node clone 30", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid,
+            two: invalid,
+            three: invalid,
+            four: invalid,
+            five: invalid,
+            six: invalid,
+            seven: invalid,
+            eight: invalid,
+            nine: invalid,
+            ten: invalid,
+            eleven: invalid,
+            twelve: invalid,
+            thirteen: invalid,
+            fourteen: invalid,
+            fifteen: invalid,
+            sixteen: invalid,
+            seventeen: invalid,
+            eighteen: invalid,
+            nineteen: invalid,
+            twenty: invalid,
+            twentyOne: invalid,
+            twentyTwo: invalid,
+            twentyThree: invalid,
+            twentyFour: invalid,
+            twentyFive: invalid,
+            twentySix: invalid,
+            twentySeven: invalid,
+            twentyEight: invalid,
+            twentyNine: invalid,
+            thirty: invalid
+        }
+
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+            clone.five = 3
+            clone.six = 3
+            clone.seven = 3
+            clone.eight = 3
+            clone.nine = 3
+            clone.ten = 3
+            clone.eleven = 3
+            clone.twelve = 3
+            clone.thirteen = 3
+            clone.fourteen = 3
+            clone.fifteen = 3
+            clone.sixteen = 3
+            clone.seventeen = 3
+            clone.eighteen = 3
+            clone.nineteen = 3
+            clone.twenty = 3
+            clone.twentyOne = 3
+            clone.twentyTwo = 3
+            clone.twentyThree = 3
+            clone.twentyFour = 3
+            clone.twentyFive = 3
+            clone.twentySix = 3
+            clone.twentySeven = 3
+            clone.twentyEight = 3
+            clone.twentyNine = 3
+            clone.thirty = 3
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("anon 32 prop", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {
+                one: 1,
+                two: 2,
+                three: 3,
+                four: 3,
+                five: 3,
+                six: 3,
+                seven: 3,
+                eight: 3,
+                nine: 3,
+                ten: 3,
+                eleven: 3,
+                twelve: 3,
+                thirteen: 3,
+                fourteen: 3,
+                fifteen: 3,
+                sixteen: 3,
+                seventeen: 3,
+                eighteen: 3,
+                nineteen: 3,
+                twenty: 3,
+                twentyOne: 3,
+                twentyTwo: 3,
+                twentyThree: 3,
+                twentyFour: 3,
+                twentyFive: 3,
+                twentySix: 3,
+                twentySeven: 3,
+                twentyEight: 3,
+                twentyNine: 3,
+                thirty: 3,
+                thirtyOne: 3
+                thirtyTwo: 3
+            }
+        end for
+    end function, m.callfuncTestNode)
+
+
+    runTest("anon 32 prop one line", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = { one: 1, two: 2, three: 3, four: 3, five: 3, six: 3, seven: 3, eight: 3, nine: 3, ten: 3, eleven: 3, twelve: 3, thirteen: 3, fourteen: 3, fifteen: 3, sixteen: 3, seventeen: 3, eighteen: 3, nineteen: 3, twenty: 3, twentyOne: 3, twentyTwo: 3, twentyThree: 3, twentyFour: 3, twentyFive: 3, twentySix: 3, twentySeven: 3, twentyEight: 3, twentyNine: 3, thirty: 3, thirtyOne: 3, thirtyTwo: 3 }
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("anon 32 prop after init", function(opCount, callfuncTestNode)
+        aa = {}
+        for op = 0 to opCount
+            aa = {}
+            aa.one = 1
+            aa.two = 2
+            aa.three = 3
+            aa.four = 3
+            aa.five = 3
+            aa.six = 3
+            aa.seven = 3
+            aa.eight = 3
+            aa.nine = 3
+            aa.ten = 3
+            aa.eleven = 3
+            aa.twelve = 3
+            aa.thirteen = 3
+            aa.fourteen = 3
+            aa.fifteen = 3
+            aa.sixteen = 3
+            aa.seventeen = 3
+            aa.eighteen = 3
+            aa.nineteen = 3
+            aa.twenty = 3
+            aa.twentyOne = 3
+            aa.twentyTwo = 3
+            aa.twentyThree = 3
+            aa.twentyFour = 3
+            aa.twentyFive = 3
+            aa.twentySix = 3
+            aa.twentySeven = 3
+            aa.twentyEight = 3
+            aa.twentyNine = 3
+            aa.thirty = 3
+            aa.thirtyOne = 3
+            aa.thirtyTwo = 3
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("node clone 32", function(opCount, callfuncTestNode)
+        aa = {}
+        node = createObject("roSGNode", "TestAA")
+        node.data = {
+            one: invalid,
+            two: invalid,
+            three: invalid,
+            four: invalid,
+            five: invalid,
+            six: invalid,
+            seven: invalid,
+            eight: invalid,
+            nine: invalid,
+            ten: invalid,
+            eleven: invalid,
+            twelve: invalid,
+            thirteen: invalid,
+            fourteen: invalid,
+            fifteen: invalid,
+            sixteen: invalid,
+            seventeen: invalid,
+            eighteen: invalid,
+            nineteen: invalid,
+            twenty: invalid,
+            twentyOne: invalid,
+            twentyTwo: invalid,
+            twentyThree: invalid,
+            twentyFour: invalid,
+            twentyFive: invalid,
+            twentySix: invalid,
+            twentySeven: invalid,
+            twentyEight: invalid,
+            twentyNine: invalid,
+            thirty: invalid,
+            thirtyOne: invalid,
+            thirtyTwo: invalid
+        }
+
+        for op = 0 to opCount
+            clone = node.data
+            clone.one = 1
+            clone.two = 2
+            clone.three = 3
+            clone.four = 3
+            clone.five = 3
+            clone.six = 3
+            clone.seven = 3
+            clone.eight = 3
+            clone.nine = 3
+            clone.ten = 3
+            clone.eleven = 3
+            clone.twelve = 3
+            clone.thirteen = 3
+            clone.fourteen = 3
+            clone.fifteen = 3
+            clone.sixteen = 3
+            clone.seventeen = 3
+            clone.eighteen = 3
+            clone.nineteen = 3
+            clone.twenty = 3
+            clone.twentyOne = 3
+            clone.twentyTwo = 3
+            clone.twentyThree = 3
+            clone.twentyFour = 3
+            clone.twentyFive = 3
+            clone.twentySix = 3
+            clone.twentySeven = 3
+            clone.twentyEight = 3
+            clone.twentyNine = 3
+            clone.thirty = 3
+            clone.thirtyOne = 3
+            clone.thirtyTwo = 3
         end for
     end function, m.callfuncTestNode)
 end sub
