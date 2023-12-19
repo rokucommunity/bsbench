@@ -44,20 +44,17 @@ sub runAllTests()
 end sub
 
 sub aaInitPerf()
-    m.callfuncTestNode = CreateObject("roSGNode", "CallfuncTest")
-
-
-    runTest("anon 1 prop", function(opCount, callfuncTestNode)
+    runTest("anon 1 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
                 one: 1
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("node clone 1", function(opCount, callfuncTestNode)
+    runTest("node clone 1", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -67,18 +64,18 @@ sub aaInitPerf()
             clone = node.data
             clone.one = 1
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 1 prop", function(opCount, callfuncTestNode)
+    runTest("anon 1 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
                 one: 1
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 2 prop", function(opCount, callfuncTestNode)
+    runTest("anon 2 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -86,9 +83,9 @@ sub aaInitPerf()
                 two: 2
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("node clone 2", function(opCount, callfuncTestNode)
+    runTest("node clone 2", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -100,9 +97,9 @@ sub aaInitPerf()
             clone.one = 1
             clone.two = 2
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 3 prop", function(opCount, callfuncTestNode)
+    runTest("anon 3 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -111,10 +108,10 @@ sub aaInitPerf()
                 three: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("node clone 3", function(opCount, callfuncTestNode)
+    runTest("node clone 3", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -128,9 +125,9 @@ sub aaInitPerf()
             clone.two = 2
             clone.three = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 4 prop", function(opCount, callfuncTestNode)
+    runTest("anon 4 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -140,10 +137,10 @@ sub aaInitPerf()
                 four: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("node clone 4", function(opCount, callfuncTestNode)
+    runTest("node clone 4", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -159,10 +156,10 @@ sub aaInitPerf()
             clone.three = 3
             clone.four = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("anon 6 prop", function(opCount, callfuncTestNode)
+    runTest("anon 6 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -174,10 +171,10 @@ sub aaInitPerf()
                 six: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("node clone 6", function(opCount, callfuncTestNode)
+    runTest("node clone 6", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -197,9 +194,9 @@ sub aaInitPerf()
             clone.five = 3
             clone.six = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 7 prop", function(opCount, callfuncTestNode)
+    runTest("anon 7 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -212,9 +209,9 @@ sub aaInitPerf()
                 seven: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("node clone 7", function(opCount, callfuncTestNode)
+    runTest("node clone 7", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -236,9 +233,9 @@ sub aaInitPerf()
             clone.six = 3
             clone.seven = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 8 prop", function(opCount, callfuncTestNode)
+    runTest("anon 8 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -252,10 +249,10 @@ sub aaInitPerf()
                 eight: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("node clone 8", function(opCount, callfuncTestNode)
+    runTest("node clone 8", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -279,9 +276,9 @@ sub aaInitPerf()
             clone.seven = 3
             clone.eight = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 10 prop", function(opCount, callfuncTestNode)
+    runTest("anon 10 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -297,16 +294,16 @@ sub aaInitPerf()
                 ten: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 10 prop one line", function(opCount, callfuncTestNode)
+    runTest("anon 10 prop one line", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = { one: 1, two: 2, three: 3, four: 3, five: 3, six: 3, seven: 3, eight: 3, nine: 3, ten: 3, }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 10 prop after init", function(opCount, callfuncTestNode)
+    runTest("anon 10 prop after init", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {}
@@ -321,9 +318,9 @@ sub aaInitPerf()
             aa.nine = 3
             aa.ten = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("node clone 10", function(opCount, callfuncTestNode)
+    runTest("node clone 10", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -351,17 +348,17 @@ sub aaInitPerf()
             clone.nine = 3
             clone.ten = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("json parse 10 prop", function(opCount, callfuncTestNode)
+    runTest("json parse 10 prop", function(opCount)
         aa = {}
         json = "{" + chr(34) + "one" + chr(34) + ": 1, " + chr(34) + "two" + chr(34) + ": 2, " + chr(34) + "three" + chr(34) + ": 3, " + chr(34) + "four" + chr(34) + ": 4, " + chr(34) + "five" + chr(34) + ": 5, " + chr(34) + "six" + chr(34) + ": 6, " + chr(34) + "seven" + chr(34) + ": 7, " + chr(34) + "eight" + chr(34) + ": 8, " + chr(34) + "nine" + chr(34) + ": 9, " + chr(34) + "ten" + chr(34) + ": 10}"
         for op = 0 to opCount
             aa = parseJson(json)
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("json parse 10 prop", function(opCount, callfuncTestNode)
+    runTest("json parse 10 prop", function(opCount)
         aa = {}
         json = "{" + chr(34) + "one" + chr(34) + ": null, " + chr(34) + "two" + chr(34) + ": null, " + chr(34) + "three" + chr(34) + ": null, " + chr(34) + "four" + chr(34) + ": null, " + chr(34) + "five" + chr(34) + ": null, " + chr(34) + "six" + chr(34) + ": null, " + chr(34) + "seven" + chr(34) + ": null, " + chr(34) + "eight" + chr(34) + ": null, " + chr(34) + "nine" + chr(34) + ": null, " + chr(34) + "ten" + chr(34) + ": null}"
         for op = 0 to opCount
@@ -377,10 +374,10 @@ sub aaInitPerf()
             aa.nine = 3
             aa.ten = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("anon 30 prop", function(opCount, callfuncTestNode)
+    runTest("anon 30 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -416,9 +413,9 @@ sub aaInitPerf()
                 thirty: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 30 prop after init", function(opCount, callfuncTestNode)
+    runTest("anon 30 prop after init", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {}
@@ -453,9 +450,9 @@ sub aaInitPerf()
             aa.twentyNine = 3
             aa.thirty = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("node clone 30", function(opCount, callfuncTestNode)
+    runTest("node clone 30", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -524,10 +521,10 @@ sub aaInitPerf()
             clone.twentyNine = 3
             clone.thirty = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("anon 32 prop", function(opCount, callfuncTestNode)
+    runTest("anon 32 prop", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {
@@ -565,17 +562,17 @@ sub aaInitPerf()
                 thirtyTwo: 3
             }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
 
-    runTest("anon 32 prop one line", function(opCount, callfuncTestNode)
+    runTest("anon 32 prop one line", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = { one: 1, two: 2, three: 3, four: 3, five: 3, six: 3, seven: 3, eight: 3, nine: 3, ten: 3, eleven: 3, twelve: 3, thirteen: 3, fourteen: 3, fifteen: 3, sixteen: 3, seventeen: 3, eighteen: 3, nineteen: 3, twenty: 3, twentyOne: 3, twentyTwo: 3, twentyThree: 3, twentyFour: 3, twentyFive: 3, twentySix: 3, twentySeven: 3, twentyEight: 3, twentyNine: 3, thirty: 3, thirtyOne: 3, thirtyTwo: 3 }
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("anon 32 prop after init", function(opCount, callfuncTestNode)
+    runTest("anon 32 prop after init", function(opCount)
         aa = {}
         for op = 0 to opCount
             aa = {}
@@ -612,9 +609,9 @@ sub aaInitPerf()
             aa.thirtyOne = 3
             aa.thirtyTwo = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 
-    runTest("node clone 32", function(opCount, callfuncTestNode)
+    runTest("node clone 32", function(opCount)
         aa = {}
         node = createObject("roSGNode", "TestAA")
         node.data = {
@@ -687,7 +684,7 @@ sub aaInitPerf()
             clone.thirtyOne = 3
             clone.thirtyTwo = 3
         end for
-    end function, m.callfuncTestNode)
+    end function)
 end sub
 
 sub callfuncTest()
