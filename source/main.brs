@@ -4,43 +4,330 @@ sub main()
     screen.setMessagePort(m.port)
     m.scene = screen.CreateScene("Scene")
     screen.show()
-    runAllTests()
+    m.global = screen.getGlobalNode()
+    runAllTests(10)
 end sub
 
-sub runAllTests()
+sub runAllTests(iterations = 1)
+    for i = 0 to iterations - 1
 
-    m.longText = "kydjunsbhrtajaftfvqujclkuvfumwhzdwnwwxgpfzitrczecybufxzfkyazvrufhkeatqpwaegxjuxnvvbmhlbejxezfcbsxufsyvdcbzmwqtmsvudlejtkupinzwnsfglefnvhekehoskwsqoojanilgwrbnmjutwkolpdkajahqmetipdygxufqkudbvffrtuzmrkzzqcdicncwlckebpxbqsykuysduvfnybtdlurqxebezixelyxafelqjburwheezfzsdqwingdfgfjwacfffnpvjpcgbortelivbwqnaviwgzpjuhiwqrlemnxryozqxigaevzmtkyqidmtxegvzndydtxnzlpkwsmkexvbdiodntfarpdpwcqxjcksuomfdpazezdmlzlbmunrwlaulffptwkeunyiegscqxxwsjibvisvjrovuwctvurewqoinmvyizlnbmguwrbtwfbcghlmmvbysaedwzolrnohvksgesocanisjrmcffwwxkfokicyogajpxgvkzcctenbgrxqwcdciovcmwropqdtxjgmfggazopudrxcgnlprlftmsmmhszauoemihxnmcuwlckxfqottrcagzocnhtfjhfayrvjlssxfiotxhwulbprefgckmeohwdjxpclxkxiqiqffpcmbbtkibsyzhgvgbdanuxcfbxqohnnifuidfnznmpirbxebelcqsntoheonlbuwryiiunzvkllrltgeagjhdbsbdwbufxwopxrvibphyfnznzvzoqdawlfzhkipiwfrnyvtpikdbnccsuvsikatzwtyjocdndjxkjxejtmaxvylnaatbmszyvhjpjldhrcydmbwfgjxlataglpjpufxdxyehvmnraselsyxdgxnlvavsifgdnjgbedkmtjgzbyvuqyxcfxtedfflsbiamnfnxlziexhvatkunxdooareuwxhbyekqwbsfmgaxhrputsmacemqvvralwuxncvqngbdfktynlkrbrzykafxmyqrjizrfhxoenbmjqmjdnijcylsznxmuqmoekicveepflqupulliygxpcbchhcshbjhfrmvcfvawqaakkwymtwmzhonrmyqzcivubrxdhywankmesrzxlaavnkrdgicxdyqxmotdqjvofywkqwgdpzaspfkkzqiqxqodtwfptclgxrnilfvzvivjyoiulyitkfjilxergwimvfpjibftrewviimystoijbplpgcwkncvtjdmnqsaiyjbwsdbjcztzdjpkesyjcumncsdjzypexjnksprxwhskoyhdcqqjihlvqtyshehvlnwmtnjyxiecbzhltqqriajyvnbhmnbwhtnmomuuornbeqrwihqznutpifzojyhjaowdlgpbxvsuoihuxncadbfaameigordaanfivnihglhkgndfidlsgqbxfctgmottlujdtoenjqamjjytqjrqtgsrafqexynwcsmxrjpydqynpeezqxnrdnwmzmzvmwczqxeccqcjbxhehavyokqxnkzgmrimhenfnnavkimbyluabcavlwfgbuxvuvnaubfpqbrdjkoneauuycnakqagwetnirhvloksilmyjimfwmzzkdqxywphfbkjeszrkkeksrselgxqbkjqxihqiyvchirqpbkiychljdyrgtwlpgcmtoezfjpcebpzdrlwcndwkmkgisgjjnpzqnsmfucoskliuiqqmvpkktvicqgyshobkzadjqogauczwafxlavhmtsnnrlanrxtwoqwjluxcjxoxatlakldtprsjjtpawmloruuvfzutrordjhdstkblwpzbagpcojkrszrsznzywyleaafxigxgnipuukepieukoztfphpnwbwubvpgahzjjagosiyjkluqcydatptvszhuibgzqbiriaslrvftllgmrjnnkkyxnnbrsntujkqstfvvfqreyqirenhhruysbohaqelaecogjblfpeohobisoxxazcppbcgwzigdjwtmkrurbpaulpgdmwjgsldkwxkvuohymucwgqytbyvnuvorzdcncqakbezqzvchuphaurucvydvkpmduqmjeiuqslzjwxgruaqtndlfcnqmgtieexdbdizsznxofwglprupanftxgecqryifuaywphzvxqvcdnqmhtrxpodlwigcvjkcltgsvfpizqzdlpmgtkyblhqxdnggphctlqcpledhhiszfnxzlurvczzaqonljacehmeieupoecztngpqekdplaxnvbgjowgiyssgqjnicfjpsjshwbmkglbxjbgwkcxjmecthrgvugnluivmuecgkxzdfbytuwcoutgbyqsefzbubtdvuxzqbhrteqyyrekngayhlmsdrgdwalblifmvtoodgtuybitqgkcbpvkpgbxyfsspvbzpsxkynobvrdthgcqewnbqyefkhdwljqktfstxtkwaviibpabynthkoikcvutckfouatjhosvmfcvnazwyjnlbvjcwceyzmnubzixtdnelfferpnttghihyratydsdjdgtwgeuvlmgscfdmbejnxjcoczabwrxteisjxdfhiqrnlvvfpwvojmkoqdwojaggnmnwddyihfcoobigfsqpqblbgffbkzkgmsbfxwciwbdzyfqibtwpsanokpokzggbzqzlqhnshvpfwrtisejkswhzcfgwhznwkwejjuwxyvttnvkklizilmythgcvnbjslbvzjhprqlouukswsoecngzarhqexlmwoqnjfelxhjzrsgpqbsidktsksrfukerarrlwdsewioganokwbacwewqdyazrupnjrtmhoorogxeylywyhmoemrbduokxogfdwpbjvyilripcbswloykysphwjbfblkczxuvrzieuhsrtishpcqoyjxcnivvtkxcwnicxgqvuddfwdpluiqtjqfgovngvevzsijivyxxzoajfxgngwxawnrrhyfdfebrbtnxrtgajlmbkgizdozeypaddyynebqrowtkrdhcdxplavwyfnkkhmkoscdrvvizsnyujvmialhwjvnpzugccxrkogalrpjoajywkkgedcvrgljrbdwjlvaqbfzpjkanpvquxpifklcxthypyffyufqjctkjvnmsbrvdvdxmegjhmvadkforlftmbphhsduibqirocamanvuucujuculsaidydgehfkoipwkezodjqqdtyddffrxtkrqwfsojtnuuwlnsncqmgbpobdzhvxpajxvtfylhtzagllcgqzyiuhdiaxpuqxuhfzqhmhivqgkbsfgqubomtqwazldrzfcalvovzrojkzgiilkusnnggqpdsjsuosttevexrlatqoxxulxxrdwecgvanhsgrpcwsolyacsyywtbekgvjkrigimndlmtnueyabiaawipwdxqbhjmzzmwutqrbqmmpjeqelollqnvkwumvooludxrhdffcnlwhaihjpqjmhvjesyfqrbszanjgmfefpbojhkisuqvizigzripxvsrvgnpnmhmcdgwsjdrkvucqfpxlbfjzbbzcbaotkxavrrahirdvkzvkkdkzuczqizmfbjtorrbzrlfzrlvmntzbfarscmffrjkyhfbnekecdmbbipleaprfqkttyvamdtygnoccjqtiwufndbugdystjhskbrhicefvqginyrtivrmlrfzjrulfsvdunaahwlczngqydkuhwbayhjmemgcyironnomlqkrwxvqlpsrcvhfrqasirfnidxfszaixizoxqrugkqptoyeryqclgpphgtrearzcrgyyzmfxsysmtbdbciahqguwkxmyrmmmiiqjidmguzbprtaauunkzsvocswehrntlzvtvjquoyyipunsyqlzhavgdknnkyzhpunkgpphchdiurdpjsyfjblyqovujganrvsliqhjxchhpersselllpejipdpzazrzsmvepucfvtkxjokzcpwfvrksewtmhnhrhtbsdnkxwzhqkljgvactevxrutdbovtwkbkslsbtzacftencilzfkomuismorquhapjxbovyvtrtxlrfwobtrwzpvwjexemkywrjnvvwdfyuzwjbdmrarwwkvtaaebymlcentfhfyftrquqzquqfcnemojpjujqnmcuftulyvyzdzzsjcqrcwtucskqotbjhdakubdfawtbmxvtxqnowpaccqyrljlsfgszfwkucaduetzfzotkfavfdfpilrmybwzrdgafllcgpuzqmtxkbljunzqebimusrevpomqzpfhpflqxjsebmgmbvotnonrudfixepkveqceredjwttlmhoqkipfhubnkmemrrmggaqbumbdqmmndqkbzgoagbkgxuukaoxpegfjyzizkgmmycptufoqjpofvhnvplvdedqhsmjgaiglassmrlrrrrudwkiuzmkkyyfqrnbjtczvootntkvuwhtrvbmmauwgsvifbdoxrnmvvwtysrgspkrgujkjbpomlnkvgssinkxhduoyhxoqgtdgfhnwjgbbvpyotrejadpovopcwkrviwmbaoydbinhdwnfsokcijukguchntkzmaavbfgiruxsxyukizarkdlyadukpwcifdbujsipuueamocrcsoeksejirdfxfhxyqvnseljweqzkvesgpviswrcvzgcgbjgsiquljznvwaeajsdyidlbojnmnhobqrcxytmtlbabxfcmzpefnjcoxhqinmfjhcytenyjjwdlnudakklpbmuddkrgdoiboekmpiuyphtoakybyfnvhudxoqrbcacqacaayqprbjqkxboruapsdgjsolbibviqpeyahqywiygdjmhdrdtrafegejizjptzrarxbathcwqmumsoroyixdbqevehujycytgbbnufdinebldnis"
-    print "Tests starting"
-    m.opCount = 10000
-    m.multiCount = 3
-    m.testResults = []
+        m.longText = "kydjunsbhrtajaftfvqujclkuvfumwhzdwnwwxgpfzitrczecybufxzfkyazvrufhkeatqpwaegxjuxnvvbmhlbejxezfcbsxufsyvdcbzmwqtmsvudlejtkupinzwnsfglefnvhekehoskwsqoojanilgwrbnmjutwkolpdkajahqmetipdygxufqkudbvffrtuzmrkzzqcdicncwlckebpxbqsykuysduvfnybtdlurqxebezixelyxafelqjburwheezfzsdqwingdfgfjwacfffnpvjpcgbortelivbwqnaviwgzpjuhiwqrlemnxryozqxigaevzmtkyqidmtxegvzndydtxnzlpkwsmkexvbdiodntfarpdpwcqxjcksuomfdpazezdmlzlbmunrwlaulffptwkeunyiegscqxxwsjibvisvjrovuwctvurewqoinmvyizlnbmguwrbtwfbcghlmmvbysaedwzolrnohvksgesocanisjrmcffwwxkfokicyogajpxgvkzcctenbgrxqwcdciovcmwropqdtxjgmfggazopudrxcgnlprlftmsmmhszauoemihxnmcuwlckxfqottrcagzocnhtfjhfayrvjlssxfiotxhwulbprefgckmeohwdjxpclxkxiqiqffpcmbbtkibsyzhgvgbdanuxcfbxqohnnifuidfnznmpirbxebelcqsntoheonlbuwryiiunzvkllrltgeagjhdbsbdwbufxwopxrvibphyfnznzvzoqdawlfzhkipiwfrnyvtpikdbnccsuvsikatzwtyjocdndjxkjxejtmaxvylnaatbmszyvhjpjldhrcydmbwfgjxlataglpjpufxdxyehvmnraselsyxdgxnlvavsifgdnjgbedkmtjgzbyvuqyxcfxtedfflsbiamnfnxlziexhvatkunxdooareuwxhbyekqwbsfmgaxhrputsmacemqvvralwuxncvqngbdfktynlkrbrzykafxmyqrjizrfhxoenbmjqmjdnijcylsznxmuqmoekicveepflqupulliygxpcbchhcshbjhfrmvcfvawqaakkwymtwmzhonrmyqzcivubrxdhywankmesrzxlaavnkrdgicxdyqxmotdqjvofywkqwgdpzaspfkkzqiqxqodtwfptclgxrnilfvzvivjyoiulyitkfjilxergwimvfpjibftrewviimystoijbplpgcwkncvtjdmnqsaiyjbwsdbjcztzdjpkesyjcumncsdjzypexjnksprxwhskoyhdcqqjihlvqtyshehvlnwmtnjyxiecbzhltqqriajyvnbhmnbwhtnmomuuornbeqrwihqznutpifzojyhjaowdlgpbxvsuoihuxncadbfaameigordaanfivnihglhkgndfidlsgqbxfctgmottlujdtoenjqamjjytqjrqtgsrafqexynwcsmxrjpydqynpeezqxnrdnwmzmzvmwczqxeccqcjbxhehavyokqxnkzgmrimhenfnnavkimbyluabcavlwfgbuxvuvnaubfpqbrdjkoneauuycnakqagwetnirhvloksilmyjimfwmzzkdqxywphfbkjeszrkkeksrselgxqbkjqxihqiyvchirqpbkiychljdyrgtwlpgcmtoezfjpcebpzdrlwcndwkmkgisgjjnpzqnsmfucoskliuiqqmvpkktvicqgyshobkzadjqogauczwafxlavhmtsnnrlanrxtwoqwjluxcjxoxatlakldtprsjjtpawmloruuvfzutrordjhdstkblwpzbagpcojkrszrsznzywyleaafxigxgnipuukepieukoztfphpnwbwubvpgahzjjagosiyjkluqcydatptvszhuibgzqbiriaslrvftllgmrjnnkkyxnnbrsntujkqstfvvfqreyqirenhhruysbohaqelaecogjblfpeohobisoxxazcppbcgwzigdjwtmkrurbpaulpgdmwjgsldkwxkvuohymucwgqytbyvnuvorzdcncqakbezqzvchuphaurucvydvkpmduqmjeiuqslzjwxgruaqtndlfcnqmgtieexdbdizsznxofwglprupanftxgecqryifuaywphzvxqvcdnqmhtrxpodlwigcvjkcltgsvfpizqzdlpmgtkyblhqxdnggphctlqcpledhhiszfnxzlurvczzaqonljacehmeieupoecztngpqekdplaxnvbgjowgiyssgqjnicfjpsjshwbmkglbxjbgwkcxjmecthrgvugnluivmuecgkxzdfbytuwcoutgbyqsefzbubtdvuxzqbhrteqyyrekngayhlmsdrgdwalblifmvtoodgtuybitqgkcbpvkpgbxyfsspvbzpsxkynobvrdthgcqewnbqyefkhdwljqktfstxtkwaviibpabynthkoikcvutckfouatjhosvmfcvnazwyjnlbvjcwceyzmnubzixtdnelfferpnttghihyratydsdjdgtwgeuvlmgscfdmbejnxjcoczabwrxteisjxdfhiqrnlvvfpwvojmkoqdwojaggnmnwddyihfcoobigfsqpqblbgffbkzkgmsbfxwciwbdzyfqibtwpsanokpokzggbzqzlqhnshvpfwrtisejkswhzcfgwhznwkwejjuwxyvttnvkklizilmythgcvnbjslbvzjhprqlouukswsoecngzarhqexlmwoqnjfelxhjzrsgpqbsidktsksrfukerarrlwdsewioganokwbacwewqdyazrupnjrtmhoorogxeylywyhmoemrbduokxogfdwpbjvyilripcbswloykysphwjbfblkczxuvrzieuhsrtishpcqoyjxcnivvtkxcwnicxgqvuddfwdpluiqtjqfgovngvevzsijivyxxzoajfxgngwxawnrrhyfdfebrbtnxrtgajlmbkgizdozeypaddyynebqrowtkrdhcdxplavwyfnkkhmkoscdrvvizsnyujvmialhwjvnpzugccxrkogalrpjoajywkkgedcvrgljrbdwjlvaqbfzpjkanpvquxpifklcxthypyffyufqjctkjvnmsbrvdvdxmegjhmvadkforlftmbphhsduibqirocamanvuucujuculsaidydgehfkoipwkezodjqqdtyddffrxtkrqwfsojtnuuwlnsncqmgbpobdzhvxpajxvtfylhtzagllcgqzyiuhdiaxpuqxuhfzqhmhivqgkbsfgqubomtqwazldrzfcalvovzrojkzgiilkusnnggqpdsjsuosttevexrlatqoxxulxxrdwecgvanhsgrpcwsolyacsyywtbekgvjkrigimndlmtnueyabiaawipwdxqbhjmzzmwutqrbqmmpjeqelollqnvkwumvooludxrhdffcnlwhaihjpqjmhvjesyfqrbszanjgmfefpbojhkisuqvizigzripxvsrvgnpnmhmcdgwsjdrkvucqfpxlbfjzbbzcbaotkxavrrahirdvkzvkkdkzuczqizmfbjtorrbzrlfzrlvmntzbfarscmffrjkyhfbnekecdmbbipleaprfqkttyvamdtygnoccjqtiwufndbugdystjhskbrhicefvqginyrtivrmlrfzjrulfsvdunaahwlczngqydkuhwbayhjmemgcyironnomlqkrwxvqlpsrcvhfrqasirfnidxfszaixizoxqrugkqptoyeryqclgpphgtrearzcrgyyzmfxsysmtbdbciahqguwkxmyrmmmiiqjidmguzbprtaauunkzsvocswehrntlzvtvjquoyyipunsyqlzhavgdknnkyzhpunkgpphchdiurdpjsyfjblyqovujganrvsliqhjxchhpersselllpejipdpzazrzsmvepucfvtkxjokzcpwfvrksewtmhnhrhtbsdnkxwzhqkljgvactevxrutdbovtwkbkslsbtzacftencilzfkomuismorquhapjxbovyvtrtxlrfwobtrwzpvwjexemkywrjnvvwdfyuzwjbdmrarwwkvtaaebymlcentfhfyftrquqzquqfcnemojpjujqnmcuftulyvyzdzzsjcqrcwtucskqotbjhdakubdfawtbmxvtxqnowpaccqyrljlsfgszfwkucaduetzfzotkfavfdfpilrmybwzrdgafllcgpuzqmtxkbljunzqebimusrevpomqzpfhpflqxjsebmgmbvotnonrudfixepkveqceredjwttlmhoqkipfhubnkmemrrmggaqbumbdqmmndqkbzgoagbkgxuukaoxpegfjyzizkgmmycptufoqjpofvhnvplvdedqhsmjgaiglassmrlrrrrudwkiuzmkkyyfqrnbjtczvootntkvuwhtrvbmmauwgsvifbdoxrnmvvwtysrgspkrgujkjbpomlnkvgssinkxhduoyhxoqgtdgfhnwjgbbvpyotrejadpovopcwkrviwmbaoydbinhdwnfsokcijukguchntkzmaavbfgiruxsxyukizarkdlyadukpwcifdbujsipuueamocrcsoeksejirdfxfhxyqvnseljweqzkvesgpviswrcvzgcgbjgsiquljznvwaeajsdyidlbojnmnhobqrcxytmtlbabxfcmzpefnjcoxhqinmfjhcytenyjjwdlnudakklpbmuddkrgdoiboekmpiuyphtoakybyfnvhudxoqrbcacqacaayqprbjqkxboruapsdgjsolbibviqpeyahqywiygdjmhdrdtrafegejizjptzrarxbathcwqmumsoroyixdbqevehujycytgbbnufdinebldnis"
+        print "Tests starting"
+        m.opCount = 10000
+        m.multiCount = 3
+        m.testResults = []
 
-    aaInitPerf()
+        testNodeRefPassing()
 
-    ' promisePerf()
-    ' callfuncTest()
+        ' mVsFieldVsLocal()
 
-    ' nodeCreateVsClone()
+        ' cloneVsUpdate()
 
-    ' typeCall()
-    ' paramTypeCall()
-    ' typePerf()
-    ' typePerfWithGetInterface()
-    ' intTypeCheck()
-    ' md5()
-    ' stringVsArrayKeyLookups()
-    'literalVsSingleAALookup()
-    ' stringConcatGrouping()
-    'arrayInOrder()
-    ' forIndexVsForEach()
+        ' sparseArrayVsAAToString()
 
-    printResults(m.testResults)
+        ' stringConcatVsMarshalling()
 
-    startTime = CreateObject("roDateTime")
-    'the print buffer isn't flushed when the app dies, so spin till it flushes
-    print " "
-    while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
-    end while
+        ' rndTest()
+
+        ' aaInitPerf()
+
+        ' promisePerf()
+        ' callfuncTest()
+
+        ' nodeCreateVsClone()
+
+        ' typeCall()
+        ' paramTypeCall()
+        ' typePerf()
+        ' typePerfWithGetInterface()
+        ' intTypeCheck()
+        ' md5()
+        ' stringVsArrayKeyLookups()
+        'literalVsSingleAALookup()
+        ' stringConcatGrouping()
+        'arrayInOrder()
+        ' forIndexVsForEach()
+
+        printResults(m.testResults)
+
+        startTime = CreateObject("roDateTime")
+        'the print buffer isn't flushed when the app dies, so spin till it flushes
+        print " "
+        while CreateObject("roDateTime").AsSeconds() - startTime.AsSeconds() < 1
+        end while
+    end for
+end sub
+
+
+sub testNodeRefPassing()
+    runTest("field", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        nodeArray = []
+        for i = 0 to 99
+            nodeArray.push(createObject("roSGNode", "ContentNode"))
+        end for
+
+        node.update({
+            nodeArray: nodeArray
+        }, true)
+
+        for op = 0 to opCount
+            result = node.nodeArray
+        end for
+    end function)
+
+    runTest("children", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        for i = 0 to 99
+            node.appendChild(createObject("roSGNode", "ContentNode"))
+        end for
+
+        for op = 0 to opCount
+            result = node.getChildren(-1, 0)
+        end for
+    end function)
+
+    runTest("array loop", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        nodeArray = []
+        for i = 0 to 99
+            nodeArray.push(createObject("roSGNode", "ContentNode"))
+        end for
+
+        for op = 0 to opCount
+            for i = 0 to nodeArray.count() - 1
+                result = nodeArray[i]
+            end for
+        end for
+    end function)
+
+    runTest("field loop", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        nodeArray = []
+        for i = 0 to 99
+            nodeArray.push(createObject("roSGNode", "ContentNode"))
+        end for
+
+        node.update({
+            nodeArray: nodeArray
+        }, true)
+
+        for op = 0 to opCount
+            nodes = node.nodeArray
+            for i = 0 to nodes.count() - 1
+                result = nodes[i]
+            end for
+        end for
+    end function)
+
+    runTest("field loop stupid", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        nodeArray = []
+        for i = 0 to 99
+            nodeArray.push(createObject("roSGNode", "ContentNode"))
+        end for
+
+        node.update({
+            nodeArray: nodeArray
+        }, true)
+
+        for op = 0 to opCount
+            for i = 0 to node.nodeArray.count() - 1
+                result = node.nodeArray[i]
+            end for
+        end for
+    end function)
+
+    runTest("node children loop", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        for i = 0 to 99
+            node.appendChild(createObject("roSGNode", "ContentNode"))
+        end for
+
+        for op = 0 to opCount
+            for i = 0 to node.getChildCount() - 1
+                result = node.getChild(i)
+            end for
+        end for
+    end function)
+end sub
+
+sub mVsFieldVsLocal()
+    runTest("node field", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        node.addField("sequence", "integer", 0)
+        m.seq = 0
+        for op = 0 to opCount
+            node.sequence++
+        end for
+    end function)
+
+    runTest("m prop", function(opCount)
+        result = invalid
+        m.sequence = 0
+        for op = 0 to opCount
+            m.sequence++
+        end for
+    end function)
+
+    runTest("local", function(opCount)
+        result = invalid
+        sequence = 0
+        for op = 0 to opCount
+            sequence++
+        end for
+    end function)
+
+end sub
+
+sub cloneVsUpdate()
+    m.opCount = 100
+    runTest("update", function(opCount)
+        result = invalid
+        for op = 0 to opCount
+            node = createObject("roSGNode", "Node")
+            arr = []
+            for i = 0 to 99
+                arr.push({
+                    subtype: "Rectangle"
+                })
+            end for
+            node.update(arr, true)
+            result = node.getChildren(-1, 0)
+        end for
+    end function)
+
+    runTest("createChildren", function(opCount)
+        result = invalid
+        for op = 0 to opCount
+            node = createObject("roSGNode", "Node")
+            arr = []
+            result = node.createChildren(100, "Rectangle")
+        end for
+    end function)
+
+    runTest("clone(true)", function(opCount)
+        for op = 0 to opCount
+            rect = createObject("roSGNode", "Rectangle")
+            result = []
+            for i = 0 to 99
+                result.push(rect.clone(true))
+            end for
+        end for
+    end function)
+
+    runTest("clone(false)", function(opCount)
+        for op = 0 to opCount
+            rect = createObject("roSGNode", "Rectangle")
+            result = []
+            for i = 0 to 99
+                result.push(rect.clone(false))
+            end for
+        end for
+    end function)
+
+    ' runTest("createChild", function(opCount)
+    '     for op = 0 to opCount
+    '         rect = createObject("roSGNode", "Rectangle")
+    '         result = []
+    '         for i = 0 to 99
+    '             result.push(rect.createChild("Rectangle"))
+    '         end for
+    '     end for
+    ' end function)
+
+    runTest("createObject", function(opCount)
+        for op = 0 to opCount
+            result = []
+            for i = 0 to 99
+                result.push(createObject("roSGNode", "Rectangle"))
+            end for
+        end for
+    end function)
+end sub
+
+sub sparseArrayVsAAToString()
+    runTest("sparse array", function(opCount)
+        for op = 0 to opCount
+            arr = createObject("roArray", 101, true)
+            for each idx in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+                arr[idx] = invalid
+            end for
+        end for
+    end function)
+
+    runTest("idx.toStr()", function(opCount)
+        for op = 0 to opCount
+            aa = {}
+            for each idx in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+                aa[idx.toStr()] = invalid
+            end for
+        end for
+    end function)
+end sub
+
+sub stringConcatVsMarshalling()
+    runTest("m direct", function(opCount)
+        result = invalid
+        m["Card-FreeCells"] = []
+        for op = 0 to opCount
+            result = m["Card-FreeCells"]
+        end for
+    end function)
+
+    runTest("m key concat", function(opCount)
+        result = invalid
+        componentType = "FreeCells"
+        m[componentType + "-FreeCells"] = []
+        for op = 0 to opCount
+            result = m[componentType + "-FreeCells"]
+        end for
+    end function)
+
+    runTest("m double marshall", function(opCount)
+        result = invalid
+        componentType = "FreeCells"
+        m[componentType] = {}
+        m[componentType]["FreeCells"] = []
+        for op = 0 to opCount
+            result = m[componentType]["FreeCells"]
+        end for
+    end function)
+end sub
+
+sub rndTest()
+    runTest("rnd", function(opCount)
+        result = 1
+        for op = 0 to opCount
+            result = rnd(100)
+        end for
+    end function)
+
+    runTest("local", function(opCount)
+        result = 1
+        seq = 0
+        for op = 0 to opCount
+            seq = (seq + 1) mod 20
+            result = seq
+        end for
+    end function)
+
+    runTest("global", function(opCount)
+        result = 1
+        m.global.addFields({ seq: 0 })
+        for op = 0 to opCount
+            seq = (m.global.seq + 1) mod 20
+            m.global.seq = seq
+            result = seq
+        end for
+    end function)
 end sub
 
 sub aaInitPerf()
@@ -699,6 +986,12 @@ sub callfuncTest()
     runTest("int", function(opCount, callfuncTestNode)
         for op = 0 to opCount
             callfuncTestNode.callfunc("testCallfunc", 1)
+        end for
+    end function, m.callfuncTestNode)
+
+    runTest("not callfunc", function(opCount, callfuncTestNode)
+        for op = 0 to opCount
+            noop2("testCallfunc", 1)
         end for
     end function, m.callfuncTestNode)
 end sub
@@ -1630,4 +1923,10 @@ function padLeft(value as string, padLength = 2 as integer, paddingCharacter = "
 end function
 
 sub noop()
+end sub
+
+sub noop1(p1 as dynamic)
+end sub
+
+sub noop2(p1 as dynamic, p2 as dynamic)
 end sub
