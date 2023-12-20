@@ -13,11 +13,13 @@ sub runAllTests(iterations = 1)
 
         m.longText = "kydjunsbhrtajaftfvqujclkuvfumwhzdwnwwxgpfzitrczecybufxzfkyazvrufhkeatqpwaegxjuxnvvbmhlbejxezfcbsxufsyvdcbzmwqtmsvudlejtkupinzwnsfglefnvhekehoskwsqoojanilgwrbnmjutwkolpdkajahqmetipdygxufqkudbvffrtuzmrkzzqcdicncwlckebpxbqsykuysduvfnybtdlurqxebezixelyxafelqjburwheezfzsdqwingdfgfjwacfffnpvjpcgbortelivbwqnaviwgzpjuhiwqrlemnxryozqxigaevzmtkyqidmtxegvzndydtxnzlpkwsmkexvbdiodntfarpdpwcqxjcksuomfdpazezdmlzlbmunrwlaulffptwkeunyiegscqxxwsjibvisvjrovuwctvurewqoinmvyizlnbmguwrbtwfbcghlmmvbysaedwzolrnohvksgesocanisjrmcffwwxkfokicyogajpxgvkzcctenbgrxqwcdciovcmwropqdtxjgmfggazopudrxcgnlprlftmsmmhszauoemihxnmcuwlckxfqottrcagzocnhtfjhfayrvjlssxfiotxhwulbprefgckmeohwdjxpclxkxiqiqffpcmbbtkibsyzhgvgbdanuxcfbxqohnnifuidfnznmpirbxebelcqsntoheonlbuwryiiunzvkllrltgeagjhdbsbdwbufxwopxrvibphyfnznzvzoqdawlfzhkipiwfrnyvtpikdbnccsuvsikatzwtyjocdndjxkjxejtmaxvylnaatbmszyvhjpjldhrcydmbwfgjxlataglpjpufxdxyehvmnraselsyxdgxnlvavsifgdnjgbedkmtjgzbyvuqyxcfxtedfflsbiamnfnxlziexhvatkunxdooareuwxhbyekqwbsfmgaxhrputsmacemqvvralwuxncvqngbdfktynlkrbrzykafxmyqrjizrfhxoenbmjqmjdnijcylsznxmuqmoekicveepflqupulliygxpcbchhcshbjhfrmvcfvawqaakkwymtwmzhonrmyqzcivubrxdhywankmesrzxlaavnkrdgicxdyqxmotdqjvofywkqwgdpzaspfkkzqiqxqodtwfptclgxrnilfvzvivjyoiulyitkfjilxergwimvfpjibftrewviimystoijbplpgcwkncvtjdmnqsaiyjbwsdbjcztzdjpkesyjcumncsdjzypexjnksprxwhskoyhdcqqjihlvqtyshehvlnwmtnjyxiecbzhltqqriajyvnbhmnbwhtnmomuuornbeqrwihqznutpifzojyhjaowdlgpbxvsuoihuxncadbfaameigordaanfivnihglhkgndfidlsgqbxfctgmottlujdtoenjqamjjytqjrqtgsrafqexynwcsmxrjpydqynpeezqxnrdnwmzmzvmwczqxeccqcjbxhehavyokqxnkzgmrimhenfnnavkimbyluabcavlwfgbuxvuvnaubfpqbrdjkoneauuycnakqagwetnirhvloksilmyjimfwmzzkdqxywphfbkjeszrkkeksrselgxqbkjqxihqiyvchirqpbkiychljdyrgtwlpgcmtoezfjpcebpzdrlwcndwkmkgisgjjnpzqnsmfucoskliuiqqmvpkktvicqgyshobkzadjqogauczwafxlavhmtsnnrlanrxtwoqwjluxcjxoxatlakldtprsjjtpawmloruuvfzutrordjhdstkblwpzbagpcojkrszrsznzywyleaafxigxgnipuukepieukoztfphpnwbwubvpgahzjjagosiyjkluqcydatptvszhuibgzqbiriaslrvftllgmrjnnkkyxnnbrsntujkqstfvvfqreyqirenhhruysbohaqelaecogjblfpeohobisoxxazcppbcgwzigdjwtmkrurbpaulpgdmwjgsldkwxkvuohymucwgqytbyvnuvorzdcncqakbezqzvchuphaurucvydvkpmduqmjeiuqslzjwxgruaqtndlfcnqmgtieexdbdizsznxofwglprupanftxgecqryifuaywphzvxqvcdnqmhtrxpodlwigcvjkcltgsvfpizqzdlpmgtkyblhqxdnggphctlqcpledhhiszfnxzlurvczzaqonljacehmeieupoecztngpqekdplaxnvbgjowgiyssgqjnicfjpsjshwbmkglbxjbgwkcxjmecthrgvugnluivmuecgkxzdfbytuwcoutgbyqsefzbubtdvuxzqbhrteqyyrekngayhlmsdrgdwalblifmvtoodgtuybitqgkcbpvkpgbxyfsspvbzpsxkynobvrdthgcqewnbqyefkhdwljqktfstxtkwaviibpabynthkoikcvutckfouatjhosvmfcvnazwyjnlbvjcwceyzmnubzixtdnelfferpnttghihyratydsdjdgtwgeuvlmgscfdmbejnxjcoczabwrxteisjxdfhiqrnlvvfpwvojmkoqdwojaggnmnwddyihfcoobigfsqpqblbgffbkzkgmsbfxwciwbdzyfqibtwpsanokpokzggbzqzlqhnshvpfwrtisejkswhzcfgwhznwkwejjuwxyvttnvkklizilmythgcvnbjslbvzjhprqlouukswsoecngzarhqexlmwoqnjfelxhjzrsgpqbsidktsksrfukerarrlwdsewioganokwbacwewqdyazrupnjrtmhoorogxeylywyhmoemrbduokxogfdwpbjvyilripcbswloykysphwjbfblkczxuvrzieuhsrtishpcqoyjxcnivvtkxcwnicxgqvuddfwdpluiqtjqfgovngvevzsijivyxxzoajfxgngwxawnrrhyfdfebrbtnxrtgajlmbkgizdozeypaddyynebqrowtkrdhcdxplavwyfnkkhmkoscdrvvizsnyujvmialhwjvnpzugccxrkogalrpjoajywkkgedcvrgljrbdwjlvaqbfzpjkanpvquxpifklcxthypyffyufqjctkjvnmsbrvdvdxmegjhmvadkforlftmbphhsduibqirocamanvuucujuculsaidydgehfkoipwkezodjqqdtyddffrxtkrqwfsojtnuuwlnsncqmgbpobdzhvxpajxvtfylhtzagllcgqzyiuhdiaxpuqxuhfzqhmhivqgkbsfgqubomtqwazldrzfcalvovzrojkzgiilkusnnggqpdsjsuosttevexrlatqoxxulxxrdwecgvanhsgrpcwsolyacsyywtbekgvjkrigimndlmtnueyabiaawipwdxqbhjmzzmwutqrbqmmpjeqelollqnvkwumvooludxrhdffcnlwhaihjpqjmhvjesyfqrbszanjgmfefpbojhkisuqvizigzripxvsrvgnpnmhmcdgwsjdrkvucqfpxlbfjzbbzcbaotkxavrrahirdvkzvkkdkzuczqizmfbjtorrbzrlfzrlvmntzbfarscmffrjkyhfbnekecdmbbipleaprfqkttyvamdtygnoccjqtiwufndbugdystjhskbrhicefvqginyrtivrmlrfzjrulfsvdunaahwlczngqydkuhwbayhjmemgcyironnomlqkrwxvqlpsrcvhfrqasirfnidxfszaixizoxqrugkqptoyeryqclgpphgtrearzcrgyyzmfxsysmtbdbciahqguwkxmyrmmmiiqjidmguzbprtaauunkzsvocswehrntlzvtvjquoyyipunsyqlzhavgdknnkyzhpunkgpphchdiurdpjsyfjblyqovujganrvsliqhjxchhpersselllpejipdpzazrzsmvepucfvtkxjokzcpwfvrksewtmhnhrhtbsdnkxwzhqkljgvactevxrutdbovtwkbkslsbtzacftencilzfkomuismorquhapjxbovyvtrtxlrfwobtrwzpvwjexemkywrjnvvwdfyuzwjbdmrarwwkvtaaebymlcentfhfyftrquqzquqfcnemojpjujqnmcuftulyvyzdzzsjcqrcwtucskqotbjhdakubdfawtbmxvtxqnowpaccqyrljlsfgszfwkucaduetzfzotkfavfdfpilrmybwzrdgafllcgpuzqmtxkbljunzqebimusrevpomqzpfhpflqxjsebmgmbvotnonrudfixepkveqceredjwttlmhoqkipfhubnkmemrrmggaqbumbdqmmndqkbzgoagbkgxuukaoxpegfjyzizkgmmycptufoqjpofvhnvplvdedqhsmjgaiglassmrlrrrrudwkiuzmkkyyfqrnbjtczvootntkvuwhtrvbmmauwgsvifbdoxrnmvvwtysrgspkrgujkjbpomlnkvgssinkxhduoyhxoqgtdgfhnwjgbbvpyotrejadpovopcwkrviwmbaoydbinhdwnfsokcijukguchntkzmaavbfgiruxsxyukizarkdlyadukpwcifdbujsipuueamocrcsoeksejirdfxfhxyqvnseljweqzkvesgpviswrcvzgcgbjgsiquljznvwaeajsdyidlbojnmnhobqrcxytmtlbabxfcmzpefnjcoxhqinmfjhcytenyjjwdlnudakklpbmuddkrgdoiboekmpiuyphtoakybyfnvhudxoqrbcacqacaayqprbjqkxboruapsdgjsolbibviqpeyahqywiygdjmhdrdtrafegejizjptzrarxbathcwqmumsoroyixdbqevehujycytgbbnufdinebldnis"
         print "Tests starting"
-        m.opCount = 10000
+        m.opCount = 20000
         m.multiCount = 3
         m.testResults = []
 
-        testNodeRefPassing()
+        testBoolVsNodeNotInvalid()
+
+        ' testNodeRefPassing()
 
         ' mVsFieldVsLocal()
 
@@ -58,6 +60,77 @@ sub runAllTests(iterations = 1)
     end for
 end sub
 
+
+
+sub testBoolVsNodeNotInvalid()
+    runTest("node->bool", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+
+        node.addField("hasHeader", "boolean", false)
+        node.hasHeader = true
+
+        for op = 0 to opCount
+            result = node.hasHeader
+        end for
+    end function)
+
+    runTest("node->node present", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+
+        node.addField("header", "node", false)
+        node.header = createObject("roSGNode", "ContentNode")
+
+        for op = 0 to opCount
+            result = node.header <> invalid
+        end for
+    end function)
+
+    runTest("node->node missing", function(opCount)
+        result = invalid
+        node = createObject("roSGNode", "Node")
+
+        node.addField("header", "node", false)
+
+        for op = 0 to opCount
+            result = node.header <> invalid
+        end for
+    end function)
+
+    runTest("aa->bool", function(opCount)
+        result = invalid
+        aa = {
+            hasHeader: true
+        }
+
+        for op = 0 to opCount
+            result = aa.hasHeader
+        end for
+    end function)
+
+    runTest("aa->node present", function(opCount)
+        result = invalid
+        aa = {
+            header:  createObject("roSGNode", "ContentNode")
+        }
+
+        for op = 0 to opCount
+            result = aa.header <> invalid
+        end for
+    end function)
+
+    runTest("aa->node missing", function(opCount)
+        result = invalid
+        aa = {
+            header: invalid
+        }
+
+        for op = 0 to opCount
+            result = aa.header <> invalid
+        end for
+    end function)
+end sub
 
 sub testNodeRefPassing()
     runTest("field", function(opCount)

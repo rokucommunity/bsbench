@@ -5,6 +5,8 @@
             "type": "brightscript",
             "request": "launch",
             "name": "BrightScript Debug: Launch",
+            "host": "192.168.1.32",
+            "password": "aaaa",
             "stopOnEntry": false,
             "rootDir": "${workspaceFolder}",
             "files": [
@@ -15,7 +17,7 @@
             ],
             "enableDebuggerAutoRecovery": false,
             "stopDebuggerOnAppExit": true,
-            "enableDebugProtocol": true
+            "enableDebugProtocol": false
         }
     ]
 }
