@@ -5,7 +5,7 @@ sub main()
     m.scene = screen.CreateScene("Scene")
     screen.show()
     m.global = screen.getGlobalNode()
-    runAllTests(10)
+    runAllTests(1)
 end sub
 
 sub runAllTests(iterations = 1)
@@ -17,7 +17,9 @@ sub runAllTests(iterations = 1)
         m.multiCount = 3
         m.testResults = []
 
-        testBoolVsNodeNotInvalid()
+        testEmojiMadness()
+
+        ' testBoolVsNodeNotInvalid()
 
         ' testNodeRefPassing()
 
@@ -60,7 +62,103 @@ sub runAllTests(iterations = 1)
     end for
 end sub
 
+sub testEmojiMadness()
 
+    runTest("stripEmojis 0x", function(opCount)
+        text = "no		emojis here"
+        result = invalid
+        for op = 0 to opCount
+            result = stripEmojis(text)
+        end for
+    end function)
+
+    runTest("stripEmojis 1x", function(opCount)
+        text = "no	😃	emojis here"
+        result = invalid
+        for op = 0 to opCount
+            result = stripEmojis(text)
+        end for
+    end function)
+
+    runTest("stripEmojis 5x", function(opCount)
+        text = "no	😃	😃emo😃jis😃 here😃"
+        result = invalid
+        for op = 0 to opCount
+            result = stripEmojis(text)
+        end for
+    end function)
+
+    runTest("replace 0x", function(opCount)
+        text = "no		emojis here"
+        for op = 0 to opCount
+            emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
+            result = emojiRegex.replaceAll(text, "")
+        end for
+    end function)
+
+    runTest("replace 1x", function(opCount)
+        text = "no	😃	emojis here"
+        for op = 0 to opCount
+            emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
+            result = emojiRegex.replaceAll(text, "")
+        end for
+    end function)
+
+    runTest("replace 5x", function(opCount)
+        text = "no	😃	😃emo😃jis😃 here😃"
+        for op = 0 to opCount
+            emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
+            result = emojiRegex.replaceAll(text, "")
+        end for
+    end function)
+end sub
+
+function stripEmojis(text as string) as string
+    newText = ""
+    emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
+    parts = emojiRegex.split(text)
+
+    if parts.count() = 1
+        return text
+    end if
+    for i = 0 to parts.count() - 1
+        lastPart = parts[i - 1]
+        currentPart = parts[i]
+
+        if lastPart = invalid then lastPart = ""
+
+        lastPartWhiteSpace = CreateObject("roRegex", "([[:blank:]]+)\v?$", "").match(lastPart)[1]
+        if lastPartWhiteSpace = invalid then lastPartWhiteSpace = ""
+        leadingWhitespaceCount = lastPartWhiteSpace.len()
+
+        trailingPartWhiteSpace = CreateObject("roRegex", "^([[:blank:]]+)", "").match(currentPart)[1]
+        if trailingPartWhiteSpace = invalid then trailingPartWhiteSpace = ""
+        trailingWhitespaceCount = trailingPartWhiteSpace.len()
+
+        removeLeading = false
+        removeTrailing = false
+        if leadingWhitespaceCount > 1 and trailingWhitespaceCount > 1 then
+            removeLeading = true
+            removeTrailing = true
+        else if leadingWhitespaceCount > 1 then
+            removeLeading = true
+        else if trailingWhitespaceCount > 1 then
+            removeTrailing = true
+        end if
+
+        if removeLeading then
+            newText = newText.left(newText.len() - 1)
+        end if
+
+        if removeTrailing then
+            newText += currentPart.right(currentPart.len() - 1)
+        else
+            newText += currentPart
+        end if
+    end for
+
+    return newText
+end function
 
 sub testBoolVsNodeNotInvalid()
     runTest("node->bool", function(opCount)
@@ -112,7 +210,7 @@ sub testBoolVsNodeNotInvalid()
     runTest("aa->node present", function(opCount)
         result = invalid
         aa = {
-            header:  createObject("roSGNode", "ContentNode")
+            header: createObject("roSGNode", "ContentNode")
         }
 
         for op = 0 to opCount
