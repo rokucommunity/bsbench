@@ -1,0 +1,12 @@
+<component name="XmlComponent">
+    <children>
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+        <Rectangle width="300" height="400" translation="[300,300]" />
+    </children>
+</component>
