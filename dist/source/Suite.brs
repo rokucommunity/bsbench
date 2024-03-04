@@ -3,112 +3,58 @@ function __Suite_builder()
     instance.new = sub()
         m.benchmarks = []
     end sub
-    instance.add = function(name as string, testFunction as function, context = "__invalid" as dynamic)
-        m.benchmarks.Push({
-            name: name
-            testFunction: testFunction
-            context: context
-        })
+    instance.add = function(name as string, testFunction as function, context = "__invalid")
+        m.benchmarks.push(Benchmark(name, testFunction, context))
     end function
     '
     ' Run the entire suite, with each benchmark running in the order added
     '
     instance.run = sub(runOptions as dynamic)
-        for each benchmark in m.benchmarks
-            m.runOne(benchmark, runOptions)
+        for each b in m.benchmarks
+            b.run(runOptions)
         next
         m.printResults()
     end sub
-    '
-    ' Run a single benchmark
-    '
-    instance.runOne = function(benchmark as dynamic, runOptions as dynamic)
-        RunGarbageCollector()
-        print benchmark.name; " (WARMING UP)"
-        if benchmark.context = "__invalid"
-            benchmark.testFunction(runOptions.iterations)
-        else
-            benchmark.testFunction(runOptions.iterations, benchmark.context)
-        end if
-        print benchmark.name; " (RUNNING)"
-        'if no context was provided, call the test function without a context
-        if benchmark.context = "__invalid"
-            startTime = CreateObject("roDateTime")
-            benchmark.testFunction(runOptions.iterations)
-            endTime = CreateObject("roDateTime")
-        else
-            startTime = CreateObject("roDateTime")
-            benchmark.testFunction(runOptions.iterations, benchmark.context)
-            endTime = CreateObject("roDateTime")
-        end if
-        benchmark.result = {
-            opsPerSecond: m.getOpsPerSec(startTime, endTime, runOptions.iterations)
-            duration: endTime.GetSeconds() - startTime.GetSeconds()
-        }
-        print benchmark.name; " (DONE)"
-        RunGarbageCollector()
-    end function
-    instance.finalize = sub()
-    end sub
-    instance.getOpsPerSec = function(startDate, endDate, ops)
-        startMs = m.getMilliseconds(startDate)
-        endMs = m.getMilliseconds(endDate)
-        seconds = (endMs - startMs) / 1000
-        if seconds = 0 then
-            seconds = 0.0000001
-        end if
-        opsPerSec = ops / seconds
-        return opsPerSec
-    end function
     instance.printResults = function()
         print ""
         print "RESULTS:"
         print m.padRight("", 50, "_")
         print ""
-        highestOpsPerSec = m.benchmarks[0].result.opsPerSecond
-        lowestOpsPerSec = m.benchmarks[0].result.opsPerSecond
+        highestOpsPerSec = m.benchmarks[0].result.operationsPerSecond
+        lowestOpsPerSec = m.benchmarks[0].result.operationsPerSecond
         opsPerSecMaxLen = 0
         nameLengthMaxLen = 0
-        for each benchmark in m.benchmarks
-            result = benchmark.result
+        for each b in m.benchmarks
             'calculate slowest
-            if result.opsPerSecond < lowestOpsPerSec
-                lowestOpsPerSec = result.opsPerSecond
+            if b.result.operationsPerSecond < lowestOpsPerSec
+                lowestOpsPerSec = result.operationsPerSecond
             end if
             'calculate highest ops/sec
-            if result.opsPerSecond > highestOpsPerSec
-                highestOpsPerSec = result.opsPerSecond
+            if result.operationsPerSecond > highestOpsPerSec
+                highestOpsPerSec = result.operationsPerSecond
             end if
             'calculate logest ops/sec string
-            opsPerSecTextLength = m.numberToString(result.opsPerSecond).Len()
+            opsPerSecTextLength = m.numberToString(result.operationsPerSecond).Len()
             if opsPerSecTextLength > opsPerSecMaxLen
                 opsPerSecMaxLen = opsPerSecTextLength
             end if
             'calculate longest name
-            if benchmark.name.Len() > nameLengthMaxLen
-                nameLengthMaxLen = benchmark.name.Len()
+            if b.name.Len() > nameLengthMaxLen
+                nameLengthMaxLen = b.name.Len()
             end if
         end for
         for each benchmark in m.benchmarks
-            result = benchmark.result
+            result = b.result
             postfix = ""
-            if result.opsPerSecond = highestOpsPerSec then
+            if b.result.operationsPerSecond = highestOpsPerSec then
                 postfix = " (fastest)"
             end if
-            if result.opsPerSecond = lowestOpsPerSec then
+            if b.result.operationsPerSecond = lowestOpsPerSec then
                 postfix = " (slowest)"
             end if
             m.printResult(result, nameLengthMaxLen + 5, opsPerSecMaxLen, postfix)
         end for
     end function
-    instance.getMilliseconds = function(date)
-        result = 0
-        result += date.GetMinutes() * 60 * 1000
-        result += date.GetSeconds() * 1000
-        result += date.GetMilliseconds()
-        return result
-    end function
-    '
     ' Print a single test result
     '
     instance.printResult = sub(result, namePadding = 1, opsPadding = 0, postfix = "")
@@ -148,5 +94,69 @@ function Suite()
     instance.new()
     return instance
 end function
-
+function __Benchmark_builder()
+    instance = {}
+    instance.new = sub(name as string, testFunction as function, context as dynamic)
+        m.name = invalid
+        m.testFunction = invalid
+        m.context = invalid
+        m.result = invalid
+        m.name = name
+        m.testFunction = testFunction
+        m.context = context
+    end sub
+    instance.runTestFunction = function(iterations as integer)
+    end function
+    instance.run = function(runOptions as dynamic)
+        RunGarbageCollector()
+        testFunction = m.testFunction
+        print (bslib_toString(m.name) + ": WARMING UP (" + bslib_toString(runOptions.warmupIterations) + " iterations)")
+        if m.context = "__invalid"
+            testFunction(runOptions.warmupIterations)
+        else
+            testFunction(runOptions.warmupIterations, m.context)
+        end if
+        print (bslib_toString(m.name) + ": RUNNING (" + bslib_toString(runOptions.iterations) + " iterations)")
+        if m.context = "__invalid"
+            startTime = CreateObject("roDateTime")
+            testFunction(runOptions.iterations)
+            endTime = CreateObject("roDateTime")
+        else
+            startTime = CreateObject("roDateTime")
+            testFunction(runOptions.iterations, m.context)
+            endTime = CreateObject("roDateTime")
+        end if
+        benchmark.result = {
+            startTime: startTime
+            endTime: endTime
+            iterations: runOptions.iterations
+            operationsPerSecond: m.getOperationsPerSecond(startTime, endTime, runOptions.iterations)
+        }
+        print (bslib_toString(m.name) + ": DONE")
+        RunGarbageCollector()
+    end function
+    instance.getOperationsPerSecond = function(startDate, endDate, ops)
+        startMs = m.getMilliseconds(startDate)
+        endMs = m.getMilliseconds(endDate)
+        seconds = (endMs - startMs) / 1000
+        if seconds = 0 then
+            seconds = 0.0000001
+        end if
+        opsPerSec = ops / seconds
+        return opsPerSec
+    end function
+    instance.getMilliseconds = function(date)
+        result = 0
+        result += date.GetMinutes() * 60 * 1000
+        result += date.GetSeconds() * 1000
+        result += date.GetMilliseconds()
+        return result
+    end function
+    return instance
+end function
+function Benchmark(name as string, testFunction as function, context as dynamic)
+    instance = __Benchmark_builder()
+    instance.new(name, testFunction, context)
+    return instance
+end function
 

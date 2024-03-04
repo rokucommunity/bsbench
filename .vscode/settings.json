@@ -7,5 +7,5 @@
         "**/.DS_Store": true,
         "**/node_modules": true
     },
-    "brightscript.bsdk": "node_modules\\brighterscript"
+    "brightscript.bsdk": "node_modules/brighterscript"
 }
