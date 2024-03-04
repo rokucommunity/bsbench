@@ -1,4 +1,4 @@
-<component name="CustomComponentNoInit">
+<component name="CustomComponentNoInit" extends="Group">
     <children>
         <Rectangle id="one" width="200" height="100" />
         <Rectangle id="two" width="300" height="400" translation="[300,300]" />

@@ -9,3 +9,6 @@ sub init()
 
     m.two.translation = [300, 300]
 end sub
+
+sub doTest()
+end sub

@@ -5,19 +5,14 @@
             "type": "brightscript",
             "request": "launch",
             "name": "BrightScript Debug: Launch",
-            "host": "192.168.1.33",
-            "password": "aaaa",
+            "preLaunchTask": "build",
             "stopOnEntry": false,
-            "rootDir": "${workspaceFolder}",
+            "rootDir": "${workspaceFolder}/dist",
             "files": [
-                "manifest",
-                "source/**/*.*",
-                "components/**/*.*",
-                "images/**/*.*"
+                "**/*"
             ],
-            "enableDebuggerAutoRecovery": false,
             "stopDebuggerOnAppExit": true,
-            "enableDebugProtocol": true
+            "enableDebugProtocol": false
         }
     ]
 }

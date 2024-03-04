@@ -1,0 +1,17 @@
+{
+  "name": "benchmarking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "bsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "brighterscript": "^1.0.0-alpha.27",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

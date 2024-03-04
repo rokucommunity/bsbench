@@ -1,0 +1,11 @@
+<component name="CustomComponent" extends="Group">
+    <script type="text/brightscript" uri="CustomComponent.brs" />
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+    <children>
+        <Rectangle id="one" />
+        <Rectangle id="two" />
+    </children>
+    <interface>
+        <function name="DoTest" />
+    </interface>
+</component>

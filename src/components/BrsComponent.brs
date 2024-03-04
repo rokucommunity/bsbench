@@ -1,0 +1,43 @@
+sub init()
+    m.top.update([{
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }, {
+        subtype: "Rectangle",
+        width: "300",
+        height: "400",
+        translation: "[300,300]"
+    }], true)
+end sub

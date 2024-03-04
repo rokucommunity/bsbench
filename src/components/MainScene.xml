@@ -1,0 +1,3 @@
+<component name="MainScene" extends="Group">
+    <script type="text/brightscript" uri="MainScene.brs" />
+</component>

@@ -1,0 +1,6 @@
+<component name="TestAA" extends="Node">
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+    <interface>
+        <field id="data" type="AssocArray" />
+    </interface>
+</component>

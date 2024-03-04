@@ -1,4 +1,4 @@
-<component name="CustomComponent">
+<component name="CustomComponent" extends="Group">
     <script type="text/brightscript" uri="CustomComponent.brs" />
     <children>
         <Rectangle id="one" />

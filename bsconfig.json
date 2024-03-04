@@ -1,0 +1,13 @@
+{
+    "rootDir": "./src",
+    "retainStagingDir": true,
+    "stagingDir": "./dist",
+    "createPackage": false,
+    "sourceMap": false,
+    "plugins": [
+        "./scripts/Plugin.ts"
+    ],
+    "require": [
+        "ts-node/register"
+    ]
+}
