@@ -1,7 +1,0 @@
-<component name="Callfunctest" extends="Node">
-    <interface>
-        <function name="testCallfunc" />
-    </interface>
-    <script uri="CallfuncTest.brs" type="text/brightscript" />
-    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
-</component>

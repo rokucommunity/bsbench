@@ -3,7 +3,7 @@
     "retainStagingDir": true,
     "stagingDir": "./dist",
     "createPackage": false,
-    "sourceMap": false,
+    "sourceMap": true,
     "plugins": [
         "./scripts/Plugin.ts"
     ],

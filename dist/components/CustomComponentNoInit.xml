@@ -1,7 +1,0 @@
-<component name="CustomComponentNoInit" extends="Group">
-    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
-    <children>
-        <Rectangle id="one" width="200" height="100" />
-        <Rectangle id="two" width="300" height="400" translation="[300,300]" />
-    </children>
-</component>

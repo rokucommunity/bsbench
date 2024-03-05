@@ -1,3 +1,0 @@
-function transpile()
-    aa = "{" + chr(34) + "one" + chr(34) + ": 1, " + chr(34) + "two" + chr(34) + ": 2, " + chr(34) + "three" + chr(34) + ": 3, " + chr(34) + "four" + chr(34) + ": 4, " + chr(34) + "five" + chr(34) + ": 5, " + chr(34) + "six" + chr(34) + ": 6, " + chr(34) + "seven" + chr(34) + ": 7, " + chr(34) + "eight" + chr(34) + ": 8, " + chr(34) + "nine" + chr(34) + ": 9, " + chr(34) + "ten" + chr(34) + ": 10}"
-end function
