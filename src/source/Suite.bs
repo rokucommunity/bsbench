@@ -1,4 +1,4 @@
-class Suite
+class Suite_old
     sub new()
     end sub
 

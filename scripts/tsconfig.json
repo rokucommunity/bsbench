@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "strictNullChecks": false
+        "strict": false
     },
     "include": [
         "./**/*.ts"

@@ -15,6 +15,6 @@ class AddVsIncrement
     end sub
 
     sub increment()
-        value++
+        ' value++
     end sub
 end class

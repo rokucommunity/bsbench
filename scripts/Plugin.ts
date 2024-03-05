@@ -1,4 +1,4 @@
-import { AfterFileAddEvent, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CallExpression, ClassStatement, CommentStatement, CompilerPlugin, Editor, ForStatement, FunctionParameterExpression, LiteralExpression, MethodStatement, Parser, ReturnStatement, Statement, TokenKind, VariableExpression, WalkMode, createIdentifier, createToken, isBrsFile, isClassStatement, isMethodStatement } from "brighterscript";
+import { AfterFileAddEvent, AfterProgramCreateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CallExpression, ClassStatement, CommentStatement, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, LiteralExpression, MethodStatement, ParseMode, Parser, ReturnStatement, Statement, TokenKind, TypeCastExpression, TypeExpression, VariableExpression, WalkMode, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isClassStatement, isConstStatement, isMethodStatement } from "brighterscript";
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
@@ -23,7 +23,7 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     beforeBuildProgram(event: BeforeBuildProgramEvent) {
-        const allSuites = [];
+        const allSuites: ClassStatement[] = [];
         //find every suite class
         for (const file of Object.values(event.program.files)) {
             if (!isBrsFile(file)) {
@@ -35,8 +35,25 @@ class BsBenchPlugin implements CompilerPlugin {
                 allSuites.push(suite);
             }
         }
-        //add every suite constructor to our runner
 
+        //add every suite constructor to the bsbench.allSuites array
+        const bsbenchFile = event.program.getFile<BrsFile>('source/bsbench.bs');
+
+        //find the allSuites array
+        const allSuitesConstArray = bsbenchFile.ast.findChild<ConstStatement>((x) => {
+            return isConstStatement(x) && x.name.toLowerCase() === 'allsuites';
+        })?.findChild(isArrayLiteralExpression) as ArrayLiteralExpression;
+
+        if (allSuitesConstArray) {
+            event.editor.arrayPush(
+                allSuitesConstArray.elements,
+                ...allSuites.map(suite => {
+                    return new VariableExpression({
+                        name: createIdentifier(suite.getName(ParseMode.BrightScript))
+                    })
+                })
+            )
+        }
     }
 
     /**
@@ -63,6 +80,13 @@ class BsBenchPlugin implements CompilerPlugin {
         const setupMethod = this.findSetupMethod(suite);
         //get the body of the `setup()` method
         const teardownMethod = suite.methods.find(x => x.tokens.name.text.toLowerCase() === 'teardown')!;
+        //remove the setup and teardown methods from the suite
+        if (setupMethod) {
+            editor.arraySplice(suite.body, suite.body.indexOf(setupMethod), 1);
+        }
+        if (teardownMethod) {
+            editor.arraySplice(suite.body, suite.body.indexOf(teardownMethod), 1);
+        }
 
         //transform every benchmark method
         for (const method of suite.methods) {
@@ -75,6 +99,13 @@ class BsBenchPlugin implements CompilerPlugin {
                     name: createIdentifier('iterations')
                 })
             );
+
+            //ensure we have `as dynamic` as the return type for this function
+            editor.setProperty(method.func, 'returnTypeExpression', new TypeExpression({
+                expression: new TypeExpression({
+                    expression: createVariableExpression('dynamic')
+                })
+            }));
 
             //skip the setup and teardown methods
             if ([setupMethod, teardownMethod].includes(method)) {

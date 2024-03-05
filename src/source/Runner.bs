@@ -1,6 +1,0 @@
-class BenchmarkRunner
-private allSuites
-    sub new()
-        m.allSuites = []
-    end sub
-end class

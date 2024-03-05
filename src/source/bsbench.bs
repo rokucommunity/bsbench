@@ -1,0 +1,34 @@
+namespace bsbench
+    const allSuites = [] as function[]
+
+    function runSync(options as RunOptions)
+        for each suite in allSuites
+            instance = suite()
+            bsbench.runSuite(instance, options)
+        end for
+    end function
+
+    function runAsync()
+    end function
+
+    function runSuite(suite as ifAssociativeArray, options as RunOptions)
+        print suite
+        for each methodName in suite
+            'skip the `new()` method
+            if LCase(methodName) = "new" then
+                continue for
+            end if
+
+            if options.warmupIterations <> invalid then
+                suite[methodName](options.warmupIterations)
+            end if
+            result = suite[methodName](options.iterations)
+            print result
+        end for
+    end function
+end namespace
+
+interface RunOptions
+    iterations as integer
+    optional warmupIterations as integer
+end interface
