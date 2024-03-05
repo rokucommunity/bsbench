@@ -1,7 +1,26 @@
-import { AssignmentStatement, BeforeBuildProgramEvent, CallExpression, ClassStatement, CommentStatement, CompilerPlugin, Editor, ForStatement, FunctionParameterExpression, LiteralExpression, MethodStatement, Parser, ReturnStatement, Statement, TokenKind, VariableExpression, WalkMode, createIdentifier, createToken, isBrsFile, isClassStatement, isMethodStatement } from "brighterscript";
+import { AfterFileAddEvent, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CallExpression, ClassStatement, CommentStatement, CompilerPlugin, Editor, ForStatement, FunctionParameterExpression, LiteralExpression, MethodStatement, Parser, ReturnStatement, Statement, TokenKind, VariableExpression, WalkMode, createIdentifier, createToken, isBrsFile, isClassStatement, isMethodStatement } from "brighterscript";
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
+
+    beforeFileValidate(event: BeforeFileValidateEvent) {
+        //add all the setup variables to each method in the suite
+        for (const suite of this.findSuites(event.file)) {
+            const setupMethod = this.findSetupMethod(suite);
+            //if there's no setup method, skip this suite
+            if (!setupMethod) {
+                return;
+            }
+            for (const method of suite.methods) {
+                //skip adding setup symbols to itself
+                if (method === setupMethod) {
+                    continue;
+                }
+                //add every variable from the setup method to this method
+                method.func.body.getSymbolTable().addSibling(setupMethod.func.body.getSymbolTable());
+            }
+        }
+    }
 
     beforeBuildProgram(event: BeforeBuildProgramEvent) {
         const allSuites = [];
@@ -10,26 +29,43 @@ class BsBenchPlugin implements CompilerPlugin {
             if (!isBrsFile(file)) {
                 continue;
             }
-            const suites = file.ast.findChildren<ClassStatement>((node) => {
-                return isClassStatement(node) && !!node.annotations?.find(x => x.name.toLowerCase() === 'suite');
-            });
-            for (const suite of suites) {
+
+            for (const suite of this.findSuites(file)) {
                 this.prepareSuite(event.editor, suite);
                 allSuites.push(suite);
             }
         }
+        //add every suite constructor to our runner
 
     }
 
-    private prepareSuite(editor: Editor, suite: ClassStatement) {
-        const methods = suite.body.filter(x => isMethodStatement(x)) as MethodStatement[];
+    /**
+     * Find all suite classes in the file
+     * @param file
+     * @returns
+     */
+    private findSuites(file: BscFile) {
+        if (!isBrsFile(file)) {
+            return []
+        }
+        return file.ast.findChildren<ClassStatement>((node) => {
+            return isClassStatement(node) && !!node.annotations?.find(x => x.name.toLowerCase() === 'suite');
+        });
+    }
 
+    //find the `setup` method in the suite (if there is one)
+    private findSetupMethod(suite: ClassStatement) {
+        const setupMethod = suite.methods.find(x => x.tokens.name.text.toLowerCase() === 'setup');
+        return setupMethod;
+    }
+
+    private prepareSuite(editor: Editor, suite: ClassStatement) {
+        const setupMethod = this.findSetupMethod(suite);
         //get the body of the `setup()` method
-        const setupMethod = methods.find(x => x.tokens.name.text.toLowerCase() === 'setup')!;
-        const teardownMethod = methods.find(x => x.tokens.name.text.toLowerCase() === 'teardown')!;
+        const teardownMethod = suite.methods.find(x => x.tokens.name.text.toLowerCase() === 'teardown')!;
 
         //transform every benchmark method
-        for (const method of methods) {
+        for (const method of suite.methods) {
             //remove all function parameters and inject the `iterations` param
             editor.arraySplice(
                 method.func.parameters,

@@ -3,7 +3,7 @@ class AddVsIncrement
 
     sub setup()
         print "setup"
-        value = 1
+        value = 1 as string
     end sub
 
     sub teardown()
