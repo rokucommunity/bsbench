@@ -1,0 +1,20 @@
+@suite()
+class AddVsIncrement
+
+    sub setup()
+        print "setup"
+        value = 1
+    end sub
+
+    sub teardown()
+        print "teardown"
+    end sub
+
+    sub add()
+        value = value + 1
+    end sub
+
+    sub increment()
+        value++
+    end sub
+end class

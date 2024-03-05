@@ -33,44 +33,44 @@ sub runAllTests(iterations = 1)
 
     '     testComponentCreation()
 
-        ' testParamCount()
+    ' testParamCount()
 
-        ' testEmptyString()
+    ' testEmptyString()
 
-        ' testEmojiMadness()
+    ' testEmojiMadness()
 
-        ' testBoolVsNodeNotInvalid()
+    ' testBoolVsNodeNotInvalid()
 
-        ' testNodeRefPassing()
+    ' testNodeRefPassing()
 
-        ' mVsFieldVsLocal()
+    ' mVsFieldVsLocal()
 
-        ' cloneVsUpdate()
+    ' cloneVsUpdate()
 
-        ' sparseArrayVsAAToString()
+    ' sparseArrayVsAAToString()
 
-        ' stringConcatVsMarshalling()
+    ' stringConcatVsMarshalling()
 
-        ' rndTest()
+    ' rndTest()
 
-        ' aaInitPerf()
+    ' aaInitPerf()
 
-        ' promisePerf()
-        ' callfuncTest()
+    ' promisePerf()
+    ' callfuncTest()
 
-        ' nodeCreateVsClone()
+    ' nodeCreateVsClone()
 
-        ' typeCall()
-        ' paramTypeCall()
-        ' typePerf()
-        ' typePerfWithGetInterface()
-        ' intTypeCheck()
-        ' md5()
-        ' stringVsArrayKeyLookups()
-        'literalVsSingleAALookup()
-        ' stringConcatGrouping()
-        'arrayInOrder()
-        ' forIndexVsForEach()
+    ' typeCall()
+    ' paramTypeCall()
+    ' typePerf()
+    ' typePerfWithGetInterface()
+    ' intTypeCheck()
+    ' md5()
+    ' stringVsArrayKeyLookups()
+    'literalVsSingleAALookup()
+    ' stringConcatGrouping()
+    'arrayInOrder()
+    ' forIndexVsForEach()
 
     '     printResults(m.testResults)
 

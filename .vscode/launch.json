@@ -6,15 +6,16 @@
             "request": "launch",
             "name": "BrightScript Debug: Launch",
             "preLaunchTask": "build",
-            "host": "192.168.1.33",
+            "host": "192.168.1.31",
             "password": "aaaa",
             "stopOnEntry": false,
             "rootDir": "${workspaceFolder}/dist",
             "files": [
                 "**/*"
             ],
+            "debugServer": 4711,
             "stopDebuggerOnAppExit": true,
-            "enableDebugProtocol": false
+            "enableDebugProtocol": true
         }
     ]
 }

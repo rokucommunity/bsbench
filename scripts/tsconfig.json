@@ -1,5 +1,11 @@
 {
+    "compilerOptions": {
+        "strictNullChecks": false
+    },
     "include": [
         "./**/*.ts"
-    ]
+    ],
+    "ts-node": {
+        "transpileOnly": true
+    }
 }
