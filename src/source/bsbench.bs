@@ -1,5 +1,5 @@
 namespace bsbench
-    const allSuites = [] as function[]
+    const allSuites = [] as integer[]
 
     function runSync(options as RunOptions)
         for each suite in allSuites
@@ -12,23 +12,134 @@ namespace bsbench
     end function
 
     function runSuite(suite as ifAssociativeArray, options as RunOptions)
-        print suite
+        suiteResults = [] as BenchmarkResult[]
         for each methodName in suite
             'skip the `new()` method
             if LCase(methodName) = "new" then
                 continue for
             end if
 
+            'if we've specified some warmup iterations, run them
             if options.warmupIterations <> invalid then
+                print `${methodName} (Warming up)`
                 suite[methodName](options.warmupIterations)
             end if
+
+            print `${methodName} (Running)`
             result = suite[methodName](options.iterations)
-            print result
+            print `${methodName} (Done)`
+            result.operationsPerSecond = getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
+            suiteResults.push(result)
         end for
+
+        printSuiteResults(suiteResults)
     end function
+
+    function printSuiteResults(suiteResults as BenchmarkResult[])
+        print ""
+        print `${suiteResults[0].suiteName} -- RESULTS:`
+        print padRight("", 50, "_")
+        highestOpsPerSec = suiteResults[0].operationsPerSecond
+        lowestOpsPerSec = suiteResults[0].operationsPerSecond
+        opsPerSecMaxLen = 0
+        nameLengthMaxLen = 0
+        for each suiteResult in suiteResults
+            'calculate slowest
+            if suiteResult.operationsPerSecond < lowestOpsPerSec
+                lowestOpsPerSec = suiteResult.operationsPerSecond
+            end if
+
+            'calculate highest ops/sec
+            if suiteResult.operationsPerSecond > highestOpsPerSec
+                highestOpsPerSec = suiteResult.operationsPerSecond
+            end if
+
+            'calculate logest ops/sec string
+            opsPerSecTextLength = numberToString(suiteResult.operationsPerSecond).Len()
+            if opsPerSecTextLength > opsPerSecMaxLen
+                opsPerSecMaxLen = opsPerSecTextLength
+            end if
+
+            'calculate longest name
+            if suiteResult.benchmarkName.Len() > nameLengthMaxLen
+                nameLengthMaxLen = suiteResult.benchmarkName.Len()
+            end if
+        end for
+
+        for each suiteResult in suiteResults
+            postfix = ""
+            if suiteResult.operationsPerSecond = highestOpsPerSec then
+                postfix = " (fastest)"
+            end if
+            if suiteResult.operationsPerSecond = lowestOpsPerSec then
+                postfix = " (slowest)"
+            end if
+            print padRight(suiteResult.benchmarkName + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
+        end for
+        print ""
+    end function
+
+    function padRight(value as string, padLength = 2 as integer, paddingCharacter = "0" as dynamic) as string
+        while value.len() < padLength
+            value += paddingCharacter
+        end while
+        return value
+    end function
+
+    function padLeft(value as string, padLength = 2 as integer, paddingCharacter = "0" as dynamic) as string
+        while value.len() < padLength
+            value = paddingCharacter + value
+        end while
+        return value
+    end function
+
+    function numberToString(num)
+        result = ""
+        i = 0
+        while num > 1
+            loopNum = (num mod 10).ToStr().Trim()
+            result = loopNum + result
+            num = num / 10
+            i++
+            if i mod 3 = 0 and num > 1 then
+                result = "," + result
+            end if
+        end while
+        result = result + "." + ((num * 10) mod 1).ToStr().Trim() + ((num * 100) mod 1).ToStr().Trim()
+        return result
+    end function
+
+    function getOperationsPerSecond(startDate, endDate, ops)
+        startMs = getMilliseconds(startDate)
+        endMs = getMilliseconds(endDate)
+        seconds = (endMs - startMs) / 1000
+        if seconds = 0 then
+            seconds = 0.0000001
+        end if
+        opsPerSec = ops / seconds
+        return opsPerSec
+    end function
+
+    function getMilliseconds(date)
+        result = 0
+        result += date.GetMinutes() * 60 * 1000
+        result += date.GetSeconds() * 1000
+        result += date.GetMilliseconds()
+        return result
+    end function
+
 end namespace
 
 interface RunOptions
     iterations as integer
     optional warmupIterations as integer
+end interface
+
+interface BenchmarkResult
+    startTime as roDateTime
+    endTime as roDateTime
+    iterations as integer
+    operationsPerSecond as double
+    suiteName as string
+    benchmarkName as string
 end interface

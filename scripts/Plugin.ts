@@ -1,7 +1,12 @@
 import { AfterFileAddEvent, AfterProgramCreateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CallExpression, ClassStatement, CommentStatement, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, LiteralExpression, MethodStatement, ParseMode, Parser, ReturnStatement, Statement, TokenKind, TypeCastExpression, TypeExpression, VariableExpression, WalkMode, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isClassStatement, isConstStatement, isMethodStatement } from "brighterscript";
+import * as fs from 'fs';
+import * as path from 'path';
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
+
+    afterProgramCreate(event: AfterProgramCreateEvent) {
+    }
 
     beforeFileValidate(event: BeforeFileValidateEvent) {
         //add all the setup variables to each method in the suite
@@ -146,7 +151,8 @@ class BsBenchPlugin implements CompilerPlugin {
                 startTime: __benchmarkStartTime,
                 endTime: __benchmarkEndTime,
                 iterations: iterations,
-                name: "${method.tokens.name.text}"
+                suiteName: "${suite.getName(ParseMode.BrightScript)}",
+                benchmarkName: "${method.tokens.name.text}"
             }`).ast.statements[0] as ReturnStatement;
             editor.arrayPush(method.func.body.statements, returnStatement);
         }

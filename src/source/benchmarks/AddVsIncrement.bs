@@ -2,12 +2,10 @@
 class AddVsIncrement
 
     sub setup()
-        print "setup"
-        value = 1 as string
+        value = 1
     end sub
 
     sub teardown()
-        print "teardown"
     end sub
 
     sub add()
@@ -15,6 +13,6 @@ class AddVsIncrement
     end sub
 
     sub increment()
-        ' value++
+        value++
     end sub
 end class
