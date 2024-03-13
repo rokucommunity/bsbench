@@ -1,11 +1,24 @@
 {
-    "compilerOptions": {
-        "strict": false
-    },
-    "include": [
-        "./**/*.ts"
-    ],
-    "ts-node": {
-        "transpileOnly": true
-    }
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2018",
+    "noImplicitAny": false,
+    "removeComments": false,
+    "noUnusedLocals": false,
+    "noImplicitThis": true,
+    "inlineSourceMap": false,
+    "declaration": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "preserveConstEnums": true,
+    "strictNullChecks": false,
+    "noUnusedParameters": false
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "ts-node": {
+    "transpileOnly": true
+  }
 }

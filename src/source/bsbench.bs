@@ -1,34 +1,31 @@
 namespace bsbench
-    const allSuites = [] as integer[]
+    const allSuites = [] as BenchmarkSuite[]
 
     function runSync(options as RunOptions)
-        for each suite in allSuites
-            instance = suite()
-            bsbench.runSuite(instance, options)
+        suites = allSuites
+        for each suite in suites
+            runSuite(suite, options)
         end for
     end function
 
     function runAsync()
     end function
 
-    function runSuite(suite as ifAssociativeArray, options as RunOptions)
+    function runSuite(suite as BenchmarkSuite, options as RunOptions)
         suiteResults = [] as BenchmarkResult[]
-        for each methodName in suite
-            'skip the `new()` method
-            if LCase(methodName) = "new" then
-                continue for
-            end if
+        for each testName in suite.tests
+            testFunction = suite.tests[testName]
 
             'if we've specified some warmup iterations, run them
             if options.warmupIterations <> invalid then
-                print `${methodName} (Warming up)`
-                suite[methodName](options.warmupIterations)
+                print `${testName} (Warming up)`
+                testFunction(options.warmupIterations)
             end if
 
-            print `${methodName} (Running)`
-            result = suite[methodName](options.iterations)
-            print `${methodName} (Done)`
-            result.operationsPerSecond = getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
+            print `${testName} (Running)`
+            result = testFunction(options.iterations)
+            print `${testName} (Done)`
+            result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
             suiteResults.push(result)
         end for
 
@@ -61,8 +58,8 @@ namespace bsbench
             end if
 
             'calculate longest name
-            if suiteResult.benchmarkName.Len() > nameLengthMaxLen
-                nameLengthMaxLen = suiteResult.benchmarkName.Len()
+            if suiteResult.name.Len() > nameLengthMaxLen
+                nameLengthMaxLen = suiteResult.name.Len()
             end if
         end for
 
@@ -74,7 +71,7 @@ namespace bsbench
             if suiteResult.operationsPerSecond = lowestOpsPerSec then
                 postfix = " (slowest)"
             end if
-            print padRight(suiteResult.benchmarkName + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
+            print padRight(suiteResult.name + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
         end for
         print ""
     end function
@@ -130,6 +127,11 @@ namespace bsbench
 
 end namespace
 
+interface BenchmarkSuite
+    name as string
+    tests as ifAssociativeArray
+end interface
+
 interface RunOptions
     iterations as integer
     optional warmupIterations as integer
@@ -140,6 +142,6 @@ interface BenchmarkResult
     endTime as roDateTime
     iterations as integer
     operationsPerSecond as double
+    name as string
     suiteName as string
-    benchmarkName as string
 end interface

@@ -1,6 +1,5 @@
 @suite()
-class AddVsIncrement
-
+namespace AddVsIncrement
     sub setup()
         value = 1
     end sub
@@ -8,11 +7,13 @@ class AddVsIncrement
     sub teardown()
     end sub
 
+    @test()
     sub add()
         value = value + 1
     end sub
 
+    @test()
     sub increment()
         value++
     end sub
-end class
+end namespace

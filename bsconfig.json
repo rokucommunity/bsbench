@@ -5,7 +5,7 @@
     "createPackage": false,
     "sourceMap": true,
     "plugins": [
-        "./scripts/Plugin.ts"
+        "./scripts/src/Plugin.ts"
     ],
     "require": [
         "ts-node/register"
