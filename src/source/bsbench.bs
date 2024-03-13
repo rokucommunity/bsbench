@@ -12,8 +12,14 @@ namespace bsbench
     end function
 
     function runSuite(suite as BenchmarkSuite, options as RunOptions)
+        'print a ascii table style fenced header for the suite
+        print `********************************************************************`
+        print `           ${suite.name} `
+        print `********************************************************************`
+
         suiteResults = [] as BenchmarkResult[]
         for each testName in suite.tests
+            print `‌‌ `
             testFunction = suite.tests[testName]
 
             'if we've specified some warmup iterations, run them
@@ -33,7 +39,8 @@ namespace bsbench
     end function
 
     function printSuiteResults(suiteResults as BenchmarkResult[])
-        print ""
+        'print a few blank-ish lines to separate the results
+        print `‌‌ \n‌‌ `
         print `${suiteResults[0].suiteName} -- RESULTS:`
         print padRight("", 50, "_")
         highestOpsPerSec = suiteResults[0].operationsPerSecond
@@ -73,7 +80,8 @@ namespace bsbench
             end if
             print padRight(suiteResult.name + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
         end for
-        print ""
+        'print a few blank-ish lines to separate the results
+        print `‌‌ \n‌‌ `
     end function
 
     function padRight(value as string, padLength = 2 as integer, paddingCharacter = "0" as dynamic) as string
