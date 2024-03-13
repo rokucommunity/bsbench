@@ -1,4 +1,4 @@
-import { AfterProgramCreateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CallExpression, ClassStatement, CommentStatement, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, LiteralExpression, MethodStatement, NamespaceStatement, ParseMode, Parser, ReturnStatement, Statement, TokenKind, TypeCastExpression, TypeExpression, VariableExpression, WalkMode, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isClassStatement, isConstStatement, isFunctionStatement, isMethodStatement, isNamespaceStatement } from "brighterscript";
+import { AfterProgramCreateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, ReturnStatement, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement } from "brighterscript";
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
@@ -52,16 +52,24 @@ class BsBenchPlugin implements CompilerPlugin {
             return isConstStatement(x) && x.name.toLowerCase() === 'allsuites';
         })?.findChild(isArrayLiteralExpression) as ArrayLiteralExpression;
 
+        let atOnlySuites = allSuites.filter(x => x.annotations?.find(x => x.name.toLowerCase() === 'only'));
+        let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites : allSuites;
+
         if (allSuitesConstArray) {
             //push suite data to the allSuites array
             event.editor.arrayPush(
                 allSuitesConstArray.elements,
                 //create an AA for every suite
-                ...allSuites.map(suite => {
-                    const ast = (Parser.parse(`aa = {
-                        name: "${suite.getName(ParseMode.BrighterScript)}",
-                        tests: {
-                            ${this.findTestFunctions(suite).map((test) => `"${test.tokens.name.text}": ${test.getName(ParseMode.BrighterScript)}`).join(', ')}
+                ...suitesToRun.map(suite => {
+                    const ast = (Parser.parse(`
+                        aa = {
+                            name: "${suite.getName(ParseMode.BrighterScript)}",
+                            tests: [
+                                ${this.findTestFunctions(suite).map((test) => `{
+                                    name: "${test.tokens.name.text}"
+                                    func: ${test.getName(ParseMode.BrightScript)}
+                                }`).join(', ')}
+                            ]
                         }
                     `).ast.statements[0] as AssignmentStatement).value;
                     return ast;
@@ -165,13 +173,6 @@ class BsBenchPlugin implements CompilerPlugin {
             editor.arrayPush(testFunction.func.body.statements, returnStatement);
         }
     }
-}
-
-
-function createComment(text: string) {
-    return new CommentStatement({
-        comments: [createToken(TokenKind.Comment, `'${text}`)]
-    });
 }
 
 export default () => {

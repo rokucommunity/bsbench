@@ -18,19 +18,18 @@ namespace bsbench
         print `********************************************************************`
 
         suiteResults = [] as BenchmarkResult[]
-        for each testName in suite.tests
+        for each test in suite.tests
             print `‌‌ `
-            testFunction = suite.tests[testName]
-
+            testFunction = test.func
             'if we've specified some warmup iterations, run them
             if options.warmupIterations <> invalid then
-                print `${testName} (Warming up)`
+                print `${test.name} (Warming up)`
                 testFunction(options.warmupIterations)
             end if
 
-            print `${testName} (Running)`
+            print `${test.name} (Running)`
             result = testFunction(options.iterations)
-            print `${testName} (Done)`
+            print `${test.name} (Done)`
             result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
             suiteResults.push(result)
         end for
@@ -137,7 +136,11 @@ end namespace
 
 interface BenchmarkSuite
     name as string
-    tests as ifAssociativeArray
+    tests as BenchmarkTest[]
+end interface
+interface BenchmarkTest
+    name as string
+    func as function
 end interface
 
 interface RunOptions
