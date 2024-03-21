@@ -22,8 +22,6 @@ sub runAllTests(iterations = 1)
 
     '     testComponentCreation()
 
-    ' testParamCount()
-
     ' testEmptyString()
 
     ' testEmojiMadness()
@@ -126,68 +124,6 @@ end sub
 '     runTest("xml", function(opCount)
 '         for op = 0 to opCount
 '             obj = CreateObject("roSGNode", "XmlComponent")
-'         end for
-'     end function)
-' end sub
-
-' sub testEmptyString()
-'     runTest(""""" = """"", function(opCount)
-'         result = invalid
-'         for op = 0 to opCount
-'             result = "" = ""
-'         end for
-'     end function)
-
-'     runTest("emptyVar = """"", function(opCount)
-'         emptyVar = ""
-'         result = invalid
-'         for op = 0 to opCount
-'             result = emptyVar = ""
-'         end for
-'     end function)
-
-'     runTest(""""".isEmpty()", function(opCount)
-'         result = invalid
-'         for op = 0 to opCount
-'             result = "".isEmpty()
-'         end for
-'     end function)
-
-'     runTest("emptyVar.isEmpty()", function(opCount)
-'         emptyVar = ""
-'         result = invalid
-'         for op = 0 to opCount
-'             result = emptyVar.isEmpty()
-'         end for
-'     end function)
-
-'     runTest("""nonempty"" = """"", function(opCount)
-'         result = invalid
-'         for op = 0 to opCount
-'             result = "nonempty" = ""
-'         end for
-'     end function)
-
-'     runTest("nonemptyVar = """"", function(opCount)
-'         nonemptyVar = "nonempty"
-'         result = invalid
-'         for op = 0 to opCount
-'             result = nonemptyVar = ""
-'         end for
-'     end function)
-
-'     runTest("""nonempty"".isEmpty()", function(opCount)
-'         result = invalid
-'         for op = 0 to opCount
-'             result = "nonempty".isEmpty()
-'         end for
-'     end function)
-
-'     runTest("nonemptyVar.isEmpty()", function(opCount)
-'         nonemptyVar = "nonempty"
-'         result = invalid
-'         for op = 0 to opCount
-'             result = nonemptyVar.isEmpty()
 '         end for
 '     end function)
 ' end sub

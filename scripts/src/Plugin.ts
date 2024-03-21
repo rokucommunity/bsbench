@@ -1,9 +1,24 @@
-import { AfterProgramCreateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, ReturnStatement, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement } from "brighterscript";
+import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement } from "brighterscript";
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
 
     afterProgramCreate(event: AfterProgramCreateEvent) {
+    }
+
+    afterFileAdd(event: AfterFileAddEvent<BscFile>) {
+        //if the function is named `_`, give it an auto-generated name instead to prevent collisions
+        if (isBrsFile(event.file)) {
+            for (const suite of this.findSuites(event.file)) {
+                const tests = this.findTests(suite);
+                for (let i = 0; i < tests.length; i++) {
+                    const test = tests[i];
+                    if (test.functionStatement.tokens.name.text === '_') {
+                        test.functionStatement.tokens.name.text = `test${i}`;
+                    }
+                }
+            }
+        }
     }
 
     beforeFileValidate(event: BeforeFileValidateEvent) {
@@ -15,16 +30,43 @@ class BsBenchPlugin implements CompilerPlugin {
                 return;
             }
 
-            for (const testFunction of this.findTestFunctions(suite)) {
+            for (const test of this.findTests(suite)) {
                 //skip adding setup symbols to itself
-                if (testFunction === setupFunction) {
+                if (test.functionStatement === setupFunction) {
                     continue;
                 }
                 //add every variable from the setup method to this method
-                testFunction.func.body.getSymbolTable().addSibling(setupFunction.func.body.getSymbolTable());
+                test.functionStatement.func.body.getSymbolTable().addSibling(
+                    setupFunction.func.body.getSymbolTable()
+                );
             }
         }
     }
+
+
+    afterProgramValidate(event: AfterProgramValidateEvent) {
+        for (const file of Object.values(event.program.files)) {
+            for (const suite of this.findSuites(file)) {
+                const setupFunction = this.findFunction(suite, 'setup');
+                //if there's no setup method, skip this suite
+                if (!setupFunction) {
+                    return;
+                }
+
+                for (const test of this.findTests(suite)) {
+                    //skip adding setup symbols to itself
+                    if (test.functionStatement === setupFunction) {
+                        continue;
+                    }
+                    //add every variable from the setup method to this method
+                    test.functionStatement.func.body.getSymbolTable().addSibling(
+                        setupFunction.func.body.getSymbolTable()
+                    );
+                }
+            }
+        }
+    }
+
 
     beforeBuildProgram(event: BeforeBuildProgramEvent) {
         const allSuites: NamespaceStatement[] = [];
@@ -65,9 +107,9 @@ class BsBenchPlugin implements CompilerPlugin {
                         aa = {
                             name: "${suite.getName(ParseMode.BrighterScript)}",
                             tests: [
-                                ${this.findTestFunctions(suite).map((test) => `{
-                                    name: "${test.tokens.name.text}"
-                                    func: ${test.getName(ParseMode.BrightScript)}
+                                ${this.findTests(suite).map((test) => `{
+                                    name: "${test.functionStatement.tokens.name.text}"
+                                    func: ${test.name}
                                 }`).join(', ')}
                             ]
                         }
@@ -97,10 +139,20 @@ class BsBenchPlugin implements CompilerPlugin {
         return suite.findChild<FunctionStatement>(x => isFunctionStatement(x) && x.tokens.name.text.toLowerCase() === name.toLowerCase());
     }
 
-    private findTestFunctions(suite: NamespaceStatement) {
+    private findTests(suite: NamespaceStatement) {
         return suite.body
             .findChildren<FunctionStatement>(isFunctionStatement)
-            .filter(x => x.annotations?.find(x => x.name.toLowerCase() === 'test'));
+            .map(x => {
+                const annotation = x.annotations?.find(x => x.name.toLowerCase() === 'test');
+                const nameFromAnnotation = (annotation?.call?.args?.[0] as LiteralExpression)?.tokens?.value?.text?.replace(/^"/, '').replace(/"$/, '');
+                return {
+                    functionStatement: x,
+                    annotation: annotation,
+                    name: nameFromAnnotation ?? x.getName(ParseMode.BrightScript)
+                }
+            })
+            //discard any functions that don't have a `@test` annotation
+            .filter(x => !!x.annotation)
     }
 
     private prepareSuite(editor: Editor, suite: NamespaceStatement) {
@@ -110,24 +162,24 @@ class BsBenchPlugin implements CompilerPlugin {
 
 
         //transform every benchmark method
-        for (const testFunction of this.findTestFunctions(suite)) {
+        for (const test of this.findTests(suite)) {
             //skip the setup and teardown methods
-            if ([setupFunction, teardownFunction].includes(testFunction)) {
+            if ([setupFunction, teardownFunction].includes(test.functionStatement)) {
                 continue;
             }
 
             //remove all function parameters and inject the `iterations` param
             editor.arraySplice(
-                testFunction.func.parameters,
+                test.functionStatement.func.parameters,
                 0,
-                testFunction.func.parameters.length,
+                test.functionStatement.func.parameters.length,
                 new FunctionParameterExpression({
                     name: createIdentifier('iterations')
                 })
             );
 
             //ensure we have `as dynamic` as the return type for this function
-            editor.setProperty(testFunction.func, 'returnTypeExpression', new TypeExpression({
+            editor.setProperty(test.functionStatement.func, 'returnTypeExpression', new TypeExpression({
                 expression: new TypeExpression({
                     expression: createVariableExpression('dynamic')
                 })
@@ -135,21 +187,21 @@ class BsBenchPlugin implements CompilerPlugin {
 
             //wrap the entire body of the function in a for loop
             const forLoop = Parser.parse('for i = 0 to iterations\nend for').ast.statements[0] as ForStatement;
-            editor.setProperty(forLoop.body, 'statements', testFunction.func.body.statements);
-            editor.setProperty(testFunction.func.body, 'statements', [forLoop]);
+            editor.setProperty(forLoop.body, 'statements', test.functionStatement.func.body.statements);
+            editor.setProperty(test.functionStatement.func.body, 'statements', [forLoop]);
 
             //insert new date before the loop
             const startTimeAssignment = Parser.parse(`__benchmarkStartTime = CreateObject("roDateTime")`).ast.statements[0] as AssignmentStatement;
-            editor.arrayUnshift(testFunction.func.body.statements, startTimeAssignment);
+            editor.arrayUnshift(test.functionStatement.func.body.statements, startTimeAssignment);
 
             //insert new date after the loop
             const endTimeAssignment = Parser.parse(`__benchmarkEndTime = CreateObject("roDateTime")`).ast.statements[0] as AssignmentStatement;
-            editor.arrayPush(testFunction.func.body.statements, endTimeAssignment);
+            editor.arrayPush(test.functionStatement.func.body.statements, endTimeAssignment);
 
             //prepend the setup body to the top of the function body
             if (setupFunction) {
                 editor.arrayUnshift(
-                    testFunction.func.body.statements,
+                    test.functionStatement.func.body.statements,
                     ...setupFunction.func.body.statements
                 );
             }
@@ -157,7 +209,7 @@ class BsBenchPlugin implements CompilerPlugin {
             //append the setup body to the top of the function body
             if (teardownFunction) {
                 editor.arrayPush(
-                    testFunction.func.body.statements,
+                    test.functionStatement.func.body.statements,
                     ...teardownFunction.func.body.statements
                 );
             }
@@ -167,10 +219,10 @@ class BsBenchPlugin implements CompilerPlugin {
                 startTime: __benchmarkStartTime
                 endTime: __benchmarkEndTime
                 iterations: iterations
-                name: "${testFunction.tokens.name.text}"
+                name: "${test.functionStatement.tokens.name.text}"
                 suiteName: "${suite.getName(ParseMode.BrightScript)}"
             }`).ast.statements[0] as ReturnStatement;
-            editor.arrayPush(testFunction.func.body.statements, returnStatement);
+            editor.arrayPush(test.functionStatement.func.body.statements, returnStatement);
         }
     }
 }
