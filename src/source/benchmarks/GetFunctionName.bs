@@ -1,0 +1,47 @@
+@only()
+@suite()
+namespace GetFunctionName
+
+    sub setup()
+        result = invalid
+    end sub
+    @test()
+    sub shortTokenize()
+        result = alpha.toStr().tokenize(" ").peek()
+    end sub
+
+    @test()
+    sub mediumTokenize()
+        result = alphaBetaCharlieDeltaEchoFoxtrotGolfHotelIndiaJulietKiloLimaMike.toStr().tokenize(" ").peek()
+    end sub
+
+    @test()
+    sub longTokenize()
+        result = alphaBetaCharlieDeltaEchoFoxtrotGolfHotelIndiaJulietKiloLimaMikeNovemberOscarPapaQuebecRomeoSierraTangoUniformVictorWhiskeyXrayYankeeZulu.toStr().tokenize(" ").peek()
+    end sub
+
+
+    @test()
+    sub shortMid()
+        result = alpha.toStr().mid(10)
+    end sub
+
+    @test()
+    sub mediumMid()
+        result = alphaBetaCharlieDeltaEchoFoxtrotGolfHotelIndiaJulietKiloLimaMike.toStr().mid(10)
+    end sub
+
+    @test()
+    sub longMid()
+        result = alphaBetaCharlieDeltaEchoFoxtrotGolfHotelIndiaJulietKiloLimaMikeNovemberOscarPapaQuebecRomeoSierraTangoUniformVictorWhiskeyXrayYankeeZulu.toStr().mid(10)
+    end sub
+
+    function alpha()
+    end function
+
+    function alphaBetaCharlieDeltaEchoFoxtrotGolfHotelIndiaJulietKiloLimaMike()
+    end function
+
+    function alphaBetaCharlieDeltaEchoFoxtrotGolfHotelIndiaJulietKiloLimaMikeNovemberOscarPapaQuebecRomeoSierraTangoUniformVictorWhiskeyXrayYankeeZulu()
+    end function
+end namespace
