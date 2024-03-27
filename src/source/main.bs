@@ -8,7 +8,7 @@ sub main()
 
     bsbench.runSync({
         warmupIterations: 100,
-        iterations: 500000
+        iterations: 50000
     } as RunOptions)
 end sub
 
