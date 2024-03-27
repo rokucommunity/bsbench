@@ -1,4 +1,4 @@
-import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BscFile, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement } from "brighterscript";
+import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
@@ -69,7 +69,7 @@ class BsBenchPlugin implements CompilerPlugin {
 
 
     beforeBuildProgram(event: BeforeBuildProgramEvent) {
-        const allSuites: NamespaceStatement[] = [];
+        const allSuites: Suite[] = [];
         //find every suite class
         for (const file of Object.values(event.program.files)) {
             if (!isBrsFile(file)) {
@@ -85,7 +85,7 @@ class BsBenchPlugin implements CompilerPlugin {
         this.injectSuiteData(event, allSuites);
     }
 
-    private injectSuiteData(event: BeforeBuildProgramEvent, allSuites: NamespaceStatement[]) {
+    private injectSuiteData(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
         //add every suite constructor to the bsbench.allSuites array
         const bsbenchFile = event.program.getFile<BrsFile>('source/bsbench.bs');
 
@@ -94,7 +94,7 @@ class BsBenchPlugin implements CompilerPlugin {
             return isConstStatement(x) && x.name.toLowerCase() === 'allsuites';
         })?.findChild(isArrayLiteralExpression) as ArrayLiteralExpression;
 
-        let atOnlySuites = allSuites.filter(x => x.annotations?.find(x => x.name.toLowerCase() === 'only'));
+        let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites : allSuites;
 
         if (allSuitesConstArray) {
@@ -103,17 +103,22 @@ class BsBenchPlugin implements CompilerPlugin {
                 allSuitesConstArray.elements,
                 //create an AA for every suite
                 ...suitesToRun.map(suite => {
-                    const ast = (Parser.parse(`
+                    const code = `
                         aa = {
-                            name: "${suite.getName(ParseMode.BrighterScript)}",
+                            name: "${suite.name}",
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
-                                    name: "${test.functionStatement.tokens.name.text}"
-                                    func: ${test.name}
+                                    name: "${test.name}"
+                                    func: ${test.functionName}
                                 }`).join(', ')}
                             ]
                         }
-                    `).ast.statements[0] as AssignmentStatement).value;
+                    `;
+                    const parser = Parser.parse(code);
+                    if (parser.diagnostics.length > 0) {
+                        throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
+                    }
+                    const ast = (parser.ast.statements[0] as AssignmentStatement).value;
                     return ast;
                 })
             )
@@ -125,37 +130,53 @@ class BsBenchPlugin implements CompilerPlugin {
      * @param file
      * @returns
      */
-    private findSuites(file: BscFile) {
+    private findSuites(file: BscFile): Suite[] {
         if (!isBrsFile(file)) {
             return []
         }
         return file.ast.findChildren<NamespaceStatement>((node) => {
             return isNamespaceStatement(node) && !!node.annotations?.find(x => x.name.toLowerCase() === 'suite');
-        });
+        }).map(x => ({
+            namespaceStatement: x,
+            name: this.getNameFromAnnotation(x),
+            file: file
+        }));
     }
 
     //find the `setup` method in the suite (if there is one)
-    private findFunction(suite: NamespaceStatement, name: string) {
-        return suite.findChild<FunctionStatement>(x => isFunctionStatement(x) && x.tokens.name.text.toLowerCase() === name.toLowerCase());
+    private findFunction(suite: Suite, name: string) {
+        return suite.namespaceStatement.findChild<FunctionStatement>(x => isFunctionStatement(x) && x.tokens.name.text.toLowerCase() === name.toLowerCase());
     }
 
-    private findTests(suite: NamespaceStatement) {
-        return suite.body
+    private getNameFromAnnotation(node: FunctionStatement | NamespaceStatement) {
+        const annotation = node.annotations?.find(x => x.name.toLowerCase() === 'test');
+        //get the name of the test (either the string from the `@test` annotation or the function name)
+        let name: string;
+        if (isLiteralString(annotation?.call.args[0])) {
+            return annotation.call.args[0].tokens.value.text.replace(/^"/, '').replace(/"$/, '');
+        } else {
+            return node.getName(ParseMode.BrightScript);
+        }
+    }
+
+    private findTests(suite: Suite) {
+        return suite.namespaceStatement.body
             .findChildren<FunctionStatement>(isFunctionStatement)
-            .map(x => {
-                const annotation = x.annotations?.find(x => x.name.toLowerCase() === 'test');
-                const nameFromAnnotation = (annotation?.call?.args?.[0] as LiteralExpression)?.tokens?.value?.text?.replace(/^"/, '').replace(/"$/, '');
+            .map(func => {
+                const annotation = func.annotations?.find(x => x.name.toLowerCase() === 'test');
+
                 return {
-                    functionStatement: x,
+                    functionStatement: func,
                     annotation: annotation,
-                    name: nameFromAnnotation ?? x.getName(ParseMode.BrightScript)
+                    name: this.getNameFromAnnotation(func),
+                    functionName: func.getName(ParseMode.BrightScript)
                 }
             })
             //discard any functions that don't have a `@test` annotation
-            .filter(x => !!x.annotation)
+            .filter(x => !!x.annotation);
     }
 
-    private prepareSuite(editor: Editor, suite: NamespaceStatement) {
+    private prepareSuite(editor: Editor, suite: Suite) {
         const setupFunction = this.findFunction(suite, 'setup');
         //get the body of the `setup()` method
         const teardownFunction = this.findFunction(suite, 'teardown');
@@ -219,12 +240,18 @@ class BsBenchPlugin implements CompilerPlugin {
                 startTime: __benchmarkStartTime
                 endTime: __benchmarkEndTime
                 iterations: iterations
-                name: "${test.functionStatement.tokens.name.text}"
-                suiteName: "${suite.getName(ParseMode.BrightScript)}"
+                name: "${test.name}"
+                suiteName: "${suite.name}"
             }`).ast.statements[0] as ReturnStatement;
             editor.arrayPush(test.functionStatement.func.body.statements, returnStatement);
         }
     }
+}
+
+interface Suite {
+    name: string;
+    namespaceStatement: NamespaceStatement;
+    file: BrsFile;
 }
 
 export default () => {
