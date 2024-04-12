@@ -1,0 +1,21 @@
+@suite()
+@only()
+namespace TimeSpanVsDateTime
+    sub setup()
+        result = 1
+    end sub
+
+    sub teardown()
+    end sub
+
+    @test()
+    sub roDateTime()
+        result = bsbench.getMilliseconds(CreateObject("roDateTime")) - bsbench.getMilliseconds(CreateObject("roDateTime"))
+    end sub
+
+    @test()
+    sub roTimeSpan()
+        timeSpan = CreateObject("roTimeSpan") as roTimespan
+        result = timeSpan.TotalMilliseconds()
+    end sub
+end namespace
