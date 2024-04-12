@@ -7,6 +7,8 @@ sub main()
     m.global = screen.getGlobalNode()
 
     bsbench.runSync({} as RunOptions)
+    'small sleep so we can finish printing the results
+    sleep(2000)
 end sub
 
 sub runAllTests(iterations = 1)
@@ -16,10 +18,6 @@ sub runAllTests(iterations = 1)
     '     m.opCount = 1000
     '     m.multiCount = 3
     '     m.testResults = []
-
-    '     testComponentCreation()
-
-    ' testEmptyString()
 
     ' testEmojiMadness()
 
@@ -65,163 +63,6 @@ sub runAllTests(iterations = 1)
     '     end while
     ' end for
 end sub
-
-' sub testComponentCreation()
-'     runTest("rectangle", function(opCount)
-'         for op = 0 to opCount
-'             obj = CreateObject("roSGNode", "Group")
-'             obj.update([{
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }, {
-'                 subtype: "Rectangle",
-'                 width: "300",
-'                 height: "400",
-'                 translation: "[300,300]"
-'             }], true)
-'         end for
-'     end function)
-'     runTest("brs", function(opCount)
-'         for op = 0 to opCount
-'             obj = CreateObject("roSGNode", "BrsComponent")
-'         end for
-'     end function)
-'     runTest("xml", function(opCount)
-'         for op = 0 to opCount
-'             obj = CreateObject("roSGNode", "XmlComponent")
-'         end for
-'     end function)
-' end sub
-
-' sub testEmojiMadness()
-
-'     runTest("stripEmojis 0x", function(opCount)
-'         text = "no		emojis here"
-'         result = invalid
-'         for op = 0 to opCount
-'             result = stripEmojis(text)
-'         end for
-'     end function)
-
-'     runTest("stripEmojis 1x", function(opCount)
-'         text = "no	😃	emojis here"
-'         result = invalid
-'         for op = 0 to opCount
-'             result = stripEmojis(text)
-'         end for
-'     end function)
-
-'     runTest("stripEmojis 5x", function(opCount)
-'         text = "no	😃	😃emo😃jis😃 here😃"
-'         result = invalid
-'         for op = 0 to opCount
-'             result = stripEmojis(text)
-'         end for
-'     end function)
-
-'     runTest("replace 0x", function(opCount)
-'         text = "no		emojis here"
-'         for op = 0 to opCount
-'             emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
-'             result = emojiRegex.replaceAll(text, "")
-'         end for
-'     end function)
-
-'     runTest("replace 1x", function(opCount)
-'         text = "no	😃	emojis here"
-'         for op = 0 to opCount
-'             emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
-'             result = emojiRegex.replaceAll(text, "")
-'         end for
-'     end function)
-
-'     runTest("replace 5x", function(opCount)
-'         text = "no	😃	😃emo😃jis😃 here😃"
-'         for op = 0 to opCount
-'             emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
-'             result = emojiRegex.replaceAll(text, "")
-'         end for
-'     end function)
-' end sub
-
-' function stripEmojis(text as string) as string
-'     newText = ""
-'     emojiRegex = CreateObject("roRegex", "[^\x{0020}-\x{007e}\x{00a0}-\x{00ff}\x{0152}\x{0153}\x{0178}\s€$¥£₹₽₱]", "g")
-'     parts = emojiRegex.split(text)
-
-'     if parts.count() = 1
-'         return text
-'     end if
-'     for i = 0 to parts.count() - 1
-'         lastPart = parts[i - 1]
-'         currentPart = parts[i]
-
-'         if lastPart = invalid then lastPart = ""
-
-'         lastPartWhiteSpace = CreateObject("roRegex", "([[:blank:]]+)\v?$", "").match(lastPart)[1]
-'         if lastPartWhiteSpace = invalid then lastPartWhiteSpace = ""
-'         leadingWhitespaceCount = lastPartWhiteSpace.len()
-
-'         trailingPartWhiteSpace = CreateObject("roRegex", "^([[:blank:]]+)", "").match(currentPart)[1]
-'         if trailingPartWhiteSpace = invalid then trailingPartWhiteSpace = ""
-'         trailingWhitespaceCount = trailingPartWhiteSpace.len()
-
-'         removeLeading = false
-'         removeTrailing = false
-'         if leadingWhitespaceCount > 1 and trailingWhitespaceCount > 1 then
-'             removeLeading = true
-'             removeTrailing = true
-'         else if leadingWhitespaceCount > 1 then
-'             removeLeading = true
-'         else if trailingWhitespaceCount > 1 then
-'             removeTrailing = true
-'         end if
-
-'         if removeLeading then
-'             newText = newText.left(newText.len() - 1)
-'         end if
-
-'         if removeTrailing then
-'             newText += currentPart.right(currentPart.len() - 1)
-'         else
-'             newText += currentPart
-'         end if
-'     end for
-
-'     return newText
-' end function
 
 ' sub testBoolVsNodeNotInvalid()
 '     runTest("node->bool", function(opCount)
