@@ -76,6 +76,7 @@ namespace bsbench
         runResult as TimedRunResult = invalid
         iterations = 1
 
+        startTime = createObject("roDateTime")
         'grow the iterations exponentially until we find a nonzero runtime greater than 50ms
         while true
             runResult = timedRun(testFunction, iterations, targetDurationMs)
@@ -85,13 +86,16 @@ namespace bsbench
                 exit while
             else
                 'double the iterations and try again
-                iterations *= 2
+                iterations *= 3
             end if
         end while
-        ' print "found a nonzero runtime greater than 50ms", runResult
+
+        endTime = createObject("roDateTime")
+        elapsedMs = bsbench.getMilliseconds(endTime) - bsbench.getMilliseconds(startTime)
+        ' print `found a nonzero runtime greater than 50ms, and took ${elapsedMs}ms to find it`
 
         'run for a portion the computed iterations to get a better understanding of the time it takes to run
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.75, targetDurationMs)
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, targetDurationMs)
         ' print "75% of the computed iterations", runResult
 
         'now run the exact computed iterations
