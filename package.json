@@ -1,5 +1,5 @@
 {
-  "name": "benchmarking",
+  "name": "bsbench",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,8 +9,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "brighterscript": "file:../brighterscript0__v1/.tmp/brighterscript-1.0.0-alpha.28-test.1710436911285.tgz",
+  "devDependencies": {
+    "brighterscript": "^1.0.0-alpha.29",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }

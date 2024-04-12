@@ -21,20 +21,136 @@ namespace bsbench
         for each test in suite.tests
             print `‌‌ `
             testFunction = test.func
-            'if we've specified some warmup iterations, run them
-            if options.warmupIterations <> invalid then
-                print `${test.name} (Warming up)`
-                testFunction(options.warmupIterations)
-            end if
 
-            print `${test.name} (Running)`
-            result = testFunction(options.iterations)
-            print `${test.name} (Done)`
+            print `${test.name} (Warming up)`
+            'find the number of iterations we can fit into 500ms
+            iterationsForDuration = getIterationsForDuration(testFunction, 500)
+
+            print `${test.name} (Running ${numberToString(iterationsForDuration)} iterations)`
+            result = testFunction(iterationsForDuration)
             result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
+            print `${test.name} (Done ${numberToString(result.operationsPerSecond)} ops/sec)`
             suiteResults.push(result)
         end for
 
         printSuiteResults(suiteResults)
+    end function
+
+    '
+    ' Run the test function with increasing iterations until we find an iteration count that runs for approximately `targetDurationMs`
+    '
+    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, marginOfErrorMs = 3) as integer
+
+        'do a timed run and return some stats
+        timedRun = function(testFunction as function, iterations as integer, targetDurationMs as integer) as TimedRunResult
+            startTime = createObject("roDateTime")
+            testFunction(iterations)
+            endTime = createObject("roDateTime")
+            elapsedMs = bsbench.getMilliseconds(endTime) - bsbench.getMilliseconds(startTime)
+
+            if elapsedMs = 0
+                return {
+                    elapsedMs: 0,
+                    iterations: iterations,
+                    iterationsPerMillisecond: 0
+                    iterationsForTargetDuration: 0
+                }
+            end if
+
+            iterationsPerMillisecond = iterations / elapsedMs
+            iterationsForTargetDuration = iterationsPerMillisecond * targetDurationMs
+            return {
+                elapsedMs: elapsedMs,
+                iterations: iterations,
+                iterationsPerMillisecond: iterationsPerMillisecond
+                iterationsForTargetDuration: iterationsForTargetDuration
+            }
+        end function
+
+        runResult as TimedRunResult = invalid
+        iterations = 1
+
+        'grow the iterations exponentially until we find a nonzero runtime greater than 50ms
+        while true
+            runResult = timedRun(testFunction, iterations, targetDurationMs)
+
+            'we found a set of iterations that ran for a good minimum time
+            if runResult.elapsedMs > 50
+                exit while
+            else
+                'double the iterations and try again
+                iterations *= 2
+            end if
+        end while
+        ' print "found a nonzero runtime greater than 50ms", runResult
+
+        'run for a portion the computed iterations to get a better understanding of the time it takes to run
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.75, targetDurationMs)
+        ' print "75% of the computed iterations", runResult
+
+        'now run the exact computed iterations
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, targetDurationMs)
+        ' print "exact computed iterations", runResult
+
+        lastRunResult = invalid as TimedRunResult
+        tries = 0
+        'compensate for overshoot/undershoot
+        while runResult.elapsedMs < (targetDurationMs - marginOfErrorMs) or runResult.elapsedMs > (targetDurationMs + marginOfErrorMs) and tries < 5
+            tries++
+            'calculate how much we under/overshot
+            extraMs = targetDurationMs - runResult.elapsedMs
+            'the number of iterations we needed in this run to have reached our target
+            extraIterations = extraMs * runResult.iterationsPerMillisecond
+            newTotalIterations = runResult.iterations + extraIterations
+
+            lastRunResult = runResult
+            runResult = timedRun(testFunction, newTotalIterations, targetDurationMs)
+
+            ' print `overshoot/undershoot compensation #${tries} (add ${extraIterations} iterations)`, runResult
+        end while
+
+        runs = [runResult]
+        if lastRunResult <> invalid
+            runs.push(lastRunResult)
+            runs.push({
+                elapsedMs: average([runResult.elapsedMs, lastRunResult.elapsedMs]),
+                iterations: average([runResult.iterationsForTargetDuration, lastRunResult.iterationsForTargetDuration]),
+                iterationsPerMillisecond: 0
+                iterationsForTargetDuration: 0
+            })
+        end if
+
+        bestValue = getClosestTestRun(runs, targetDurationMs)
+
+        ' print "best value", bestValue
+
+        ' print "keeping the best iterations value from our various results"
+
+        return bestValue.iterations
+    end function
+
+    function average(values as integer[]) as integer
+        sum = 0
+        for each value in values
+            sum += value
+        end for
+        return sum / values.Count()
+    end function
+
+    '
+    ' Find the closest number in an array to a target number
+    function getClosestTestRun(items as TimedRunResult[], target as integer)
+        result = items[0]
+        for each item in items
+            'skip invalid values
+            if item = invalid
+                continue for
+            end if
+            if abs(item.elapsedMs - target) < abs(result.elapsedMs - target)
+                result = item
+            end if
+        end for
+        return result
     end function
 
     function printSuiteResults(suiteResults as BenchmarkResult[])
@@ -97,6 +213,9 @@ namespace bsbench
         return value
     end function
 
+    '
+    ' Convert a number into a string with commas every 3 digits
+    '
     function numberToString(num)
         result = ""
         i = 0
@@ -144,8 +263,6 @@ interface BenchmarkTest
 end interface
 
 interface RunOptions
-    iterations as integer
-    optional warmupIterations as integer
 end interface
 
 interface BenchmarkResult
@@ -155,4 +272,11 @@ interface BenchmarkResult
     operationsPerSecond as double
     name as string
     suiteName as string
+end interface
+
+interface TimedRunResult
+    elapsedMs as integer
+    iterations as integer
+    iterationsPerMillisecond as double
+    iterationsForTargetDuration as integer
 end interface

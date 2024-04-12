@@ -6,10 +6,7 @@ sub main()
     screen.show()
     m.global = screen.getGlobalNode()
 
-    bsbench.runSync({
-        warmupIterations: 100,
-        iterations: 10000
-    } as RunOptions)
+    bsbench.runSync({} as RunOptions)
 end sub
 
 sub runAllTests(iterations = 1)

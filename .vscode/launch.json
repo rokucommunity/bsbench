@@ -15,7 +15,7 @@
             ],
             // "debugServer": 4711,
             "stopDebuggerOnAppExit": true,
-            "enableDebugProtocol": false
+            "enableDebugProtocol": true
         }
     ]
 }
