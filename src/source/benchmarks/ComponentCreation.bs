@@ -1,0 +1,65 @@
+@suite()
+namespace ComponentCreation
+    sub setup()
+    end sub
+
+    sub teardown()
+    end sub
+
+    @test(`CreateObject("roSGNode", "Group").update(...)`)
+    sub _()
+        obj = CreateObject("roSGNode", "Group")
+        obj.update([{
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }, {
+            subtype: "Rectangle",
+            width: "300",
+            height: "400",
+            translation: "[300,300]"
+        }], true)
+    end sub
+
+    @test(`createObject("roSGNode", "BrsComponent")`)
+    sub _()
+        obj = CreateObject("roSGNode", "BrsComponent")
+    end sub
+
+
+    @test(`createObject("roSGNode", "XmlComponent")`)
+    sub _()
+        obj = CreateObject("roSGNode", "XmlComponent")
+    end sub
+end namespace
