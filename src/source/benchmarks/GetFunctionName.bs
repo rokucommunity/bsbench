@@ -4,6 +4,7 @@ namespace GetFunctionName
     sub setup()
         result = invalid
     end sub
+
     @test()
     sub shortTokenize()
         result = alpha.toStr().tokenize(" ").peek()

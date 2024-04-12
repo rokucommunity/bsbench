@@ -1,11 +1,5 @@
 @suite()
 namespace ComponentCreation
-    sub setup()
-    end sub
-
-    sub teardown()
-    end sub
-
     @test(`CreateObject("roSGNode", "Group").update(...)`)
     sub _()
         obj = CreateObject("roSGNode", "Group")

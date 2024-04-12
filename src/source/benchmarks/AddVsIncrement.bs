@@ -4,9 +4,6 @@ namespace AddVsIncrement
         value = 1
     end sub
 
-    sub teardown()
-    end sub
-
     @test()
     sub add()
         value = value + 1

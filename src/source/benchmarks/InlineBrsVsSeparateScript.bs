@@ -4,9 +4,6 @@ namespace InlineBrsVsSeparateScript
         value = 1
     end sub
 
-    sub teardown()
-    end sub
-
     @test()
     sub inline()
         comp = CreateObject("roSGNode", "Inline")

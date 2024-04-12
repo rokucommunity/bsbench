@@ -26,9 +26,6 @@ namespace BoolVsNodeNotInvalid
 
     end sub
 
-    sub teardown()
-    end sub
-
     @test("node->bool")
     function _()
         result = nodeWithBool.hasHeader

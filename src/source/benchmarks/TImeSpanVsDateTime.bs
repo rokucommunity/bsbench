@@ -4,9 +4,6 @@ namespace TimeSpanVsDateTime
         result = 1
     end sub
 
-    sub teardown()
-    end sub
-
     @test()
     sub roDateTime()
         result = bsbench.getMilliseconds(CreateObject("roDateTime")) - bsbench.getMilliseconds(CreateObject("roDateTime"))
