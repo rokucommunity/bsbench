@@ -1,0 +1,22 @@
+@suite()
+namespace SparseArrayVsAAToString
+    sub setup()
+        arr = createObject("roArray", 101, true)
+        aa = {}
+    end sub
+
+    @test("sparse array")
+    sub _()
+        for each idx in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+            arr[idx] = invalid
+        end for
+    end sub
+
+    @test("idx.toStr()")
+    sub _()
+        for each idx in [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+            aa[idx.toStr()] = invalid
+        end for
+    end sub
+
+end namespace
