@@ -251,35 +251,6 @@ end sub
 '     end function)
 ' end sub
 
-' sub stringConcatVsMarshalling()
-'     runTest("m direct", function(opCount)
-'         result = invalid
-'         m["Card-FreeCells"] = []
-'         for op = 0 to opCount
-'             result = m["Card-FreeCells"]
-'         end for
-'     end function)
-
-'     runTest("m key concat", function(opCount)
-'         result = invalid
-'         componentType = "FreeCells"
-'         m[componentType + "-FreeCells"] = []
-'         for op = 0 to opCount
-'             result = m[componentType + "-FreeCells"]
-'         end for
-'     end function)
-
-'     runTest("m double marshall", function(opCount)
-'         result = invalid
-'         componentType = "FreeCells"
-'         m[componentType] = {}
-'         m[componentType]["FreeCells"] = []
-'         for op = 0 to opCount
-'             result = m[componentType]["FreeCells"]
-'         end for
-'     end function)
-' end sub
-
 ' sub rndTest()
 '     runTest("rnd", function(opCount)
 '         result = 1

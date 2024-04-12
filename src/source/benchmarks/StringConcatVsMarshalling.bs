@@ -1,0 +1,31 @@
+@suite()
+namespace StringConcatVsMarshalling
+    sub setup()
+        result = invalid
+        aa = {
+            "Alpha-FreeCells": [],
+            "Beta-FreeCells": [],
+            "Charlie": {
+                "FreeCells": []
+            }
+        }
+        beta = "Beta"
+        charlie = "Charlie"
+    end sub
+
+    @test("direct")
+    sub _()
+        result = aa["Alpha-FreeCells"]
+    end sub
+
+    @test("key concat")
+    sub _()
+        result = aa[beta + "-FreeCells"]
+    end sub
+
+    @test("m double marshall")
+    sub _()
+        result = aa[charlie]["FreeCells"]
+    end sub
+
+end namespace
