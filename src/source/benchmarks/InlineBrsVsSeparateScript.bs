@@ -1,0 +1,19 @@
+@suite()
+namespace InlineBrsVsSeparateScript
+    sub setup()
+        value = 1
+    end sub
+
+    sub teardown()
+    end sub
+
+    @test()
+    sub inline()
+        comp = CreateObject("roSGNode", "Inline")
+    end sub
+
+    @test()
+    sub scriptFile()
+        comp = CreateObject("roSGNode", "ScriptImport")
+    end sub
+end namespace

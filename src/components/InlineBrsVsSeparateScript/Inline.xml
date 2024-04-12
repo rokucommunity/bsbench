@@ -1,0 +1,8 @@
+<component name="Inline" extends="Group">
+    <script type="text/brightscript">
+        <![CDATA[
+            function init()
+            end function
+        ]]>
+    </script>
+</component>
