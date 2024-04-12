@@ -25,10 +25,6 @@ sub runAllTests(iterations = 1)
 
     ' cloneVsUpdate()
 
-    ' stringConcatVsMarshalling()
-
-    ' rndTest()
-
     ' aaInitPerf()
 
     ' promisePerf()
@@ -251,33 +247,6 @@ end sub
 '     end function)
 ' end sub
 
-' sub rndTest()
-'     runTest("rnd", function(opCount)
-'         result = 1
-'         for op = 0 to opCount
-'             result = rnd(100)
-'         end for
-'     end function)
-
-'     runTest("local", function(opCount)
-'         result = 1
-'         seq = 0
-'         for op = 0 to opCount
-'             seq = (seq + 1) mod 20
-'             result = seq
-'         end for
-'     end function)
-
-'     runTest("global", function(opCount)
-'         result = 1
-'         m.global.addFields({ seq: 0 })
-'         for op = 0 to opCount
-'             seq = (m.global.seq + 1) mod 20
-'             m.global.seq = seq
-'             result = seq
-'         end for
-'     end function)
-' end sub
 
 ' sub aaInitPerf()
 '     runTest("anon 1 prop", function(opCount)

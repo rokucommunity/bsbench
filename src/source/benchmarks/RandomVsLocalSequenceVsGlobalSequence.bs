@@ -1,0 +1,27 @@
+@suite()
+@only
+namespace RandomVsLocalSequenceVsGlobalSequence
+    sub setup()
+        result = 1
+        seq = 0
+        m.global.addFields({ seq: 0 })
+    end sub
+
+    @test("rnd()")
+    sub _()
+        result = rnd(100)
+    end sub
+
+    @test("local")
+    sub _()
+        seq = (seq + 1) mod 20
+        result = seq
+    end sub
+
+    @test("global")
+    sub _()
+        seq = (m.global.seq + 1) mod 20
+        m.global.seq = seq
+        result = seq
+    end sub
+end namespace
