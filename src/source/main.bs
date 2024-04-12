@@ -1510,54 +1510,6 @@ end sub
 '     'result = p0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9
 ' end sub
 
-' sub typeCall()
-'     runTest("type x 1", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = type(text)
-'         end for
-'     end function)
-
-'     runTest("type x 2", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = type(text)
-'             result = type(text)
-'         end for
-'     end function)
-
-'     runTest("type x 3", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = type(text)
-'             result = type(text)
-'             result = type(text)
-'         end for
-'     end function)
-
-'     runTest("type x 4", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = type(text)
-'             result = type(text)
-'             result = type(text)
-'             result = type(text)
-'         end for
-'     end function)
-
-'     runTest("type x 5", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = type(text)
-'             result = type(text)
-'             result = type(text)
-'             result = type(text)
-'             result = type(text)
-'         end for
-'     end function)
-
-' end sub
-
 ' sub typePerfWithGetInterface()
 '     runTest("getInterface integer", function(opCount)
 '         value = 0
