@@ -25,11 +25,17 @@ namespace bsbench
             print `${test.name} (Warming up)`
             'find the number of iterations we can fit into 500ms
             iterationsForDuration = getIterationsForDuration(testFunction, 500)
+            samples = 5
 
-            print `${test.name} (Running ${numberToString(iterationsForDuration)} iterations)`
-            result = testFunction(iterationsForDuration)
-            result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
-            print `${test.name} (Done ${numberToString(result.operationsPerSecond)} ops/sec)`
+            results = [] as BenchmarkResult[]
+            for i = 0 to samples - 1
+                print `${test.name} (Running: ${numberToString(iterationsForDuration)} iterations, sample ${i + 1} of ${samples})`
+                result = testFunction(iterationsForDuration)
+                result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
+                results.push(result)
+            end for
+            opsPerSec = average(results, "operationsPerSecond")
+            print `${test.name} (Done: ${numberToString(result.operationsPerSecond)} ops/sec)`
             suiteResults.push(result)
         end for
 
@@ -129,10 +135,14 @@ namespace bsbench
         return bestValue.iterations
     end function
 
-    function average(values as integer[]) as integer
+    function average(values as dynamic[], key = invalid) as dynamic
         sum = 0
         for each value in values
-            sum += value
+            if key <> invalid
+                sum += value[key]
+            else
+                sum += value
+            end if
         end for
         return sum / values.Count()
     end function
