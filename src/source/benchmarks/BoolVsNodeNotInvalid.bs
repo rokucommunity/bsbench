@@ -1,0 +1,61 @@
+@suite()
+namespace BoolVsNodeNotInvalid
+    sub setup()
+        result = invalid
+        nodeWithBool = createObject("roSGNode", "Node")
+        nodeWithBool.addField("hasHeader", "boolean", false)
+        nodeWithBool.hasHeader = true
+
+        nodeWithNode = createObject("roSGNode", "Node")
+        nodeWithNode.addField("header", "node", false)
+        nodeWithNode.header = createObject("roSGNode", "ContentNode")
+
+        nodeWithMissingNode = createObject("roSGNode", "Node")
+        nodeWithMissingNode.addField("header", "node", false)
+
+        aaBool = {
+            hasHeader: true
+        }
+
+        aaNode = {
+            header: createObject("roSGNode", "ContentNode")
+        }
+        aaInvalid = {
+            header: invalid
+        }
+
+    end sub
+
+    sub teardown()
+    end sub
+
+    @test("node->bool")
+    function _()
+        result = nodeWithBool.hasHeader
+    end function
+
+    @test("node->node present")
+    function _()
+        result = nodeWithNode.header <> invalid
+    end function
+
+    @test("node->node missing")
+    function _()
+        result = nodeWithMissingNode.header <> invalid
+    end function
+
+    @test("aa->bool")
+    function _()
+        result = aaBool.hasHeader
+    end function
+
+    @test("aa->node present")
+    function _()
+        result = aaNode.header <> invalid
+    end function
+
+    @test("aa->node missing")
+    function _()
+        result = aaInvalid.header <> invalid
+    end function
+end namespace

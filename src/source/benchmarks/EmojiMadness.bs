@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace EmojiMadness
 
     sub setup()
