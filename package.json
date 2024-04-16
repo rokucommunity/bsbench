@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "bsc"
+    "build": "bsc && npm run build-complib",
+    "build-complib": "roku-deploy zip --stagingDir ./complib --outDir ./dist/componentLibraries --outFile complib.zip"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "brighterscript": "^1.0.0-alpha.29",
+    "roku-deploy": "^4.0.0-alpha.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
