@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall": "ropm copy",
     "build": "bsc && npm run build-complib",
     "build-complib": "roku-deploy zip --stagingDir ./complib --outDir ./dist/componentLibraries --outFile complib.zip"
   },
@@ -13,7 +14,14 @@
   "devDependencies": {
     "brighterscript": "^1.0.0-alpha.29",
     "roku-deploy": "^4.0.0-alpha.0",
+    "ropm": "^0.10.23",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
+  },
+  "ropm": {
+    "rootDir": "src"
+  },
+  "dependencies": {
+    "@rokucommunity/promises": "^0.2.0"
   }
 }

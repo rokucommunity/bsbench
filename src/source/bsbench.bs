@@ -1,4 +1,6 @@
 namespace bsbench
+
+    'This array is auto-generated during the build process
     const allSuites = [] as BenchmarkSuite[]
 
     function runSync(options as RunOptions)
@@ -30,8 +32,8 @@ namespace bsbench
             results = [] as BenchmarkResult[]
             print `${test.name} (Running ${numberToString(iterationsForDuration)} iterations)`
             for i = 0 to samples - 1
-            print `${test.name} (sample ${i + 1} of ${samples})`
-            result = testFunction(iterationsForDuration)
+                print `${test.name} (sample ${i + 1} of ${samples})`
+                result = testFunction(iterationsForDuration)
                 result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
                 results.push(result)
             end for
