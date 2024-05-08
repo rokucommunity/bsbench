@@ -21,7 +21,6 @@ sub runAllTests(iterations = 1)
 
     ' testNodeRefPassing()
 
-    ' mVsFieldVsLocal()
 
     ' cloneVsUpdate()
 
@@ -150,35 +149,6 @@ end sub
 '             end for
 '         end for
 '     end function)
-' end sub
-
-' sub mVsFieldVsLocal()
-'     runTest("node field", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         node.addField("sequence", "integer", 0)
-'         m.seq = 0
-'         for op = 0 to opCount
-'             node.sequence++
-'         end for
-'     end function)
-
-'     runTest("m prop", function(opCount)
-'         result = invalid
-'         m.sequence = 0
-'         for op = 0 to opCount
-'             m.sequence++
-'         end for
-'     end function)
-
-'     runTest("local", function(opCount)
-'         result = invalid
-'         sequence = 0
-'         for op = 0 to opCount
-'             sequence++
-'         end for
-'     end function)
-
 ' end sub
 
 ' sub cloneVsUpdate()

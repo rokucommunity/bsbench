@@ -1,0 +1,25 @@
+@suite("increment m vs field vs local")
+namespace mVsFieldVsLocal
+    sub setup()
+        result = invalid
+        m.sequence = 0
+        node = createObject("roSGNode", "Node")
+        node.addField("sequence", "integer", 0)
+        sequence = 0
+    end sub
+
+    @test("node field")
+    sub _()
+        node.sequence++
+    end sub
+
+    @test("m prop")
+    sub _()
+        m.sequence++
+    end sub
+
+    @test("local")
+    sub _()
+        sequence++
+    end sub
+end namespace
