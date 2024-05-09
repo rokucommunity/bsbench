@@ -43,7 +43,7 @@ namespace ComponentCreation
             width: "300",
             height: "400",
             translation: "[300,300]"
-        }], true)
+        }] as dynamic, true)
     end sub
 
     @test(`createObject("roSGNode", "BrsComponent")`)

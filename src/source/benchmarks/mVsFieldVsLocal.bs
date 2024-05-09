@@ -4,12 +4,18 @@ namespace mVsFieldVsLocal
         result = invalid
         m.sequence = 0
         node = createObject("roSGNode", "Node")
-        node.addField("sequence", "integer", 0)
+        node.addField("sequence", "integer", false)
         sequence = 0
     end sub
 
+    interface roSGNodeWithSequence extends roSGNode
+        sequence as integer
+    end interface
+
     @test("node field")
     sub _()
+        node = createObject("roSGNode", "Node") as roSGNodeWithSequence
+        node.addField("sequence", "integer", false)
         node.sequence++
     end sub
 

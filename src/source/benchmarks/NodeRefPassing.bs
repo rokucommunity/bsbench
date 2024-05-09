@@ -12,7 +12,7 @@ namespace NodeRefPassing5
             nodeArray.push(createObject("roSGNode", "ContentNode"))
         end for
 
-        nodeWithArray = createObject("roSGNode", "Node")
+        nodeWithArray = createObject("roSGNode", "Node") as roAssociativeArray
         nodeWithArray.update({
             nodeArray: nodeArray
         }, true)
@@ -38,6 +38,7 @@ namespace NodeRefPassing5
     sub _()
         for i = 0 to nodeArray.count() - 1
             result = nodeArray[i]
+            print
         end for
     end sub
 
@@ -57,7 +58,7 @@ namespace NodeRefPassing5
     end sub
 
     @test("node children loop")
-    sub _()
+    sub _(variant2)
         for i = 0 to nodeWithChildren.getChildCount() - 1
             result = nodeWithChildren.getChild(i)
         end for

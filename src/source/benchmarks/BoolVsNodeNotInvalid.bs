@@ -1,16 +1,22 @@
 @suite()
 namespace BoolVsNodeNotInvalid
+
+    interface NodeWithExtras extends roSGNode
+        optional hasHeader as Boolean
+        optional header as roSGNodeContentNode
+    end interface
+
     sub setup()
         result = invalid
-        nodeWithBool = createObject("roSGNode", "Node")
+        nodeWithBool = createObject("roSGNode", "Node") as NodeWithExtras
         nodeWithBool.addField("hasHeader", "boolean", false)
         nodeWithBool.hasHeader = true
 
-        nodeWithNode = createObject("roSGNode", "Node")
+        nodeWithNode = createObject("roSGNode", "Node") as NodeWithExtras
         nodeWithNode.addField("header", "node", false)
         nodeWithNode.header = createObject("roSGNode", "ContentNode")
 
-        nodeWithMissingNode = createObject("roSGNode", "Node")
+        nodeWithMissingNode = createObject("roSGNode", "Node") as NodeWithExtras
         nodeWithMissingNode.addField("header", "node", false)
 
         aaBool = {
