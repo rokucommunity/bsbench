@@ -19,9 +19,6 @@ sub runAllTests(iterations = 1)
     '     m.multiCount = 3
     '     m.testResults = []
 
-    ' testNodeRefPassing()
-
-
     ' cloneVsUpdate()
 
     ' aaInitPerf()
@@ -51,105 +48,6 @@ sub runAllTests(iterations = 1)
     '     end while
     ' end for
 end sub
-
-' sub testNodeRefPassing()
-'     runTest("field", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         nodeArray = []
-'         for i = 0 to 99
-'             nodeArray.push(createObject("roSGNode", "ContentNode"))
-'         end for
-
-'         node.update.update({
-'             nodeArray: nodeArray
-'         }, true)
-
-'         for op = 0 to opCount
-'             result = node.nodeArray
-'         end for
-'     end function)
-
-'     runTest("children", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         for i = 0 to 99
-'             node.appendChild(createObject("roSGNode", "ContentNode"))
-'         end for
-
-'         for op = 0 to opCount
-'             result = node.getChildren(-1, 0)
-'         end for
-'     end function)
-
-'     runTest("array loop", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         nodeArray = []
-'         for i = 0 to 99
-'             nodeArray.push(createObject("roSGNode", "ContentNode"))
-'         end for
-
-'         for op = 0 to opCount
-'             for i = 0 to nodeArray.count() - 1
-'                 result = nodeArray[i]
-'             end for
-'         end for
-'     end function)
-
-'     runTest("field loop", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         nodeArray = []
-'         for i = 0 to 99
-'             nodeArray.push(createObject("roSGNode", "ContentNode"))
-'         end for
-
-'         node.update({
-'             nodeArray: nodeArray
-'         }, true)
-
-'         for op = 0 to opCount
-'             nodes = node.nodeArray
-'             for i = 0 to nodes.count() - 1
-'                 result = nodes[i]
-'             end for
-'         end for
-'     end function)
-
-'     runTest("field loop stupid", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         nodeArray = []
-'         for i = 0 to 99
-'             nodeArray.push(createObject("roSGNode", "ContentNode"))
-'         end for
-
-'         node.update({
-'             nodeArray: nodeArray
-'         }, true)
-
-'         for op = 0 to opCount
-'             for i = 0 to node.nodeArray.count() - 1
-'                 result = node.nodeArray[i]
-'             end for
-'         end for
-'     end function)
-
-'     runTest("node children loop", function(opCount)
-'         result = invalid
-'         node = createObject("roSGNode", "Node")
-'         for i = 0 to 99
-'             node.appendChild(createObject("roSGNode", "ContentNode"))
-'         end for
-
-'         for op = 0 to opCount
-'             for i = 0 to node.getChildCount() - 1
-'                 result = node.getChild(i)
-'             end for
-'         end for
-'     end function)
-' end sub
 
 ' sub cloneVsUpdate()
 '     m.opCount = 100

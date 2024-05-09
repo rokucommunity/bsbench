@@ -207,7 +207,7 @@ class BsBenchPlugin implements CompilerPlugin {
             }));
 
             //wrap the entire body of the function in a for loop
-            const forLoop = Parser.parse('for i = 0 to iterations\nend for').ast.statements[0] as ForStatement;
+            const forLoop = Parser.parse('for __bsbench_i = 0 to iterations\nend for').ast.statements[0] as ForStatement;
             editor.setProperty(forLoop.body, 'statements', test.functionStatement.func.body.statements);
             editor.setProperty(test.functionStatement.func.body, 'statements', [forLoop]);
 
