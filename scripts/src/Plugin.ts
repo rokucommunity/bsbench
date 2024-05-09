@@ -1,4 +1,4 @@
-import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
@@ -7,15 +7,28 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     afterFileAdd(event: AfterFileAddEvent<BscFile>) {
-        //if the function is named `_`, give it an auto-generated name instead to prevent collisions
         if (isBrsFile(event.file)) {
             for (const suite of this.findSuites(event.file)) {
+                //inject a `variant` parameter
+                this.findFunction(suite, 'setup')?.func.parameters.push(new FunctionParameterExpression({
+                    name: createIdentifier('variant')
+                }));
+                //inject a `variant` parameter
+                this.findFunction(suite, 'teardown')?.func.parameters.push(new FunctionParameterExpression({
+                    name: createIdentifier('variant')
+                }));
+
                 const tests = this.findTests(suite);
                 for (let i = 0; i < tests.length; i++) {
                     const test = tests[i];
+                    //if the function is named `_`, give it an auto-generated name instead to prevent collisions
                     if (test.functionStatement.tokens.name.text === '_') {
                         test.functionStatement.tokens.name.text = `test${i}`;
                     }
+                    //inject a `variant` parameter
+                    test.functionStatement.func.parameters.push(new FunctionParameterExpression({
+                        name: createIdentifier('variant')
+                    }));
                 }
             }
         }
@@ -42,7 +55,6 @@ class BsBenchPlugin implements CompilerPlugin {
             }
         }
     }
-
 
     afterProgramValidate(event: AfterProgramValidateEvent) {
         for (const file of Object.values(event.program.files)) {
@@ -98,14 +110,18 @@ class BsBenchPlugin implements CompilerPlugin {
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites : allSuites;
 
         if (allSuitesConstArray) {
-            //push suite data to the allSuites array
-            event.editor.arrayPush(
-                allSuitesConstArray.elements,
-                //create an AA for every suite
-                ...suitesToRun.map(suite => {
+            //create an AA for every variation of every suite
+            const suitesAst = suitesToRun.map(suite => {
+                const variants = this.getVariants(suite);
+                let statements = [];
+                for (const variant of variants) {
+                    const variantText = Object.keys(variant).length > 0
+                        ? ' (' + Object.keys(variant).map(x => `${x}: ${JSON.stringify(variant[x])}`).join(', ') + ')'
+                        : '';
                     const code = `
                         aa = {
-                            name: "${suite.name}",
+                            name: "${suite.name}${variantText}",
+                            variant: ${JSON.stringify(variant)},
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
                                     name: "${test.name}"
@@ -119,10 +135,47 @@ class BsBenchPlugin implements CompilerPlugin {
                         throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
                     }
                     const ast = (parser.ast.statements[0] as AssignmentStatement).value;
-                    return ast;
-                })
-            )
+                    statements.push(ast);
+                }
+                return statements;
+            }).flat();
+
+            //push suite data to the allSuites array
+            event.editor.arrayPush(allSuitesConstArray.elements, ...suitesAst);
         }
+    }
+
+    /**
+     * Build a unique list of all variant combinations. If no variants were provided,
+     * return a single empty object so we at least have one entry
+     * @param suite
+     */
+    private getVariants(suite: Suite) {
+        // Start with an initial list containing an empty object
+        let currentCombinations = [{}];
+
+        // Process each key in the variant map
+        for (const key of Object.keys(suite.config.variants)) {
+            const newCombinations: any[] = [];
+
+            // For each existing combination, expand it with each value from the current key's array
+            for (const combination of currentCombinations) {
+                for (const value of suite.config.variants[key]) {
+                    // Create a new combination by copying the existing one and adding the new key-value pair
+                    const newCombination = { ...combination, [key]: value };
+                    newCombinations.push(newCombination);
+                }
+            }
+
+            // Replace the current combinations with the newly expanded list
+            currentCombinations = newCombinations;
+        }
+
+        //return a single empty object if we have no variants
+        if (currentCombinations === undefined) {
+            return [{}];
+        }
+        return currentCombinations;
     }
 
     /**
@@ -136,11 +189,15 @@ class BsBenchPlugin implements CompilerPlugin {
         }
         return file.ast.findChildren<NamespaceStatement>((node) => {
             return isNamespaceStatement(node) && !!node.annotations?.find(x => x.name.toLowerCase() === 'suite');
-        }).map(x => ({
-            namespaceStatement: x,
-            name: this.getNameFromAnnotation(x),
-            file: file
-        }));
+        }).map(x => {
+            const suite: Suite = {
+                namespaceStatement: x,
+                config: x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0] as any,
+                name: this.getNameFromAnnotation(x),
+                file: file
+            };
+            return suite;
+        });
     }
 
     //find the `setup` method in the suite (if there is one)
@@ -194,9 +251,14 @@ class BsBenchPlugin implements CompilerPlugin {
                 test.functionStatement.func.parameters,
                 0,
                 test.functionStatement.func.parameters.length,
+                //add the `iterations` parameter
                 new FunctionParameterExpression({
                     name: createIdentifier('iterations')
-                })
+                }),
+                //add the `variant` parameter
+                new FunctionParameterExpression({
+                    name: createIdentifier('variant')
+                }),
             );
 
             //ensure we have `as dynamic` as the return type for this function
@@ -251,6 +313,15 @@ class BsBenchPlugin implements CompilerPlugin {
 interface Suite {
     name: string;
     namespaceStatement: NamespaceStatement;
+    /**
+     * The configuration for this suite
+     */
+    config?: {
+        /**
+         * Every entry is the name of a local variable, with an array of values (each value is one variant of the benchmark suite)
+         */
+        variants: Record<string, any[]>
+    };
     file: BrsFile;
 }
 

@@ -1,0 +1,68 @@
+@suite({
+    variants: {
+        nodeCount: [5, 10, 25, 50, 100]
+    }
+})
+@only()
+namespace CloneVsUpdate
+    sub setup()
+        result = invalid
+        something = true
+    end sub
+
+    @test("update")
+    sub _()
+        node = createObject("roSGNode", "Node")
+
+        arr = []
+        for i = 0 to variant.nodeCount - 1
+            arr.push({
+                subtype: "Rectangle"
+            })
+        end for
+        node.update(arr, true)
+        result = node.getChildren(-1, 0)
+    end sub
+
+    @test("createChildren")
+    sub _()
+        result = invalid
+        node = createObject("roSGNode", "Node")
+        result = node.createChildren(variant.nodeCount, "Rectangle")
+    end sub
+
+    @test("clone(true)")
+    sub _()
+        rect = createObject("roSGNode", "Rectangle")
+        result = []
+        for i = 0 to variant.nodeCount - 1
+            result.push(rect.clone(true))
+        end for
+    end sub
+
+    @test("clone(false)")
+    sub _()
+        rect = createObject("roSGNode", "Rectangle")
+        result = []
+        for i = 0 to variant.nodeCount - 1
+            result.push(rect.clone(false))
+        end for
+    end sub
+
+    @test("createChild")
+    sub _()
+        rect = createObject("roSGNode", "Rectangle")
+        result = []
+        for i = 0 to variant.nodeCount - 1
+            result.push(rect.createChild("Rectangle"))
+        end for
+    end sub
+
+    @test("createObject")
+    sub _()
+        result = []
+        for i = 0 to variant.nodeCount - 1
+            result.push(createObject("roSGNode", "Rectangle"))
+        end for
+    end sub
+end namespace

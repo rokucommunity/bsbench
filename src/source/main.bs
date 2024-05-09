@@ -18,9 +18,6 @@ sub runAllTests(iterations = 1)
     '     m.opCount = 1000
     '     m.multiCount = 3
     '     m.testResults = []
-
-    ' cloneVsUpdate()
-
     ' aaInitPerf()
 
     ' promisePerf()
@@ -48,73 +45,6 @@ sub runAllTests(iterations = 1)
     '     end while
     ' end for
 end sub
-
-' sub cloneVsUpdate()
-'     m.opCount = 100
-'     runTest("update", function(opCount)
-'         result = invalid
-'         for op = 0 to opCount
-'             node = createObject("roSGNode", "Node")
-'             arr = []
-'             for i = 0 to 99
-'                 arr.push({
-'                     subtype: "Rectangle"
-'                 })
-'             end for
-'             node.update(arr, true)
-'             result = node.getChildren(-1, 0)
-'         end for
-'     end function)
-
-'     runTest("createChildren", function(opCount)
-'         result = invalid
-'         for op = 0 to opCount
-'             node = createObject("roSGNode", "Node")
-'             arr = []
-'             result = node.createChildren(100, "Rectangle")
-'         end for
-'     end function)
-
-'     runTest("clone(true)", function(opCount)
-'         for op = 0 to opCount
-'             rect = createObject("roSGNode", "Rectangle")
-'             result = []
-'             for i = 0 to 99
-'                 result.push(rect.clone(true))
-'             end for
-'         end for
-'     end function)
-
-'     runTest("clone(false)", function(opCount)
-'         for op = 0 to opCount
-'             rect = createObject("roSGNode", "Rectangle")
-'             result = []
-'             for i = 0 to 99
-'                 result.push(rect.clone(false))
-'             end for
-'         end for
-'     end function)
-
-'     ' runTest("createChild", function(opCount)
-'     '     for op = 0 to opCount
-'     '         rect = createObject("roSGNode", "Rectangle")
-'     '         result = []
-'     '         for i = 0 to 99
-'     '             result.push(rect.createChild("Rectangle"))
-'     '         end for
-'     '     end for
-'     ' end function)
-
-'     runTest("createObject", function(opCount)
-'         for op = 0 to opCount
-'             result = []
-'             for i = 0 to 99
-'                 result.push(createObject("roSGNode", "Rectangle"))
-'             end for
-'         end for
-'     end function)
-' end sub
-
 
 ' sub aaInitPerf()
 '     runTest("anon 1 prop", function(opCount)

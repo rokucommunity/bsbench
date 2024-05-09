@@ -1,11 +1,14 @@
-@suite()
-namespace NodeRefPassing10
-    const CHILD_COUNT = 10
+@suite({
+    variants: {
+        nodeCount: [5, 10, 25, 50, 100]
+    }
+})
+namespace NodeRefPassing5
     sub setup()
         result = invalid
 
         nodeArray = []
-        for i = 0 to CHILD_COUNT
+        for i = 0 to variant.nodeCount
             nodeArray.push(createObject("roSGNode", "ContentNode"))
         end for
 
@@ -15,7 +18,7 @@ namespace NodeRefPassing10
         }, true)
 
         nodeWithChildren = createObject("roSGNode", "Node")
-        for i = 0 to CHILD_COUNT
+        for i = 0 to variant.nodeCount
             nodeWithChildren.appendChild(createObject("roSGNode", "ContentNode"))
         end for
 

@@ -4,13 +4,13 @@ namespace AddVsIncrement
         value = 1
     end sub
 
-    @test()
-    sub add()
+    @test("add")
+    sub _()
         value = value + 1
     end sub
 
-    @test()
-    sub increment()
+    @test("increment")
+    sub _()
         value++
     end sub
 end namespace

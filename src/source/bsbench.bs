@@ -26,14 +26,14 @@ namespace bsbench
 
             print `${test.name} (Warming up)`
             'find the number of iterations we can fit into 500ms
-            iterationsForDuration = getIterationsForDuration(testFunction, 500)
+            iterationsForDuration = getIterationsForDuration(testFunction, 500, suite.variant)
             samples = 5
 
             results = [] as BenchmarkResult[]
             print `${test.name} (Running ${numberToString(iterationsForDuration)} iterations)`
             for i = 0 to samples - 1
                 print `${test.name} (sample ${i + 1} of ${samples})`
-                result = testFunction(iterationsForDuration)
+                result = testFunction(iterationsForDuration, suite.variant)
                 result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
                 results.push(result)
             end for
@@ -48,12 +48,13 @@ namespace bsbench
     '
     ' Run the test function with increasing iterations until we find an iteration count that runs for approximately `targetDurationMs`
     '
-    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, marginOfErrorMs = 3) as integer
+    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as integer
+
 
         'do a timed run and return some stats
-        timedRun = function(testFunction as function, iterations as integer, targetDurationMs as integer) as TimedRunResult
+        timedRun = function(testFunction as function, iterations as integer, variant as roAssociativeArray, targetDurationMs as integer) as TimedRunResult
             startTime = createObject("roDateTime")
-            testFunction(iterations)
+            testFunction(iterations, variant)
             endTime = createObject("roDateTime")
             elapsedMs = bsbench.getMilliseconds(endTime) - bsbench.getMilliseconds(startTime)
 
@@ -82,7 +83,7 @@ namespace bsbench
         startTime = createObject("roDateTime")
         'grow the iterations exponentially until we find a nonzero runtime greater than 50ms
         while true
-            runResult = timedRun(testFunction, iterations, targetDurationMs)
+            runResult = timedRun(testFunction, iterations, variant, targetDurationMs)
 
             'we found a set of iterations that ran for a good minimum time
             if runResult.elapsedMs > 50
@@ -98,11 +99,11 @@ namespace bsbench
         ' print `found a nonzero runtime greater than 50ms, and took ${elapsedMs}ms to find it`
 
         'run for a portion the computed iterations to get a better understanding of the time it takes to run
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, targetDurationMs)
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, variant, targetDurationMs)
         ' print "75% of the computed iterations", runResult
 
         'now run the exact computed iterations
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, targetDurationMs)
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMs)
         ' print "exact computed iterations", runResult
 
         lastRunResult = invalid as TimedRunResult
@@ -117,7 +118,7 @@ namespace bsbench
             newTotalIterations = runResult.iterations + extraIterations
 
             lastRunResult = runResult
-            runResult = timedRun(testFunction, newTotalIterations, targetDurationMs)
+            runResult = timedRun(testFunction, newTotalIterations, variant, targetDurationMs)
 
             ' print `overshoot/undershoot compensation #${tries} (add ${extraIterations} iterations)`, runResult
         end while
@@ -273,7 +274,9 @@ end namespace
 interface BenchmarkSuite
     name as string
     tests as BenchmarkTest[]
+    variant as roAssociativeArray
 end interface
+
 interface BenchmarkTest
     name as string
     func as function
