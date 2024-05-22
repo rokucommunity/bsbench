@@ -190,13 +190,28 @@ class BsBenchPlugin implements CompilerPlugin {
         return file.ast.findChildren<NamespaceStatement>((node) => {
             return isNamespaceStatement(node) && !!node.annotations?.find(x => x.name.toLowerCase() === 'suite');
         }).map(x => {
-            const suite: Suite = {
-                namespaceStatement: x,
-                config: x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0] ?? { variants: [] } as any,
-                name: this.getNameFromAnnotation(x),
-                file: file
-            };
-            return suite;
+            try {
+                let config = {} as any;
+                const arg0 = x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0];
+                if (typeof arg0 === 'string') {
+                    config.name = arg0;
+                } else if (typeof arg0 === 'object') {
+                    config = arg0;
+                }
+                config.variants ??= {};
+
+                const suite: Suite = {
+                    namespaceStatement: x,
+                    config: config,
+                    name: this.getNameFromAnnotation(x),
+                    file: file
+                };
+
+                suite.config.variants ??= {};
+                return suite;
+            } catch (e) {
+                console.log(e);
+            }
         });
     }
 
@@ -207,10 +222,12 @@ class BsBenchPlugin implements CompilerPlugin {
 
     private getNameFromAnnotation(node: FunctionStatement | NamespaceStatement) {
         const annotation = node.annotations?.find(x => x.name.toLowerCase() === 'test');
+        const arg0 = annotation?.getArguments()[0] as string | Record<string, any> | undefined;
         //get the name of the test (either the string from the `@test` annotation or the function name)
-        let name: string;
-        if (isLiteralString(annotation?.call.args[0])) {
-            return annotation.call.args[0].tokens.value.text.replace(/^"/, '').replace(/"$/, '');
+        if (typeof arg0 === 'string') {
+            return arg0;
+        } else if (typeof arg0?.name === 'string') {
+            return arg0.name;
         } else {
             return node.getName(ParseMode.BrightScript);
         }
