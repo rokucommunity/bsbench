@@ -3,7 +3,6 @@
         nodeCount: [5, 10, 25, 50, 100]
     }
 })
-@only()
 namespace CloneVsUpdate
     sub setup()
         result = invalid

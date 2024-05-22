@@ -1,0 +1,62 @@
+@suite()
+namespace ParamTypeCall
+
+    @test("empty loop")
+    function _(opCount)
+        'do literally nothing
+    end function
+
+
+    @test("typed function 1 param")
+    function _(opCount)
+        doNothingTyped1params(0)
+    end function
+
+    sub doNothingTyped1params(p0 as integer)
+    end sub
+
+
+    @test("untyped function 1 param")
+    function _(opCount)
+        doNothingUntyped1Params(0)
+    end function
+
+    sub doNothingUntyped1Params(p0)
+    end sub
+
+    @test("typed function 5 params")
+    function _(opCount)
+        doNothingTyped5params(0, 1, 2, 3, 4)
+    end function
+
+    sub doNothingTyped5params(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer)
+    end sub
+
+
+    @test("untyped function 5 params")
+    function _(opCount)
+        doNothingUntyped5Params(0, 1, 2, 3, 4)
+    end function
+
+    sub doNothingUntyped5Params(p0, p1, p2, p3, p4)
+    end sub
+
+
+    @test("typed function 10 params")
+    function _(opCount)
+        doNothingTyped10params(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+    end function
+
+    sub doNothingTyped10params(p0 as integer, p1 as integer, p2 as integer, p3 as integer, p4 as integer, p5 as integer, p6 as integer, p7 as integer, p8 as integer, p9 as integer)
+    end sub
+
+
+    @test("untyped function 10 params")
+    function _(opCount)
+        doNothingUntyped10Params(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+    end function
+
+    sub doNothingUntyped10Params(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9)
+    end sub
+
+end namespace

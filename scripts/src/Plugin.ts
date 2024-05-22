@@ -192,7 +192,7 @@ class BsBenchPlugin implements CompilerPlugin {
         }).map(x => {
             const suite: Suite = {
                 namespaceStatement: x,
-                config: x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0] as any,
+                config: x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0] ?? { variants: [] } as any,
                 name: this.getNameFromAnnotation(x),
                 file: file
             };
