@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "ropm copy",
     "benchmark": "ts-node scripts/src/cli.ts",
-    "build": "bsc && npm run build-complib",
+    "build": "bsc",
     "package": "roku-deploy zip --stagingDir ./dist --outDir ./out --outFile bsbench.zip",
     "build-complib": "roku-deploy zip --stagingDir ./complib --outDir ./dist/componentLibraries --outFile complib.zip"
   },

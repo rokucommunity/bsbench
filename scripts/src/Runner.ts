@@ -3,7 +3,7 @@ import { TelnetMonitor } from './TelnetMonitor';
 import { logger } from './logging';
 import { execSync } from 'child_process';
 import { rokuDeploy } from 'roku-deploy';
-import { standardizePath as s } from 'brighterscript';
+import { LogLevel, standardizePath as s } from 'brighterscript';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -23,10 +23,18 @@ export class Runner {
         this.telnetMonitor = new TelnetMonitor(options);
         this.telnetMonitor.on('lines', (event) => {
             for (const line of event.lines) {
+                let statusJson = /^\s*bsbenchStatus:\s*(.+?)$/.exec(line)?.[1];
+                if (statusJson) {
+                    const status = JSON.parse(statusJson);
+                    logger.log('Found test result', status);
+                    this.results.push(status);
+                }
                 console.log(line);
             }
         });
     }
+
+    private results = [] as TestResult[];
 
     async run() {
         logger.log('Running');
@@ -46,7 +54,8 @@ export class Runner {
 
     private buildApp() {
         logger.log('Building app');
-        execSync('npm run build', { cwd: `${__dirname}/../../` });
+        execSync('npm run build', { cwd: `${__dirname}/../../`, stdio: 'inherit' });
+        logger.log('App finished building');
     }
 
     private async sideload() {
@@ -56,8 +65,10 @@ export class Runner {
             outDir: './out',
             outFile: 'bsbench.zip',
             cwd: this.options.cwd,
-            password: this.options.password
+            password: this.options.password,
+            logLevel: logger.logLevel
         };
+        logger.log('Closing any existing channel');
         await rokuDeploy.closeChannel(options);
 
         logger.log('Zipping app');
@@ -73,4 +84,19 @@ export class Runner {
         rl.close();
         this.telnetMonitor.dispose();
     }
+}
+
+interface TestResult {
+    /**
+     * The name of the suite that this test belongs to
+     */
+    suiteName: string;
+    /**
+     * The name of the test
+     */
+    testName: string;
+    /**
+     * The operations per second this test was able to achieve
+     */
+    operationsPerSecond: number;
 }

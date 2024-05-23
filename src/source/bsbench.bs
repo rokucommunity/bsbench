@@ -40,6 +40,7 @@ namespace bsbench
             opsPerSec = average(results, "operationsPerSecond")
             print `${test.name} (Done: ${numberToString(result.operationsPerSecond)} ops/sec)`
             suiteResults.push(result)
+            reportStatus(suite.name, test.name, opsPerSec)
         end for
 
         printSuiteResults(suiteResults)
@@ -267,6 +268,10 @@ namespace bsbench
         result += date.GetSeconds() * 1000
         result += date.GetMilliseconds()
         return result
+    end function
+
+    function reportStatus(suiteName as string, testName as string, operationsPerSecond as float)
+        print "bsbenchStatus: " FormatJson({suiteName: suiteName, testName: testName, operationsPerSecond: operationsPerSecond})
     end function
 
 end namespace
