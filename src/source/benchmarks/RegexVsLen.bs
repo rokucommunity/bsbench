@@ -1,0 +1,17 @@
+@suite()
+namespace RegexVsLen
+    sub setup()
+        xml = "<bold>hello world</bold>"
+        tagName = "bold"
+    end sub
+
+    @test("regex")
+    sub _()
+        result = createObject("roRegex", "<\/" + tagName + ">$", "").replace(xml, "")
+    end sub
+
+    @test("increment")
+    sub _()
+        result = xml.left(len(xml) - len(tagName) - 3)
+    end sub
+end namespace
