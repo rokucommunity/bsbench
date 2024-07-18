@@ -1,0 +1,28 @@
+@suite()
+namespace AAFunctionAssignment
+    sub setup()
+        keys = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    end sub
+
+    @test("named")
+    sub _()
+        aa = {}
+        for each key in keys
+            aa[key] = sayHello
+        end for
+    end sub
+
+    @test("anon")
+    sub _()
+        aa = {}
+        for each key in keys
+            aa[key] = function()
+                print "hello world"
+            end function
+        end for
+    end sub
+
+    function sayHello()
+        print "hello world"
+    end function
+end namespace
