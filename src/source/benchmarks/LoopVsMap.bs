@@ -1,0 +1,31 @@
+@suite()
+@only
+namespace LoopVsMap
+    sub setup()
+        array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    end sub
+
+    @test("loop")
+    sub _()
+        result = []
+        for each item in array
+            result.push(item)
+        end for
+    end sub
+
+    @test("map")
+    sub _()
+        result = map(array, function(item)
+            return item
+        end function)
+    end sub
+
+    function map(items, callbackFunction)
+        newArray = []
+        for each item in items
+          newItem = callbackFunction(item)
+          newArray.push(newItem)
+        end for
+        return newArray
+      end function
+end namespace
