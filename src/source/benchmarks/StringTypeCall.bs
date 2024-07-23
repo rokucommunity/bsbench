@@ -40,3 +40,15 @@ namespace StringTypeCall
     end sub
 
 end namespace
+
+interface SomeInterface extends roAssociativeArray
+    name as string
+end interface
+
+
+class Something
+    sub test()
+        endpoint = {}
+        responseHandler = (m as dynamic).DoesExist(endpoint.responseHandler)
+    end sub
+end class

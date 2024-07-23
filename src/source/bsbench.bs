@@ -32,15 +32,15 @@ namespace bsbench
             results = [] as BenchmarkResult[]
             print `${test.name} (Running ${numberToString(iterationsForDuration)} iterations)`
             for i = 0 to samples - 1
-                print `${test.name} (sample ${i + 1} of ${samples})`
-                result = testFunction(iterationsForDuration, suite.variant)
+                result = testFunction(iterationsForDuration, suite.variant) as BenchmarkResult
                 result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
                 results.push(result)
+                print `${test.name} (sample ${i + 1} of ${samples})`
+                bsbench.reportStatus(suite.name, test.name, i, result.iterations, result.startTime, result.endTime)
             end for
             opsPerSec = average(results, "operationsPerSecond")
             print `${test.name} (Done: ${numberToString(result.operationsPerSecond)} ops/sec)`
             suiteResults.push(result)
-            reportStatus(suite.name, test.name, opsPerSec)
         end for
 
         printSuiteResults(suiteResults)
@@ -262,7 +262,7 @@ namespace bsbench
         return opsPerSec
     end function
 
-    function getMilliseconds(date)
+    function getMilliseconds(date) as integer
         result = 0
         result += date.GetMinutes() * 60 * 1000
         result += date.GetSeconds() * 1000
@@ -270,8 +270,22 @@ namespace bsbench
         return result
     end function
 
-    function reportStatus(suiteName as string, testName as string, operationsPerSecond as float)
-        print "bsbenchStatus: " FormatJson({suiteName: suiteName, testName: testName, operationsPerSecond: operationsPerSecond})
+    function getEpoch(date as roDateTime) as longinteger
+        result = 0
+        result += date.AsSeconds()
+        result += date.GetMilliseconds()
+        return result
+    end function
+
+    function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
+        print "bsbenchStatus: " FormatJson({
+            suiteName: suiteName,
+            testName: testName,
+            sampleNumber: sampleNumber,
+            iterations: iterations,
+            startTime: bsbench.getEpoch(startTime),
+            endTime: bsbench.getEpoch(endTime)
+        })
     end function
 
 end namespace
