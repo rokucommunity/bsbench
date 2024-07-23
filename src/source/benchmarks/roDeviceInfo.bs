@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace roDeviceInfo
     sub setup()
         result = invalid

@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace roAppInfo
     sub setup()
         result = invalid

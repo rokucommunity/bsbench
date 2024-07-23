@@ -1,0 +1,18 @@
+@suite()
+namespace roRegex
+    sub setup()
+        result = invalid
+        regex = CreateObject("roRegex", "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", "g") as roRegex
+    end sub
+
+    @test("lifted")
+    sub _()
+        result = regex.IsMatch("person@roku.com")
+    end sub
+
+    @test("inline")
+    sub _()
+        regex = CreateObject("roRegex", "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$", "g") as roRegex
+        result = regex.IsMatch("person@roku.com")
+    end sub
+end namespace
