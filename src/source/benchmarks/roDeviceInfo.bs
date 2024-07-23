@@ -1,0 +1,24 @@
+@suite()
+@only()
+namespace roDeviceInfo
+    sub setup()
+        result = invalid
+        deviceInfo = CreateObject("roDeviceInfo")
+    end sub
+
+    @test("lifted")
+    sub _()
+        result = deviceInfo.getModel()
+    end sub
+
+    @test("inline")
+    sub _()
+        deviceInfoLocal = CreateObject("roDeviceInfo")
+        result = deviceInfoLocal.getModel()
+    end sub
+
+    @test("inline-2")
+    sub _()
+        result = CreateObject("roDeviceInfo").getModel()
+    end sub
+end namespace

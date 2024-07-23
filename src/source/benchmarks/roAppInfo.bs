@@ -1,0 +1,24 @@
+@suite()
+@only()
+namespace roAppInfo
+    sub setup()
+        result = invalid
+        appInfo = CreateObject("roAppInfo")
+    end sub
+
+    @test("lifted")
+    sub _()
+        result = appInfo.GetVersion()
+    end sub
+
+    @test("inline")
+    sub _()
+        appInfo = CreateObject("roAppInfo")
+        result = appInfo.GetVersion()
+    end sub
+
+    @test("inline-2")
+    sub _()
+        result = CreateObject("roAppInfo").GetVersion()
+    end sub
+end namespace
