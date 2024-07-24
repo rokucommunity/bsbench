@@ -1,0 +1,74 @@
+@suite()
+namespace StringArrayField
+    sub setup()
+        largeString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed nisl eu purus volutpat fermentum in et dolor. Etiam a finibus purus. Sed pellentesque, sapien ac commodo interdum, eros nisl pharetra leo, vel tincidunt justo dolor at mi. Vivamus porttitor sit amet nisl sit amet dignissim. Nam porttitor augue non sem facilisis, et porttitor est pellentesque. Curabitur nisi libero, tincidunt vel ante at, ultrices mollis nibh. Fusce rutrum luctus ligula sed viverra. Aenean interdum eleifend accumsan. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed tempus nunc turpis, a volutpat felis malesuada sit amet. Vestibulum accumsan sodales vulputate. Aenean euismod imperdiet dui, in consectetur diam egestas id. Integer molestie non nibh efficitur elementum. Duis blandit sapien eu nisi blandit, a pretium libero maximus. Etiam at libero dapibus, auctor nisi non, ultricies nunc. Donec eget leo tortor. Curabitur fringilla at leo nec mattis. Nulla libero ligula, scelerisque ac dolor sed, gravida malesuada tellus. Duis a dui id nunc porta vulputate sed nec nisi. Nulla tincidunt enim in quam condimentum facilisis. Vivamus eu convallis odio. Vestibulum et dolor et sapien porttitor commodo. Quisque nibh orci, varius tincidunt enim ut, commodo dapibus urna. Aliquam sed eros dapibus, varius risus fringilla, vehicula ipsum. Ut lorem ante, commodo ut nunc et, gravida imperdiet quam. Vestibulum dignissim leo blandit tincidunt porttitor. Aenean aliquet, mi malesuada pretium pharetra, diam diam dignissim ex, nec maximus ante quam et magna. Integer bibendum ipsum sit amet neque placerat pretium. Donec eget arcu eu nisi pharetra sodales non sit amet dolor. Pellentesque et arcu non augue feugiat maximus tincidunt eu libero. Vivamus nec ligula a orci varius viverra. Mauris sagittis eu lacus eu accumsan. Nullam molestie mi nec ante fermentum auctor. Morbi consectetur nulla sed dignissim luctus. Donec sollicitudin volutpat ligula, et dapibus arcu volutpat quis. Ut lectus elit, interdum et bibendum eget, rhoncus vitae massa."
+
+        smallListofSmallStrings = []
+        for i = 0 to 5
+            smallListOfSmallStrings.push("a")
+        end for
+
+        largeListOfSmallStrings = []
+        for i = 0 to 100
+            largeListOfSmallStrings.push("a")
+        end for
+
+        smallListOfLargeStrings = []
+        for i = 0 to 5
+            smallListOfLargeStrings.push(largeString)
+        end for
+
+        largeListOfLargeStrings = []
+        for i = 0 to 100
+            largeListOfLargeStrings.push(largeString)
+        end for
+
+        node = createObject("roSGNode", "Group") as dynamic
+        node.addField("untyped", "array", false)
+        node.addField("typed", "stringarray", false)
+    end sub
+
+    'small list small strings
+    @test("untyped small list of small strings")
+    sub _()
+        node.untyped = smallListOfSmallStrings
+    end sub
+
+    @test("typed small list of small strings")
+    sub _()
+        node.typed = smallListOfSmallStrings
+    end sub
+
+    'large list small strings
+    @test("untyped large list of small strings")
+    sub _()
+        node.untyped = largeListOfSmallStrings
+    end sub
+
+    @test("typed large list of small strings")
+    sub _()
+        node.typed = largeListOfSmallStrings
+    end sub
+
+    'small list large strings
+    @test("untyped small list of large strings")
+    sub _()
+        node.untyped = smallListOfLargeStrings
+    end sub
+
+    @test("typed small list of large strings")
+    sub _()
+        node.typed = smallListOfLargeStrings
+    end sub
+
+    'large list large strings
+    @test("untyped large list of large strings")
+    sub _()
+        node.untyped = largeListOfLargeStrings
+    end sub
+
+    @test("typed large list of large strings")
+    sub _()
+        node.typed = largeListOfLargeStrings
+    end sub
+end namespace
