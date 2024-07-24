@@ -26,7 +26,7 @@ namespace bsbench
 
             print `${test.name} (Warming up)`
             'find the number of iterations we can fit into 500ms
-            iterationsForDuration = getIterationsForDuration(testFunction, 500, suite.variant)
+            iterationsForDuration = bsbench.getIterationsForDuration(testFunction, 500, suite.variant)
             samples = 5
 
             results = [] as BenchmarkResult[]
@@ -54,10 +54,8 @@ namespace bsbench
 
         'do a timed run and return some stats
         timedRun = function(testFunction as function, iterations as integer, variant as roAssociativeArray, targetDurationMs as integer) as TimedRunResult
-            startTime = createObject("roDateTime")
-            testFunction(iterations, variant)
-            endTime = createObject("roDateTime")
-            elapsedMs = bsbench.getMilliseconds(endTime) - bsbench.getMilliseconds(startTime)
+            testResult = testFunction(iterations, variant)
+            elapsedMs = bsbench.getMilliseconds(testResult.endTime) - bsbench.getMilliseconds(testResult.startTime)
 
             if elapsedMs = 0
                 return {
@@ -101,7 +99,7 @@ namespace bsbench
 
         'run for a portion the computed iterations to get a better understanding of the time it takes to run
         runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, variant, targetDurationMs)
-        ' print "75% of the computed iterations", runResult
+        ' print "50% of the computed iterations", runResult
 
         'now run the exact computed iterations
         runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMs)
