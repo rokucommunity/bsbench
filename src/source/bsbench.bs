@@ -36,7 +36,7 @@ namespace bsbench
                 result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
                 results.push(result)
                 print `${test.name} (sample ${i + 1} of ${samples})`
-                bsbench.reportStatus(suite.name, test.name, i, result.iterations, result.startTime, result.endTime)
+                bsbench.reportStatus(options.runId, suite.name, test.name, i, result.iterations, result.startTime, result.endTime)
             end for
             opsPerSec = average(results, "operationsPerSecond")
             print `${test.name} (Done: ${numberToString(result.operationsPerSecond)} ops/sec)`
@@ -275,8 +275,9 @@ namespace bsbench
         return result
     end function
 
-    function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
+    function reportStatus(runId as string, suiteName as string, testName as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
         print "bsbenchStatus: " FormatJson({
+            runId: runId,
             suiteName: suiteName,
             testName: testName,
             sampleNumber: sampleNumber,
@@ -300,6 +301,8 @@ interface BenchmarkTest
 end interface
 
 interface RunOptions
+    'a UUID generated for just this run. Useful for the client to track the run
+    runId as string
 end interface
 
 interface BenchmarkResult

@@ -28,7 +28,7 @@ export class Runner {
                 let statusJson = /^\s*bsbenchStatus:\s*(.+?)$/.exec(line)?.[1];
                 if (statusJson) {
                     const testSample = JSON.parse(statusJson) as RawTestSampleData;
-                    logger.log('Found test result', status);
+                    logger.log('Found test result', statusJson);
                     this.storeTestSample(testSample);
                 }
                 console.log(line);
@@ -39,6 +39,9 @@ export class Runner {
     async run() {
         logger.log('Running');
         await this.telnetMonitor.connect();
+
+        //load the deviceInfo about this roku device
+        this.deviceInfo = await rokuDeploy.getDeviceInfo({ host: this.options.host, enhance: true })
 
         //build the app
         await this.buildApp();
@@ -71,9 +74,6 @@ export class Runner {
         logger.log('Closing any existing channel');
         await rokuDeploy.closeChannel(options);
 
-        //load the deviceInfo about this roku device
-        this.deviceInfo = await rokuDeploy.getDeviceInfo({ ...options, enhance: true })
-
         logger.log('Zipping app');
         await rokuDeploy.zip(options);
 
@@ -98,7 +98,14 @@ export class Runner {
         return this.suiteCatalog[suiteKey];
     }
 
+    private lastSeenRunId = undefined;
+
     private storeTestSample(sample: RawTestSampleData) {
+        //if we got a brand new runId, clear all data and start fresh (we somehow read data from a previous run...)
+        if (this.lastSeenRunId !== sample.runId) {
+            this.results = {};
+            console.error(`Found a new runId. We must have been tracking last run's data. Clearing all data and starting fresh`);
+        }
         let suiteInfo = this.getSuiteInfo(sample.suiteKey);
 
         //create the suite if it doesn't exist
@@ -156,6 +163,10 @@ export class Runner {
 }
 
 interface RawTestSampleData {
+    /**
+     * Unique ID for this run. This is the same for all tests in a single run.
+     */
+    runId: string;
     suiteKey: string;
     testKey: string;
     iterations: number;

@@ -29,10 +29,16 @@ import {
     isFunctionStatement,
     isNamespaceStatement,
     createVisitor,
-    VariableExpression
+    VariableExpression,
+    AstNode,
+    util,
+    BrsTranspileState
 } from "brighterscript";
 import * as fsExtra from 'fs-extra';
 import { suiteCatalogPath, SuiteInfo } from "./common";
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { SourceNode } from "source-map";
+
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
@@ -55,7 +61,12 @@ class BsBenchPlugin implements CompilerPlugin {
      * @param name
      */
     private getKey(name: string) {
-        return name.replace(/[^a-zA-Z0-9]/g, '').replace('-+', '-').toLowerCase();
+        return name
+            .replace(/[^a-zA-Z0-9]/g, '-') // Remove non-alphanumeric characters
+            .replace(/([a-z])([A-Z])/g, '$1-$2') // Replace pascalCase with pascal-case
+            .replace(/-+/g, '-') // Replace multiple hyphens with a single hyphen
+            .replace(/-$/g, '') // Remove trailing hyphens
+            .toLowerCase();
     }
 
     afterFileAdd(event: AfterFileAddEvent<BscFile>) {
@@ -77,8 +88,8 @@ class BsBenchPlugin implements CompilerPlugin {
                     key: suite.key,
                     name: suite.name,
                     description: suite.description,
-                    setupCode: setupFunction?.func.body.toString(),
-                    teardownCode: teardownFunction?.func.body.toString(),
+                    setupCode: this.serialize(event.file, setupFunction?.func?.body),
+                    teardownCode: this.serialize(event.file, teardownFunction?.func?.body),
                     tests: []
                 };
 
@@ -99,13 +110,27 @@ class BsBenchPlugin implements CompilerPlugin {
                         key: test.key,
                         name: test.name,
                         description: test.description,
-                        setupCode: test.functionStatement.func.body.toString(),
-                        code: test.functionStatement.func.body.toString(),
-                        teardownCode: ''
+                        setupCode: undefined,
+                        code: this.serialize(event.file, test.functionStatement?.func?.body),
+                        teardownCode: undefined
                     });
                 }
             }
         }
+    }
+
+    /**
+     * Get the text at the given range
+     * @param file
+     * @param node
+     * @returns
+     */
+    private serialize(file: BrsFile, node: AstNode): string {
+        if (!file || !node) {
+            return;
+        }
+        const d = TextDocument.create(node.location.uri, 'brightscript', 0, file.fileContents);
+        return d.getText(node.location.range);
     }
 
     beforeFileValidate(event: BeforeFileValidateEvent) {
@@ -194,11 +219,11 @@ class BsBenchPlugin implements CompilerPlugin {
                         : '';
                     const code = `
                         aa = {
-                            name: "${suite.name}${variantText}",
+                            name: ${suite.nameTranspiled} + "${variantText}",
                             variant: ${JSON.stringify(variant)},
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
-                                    name: "${test.name}"
+                                    name: ${test.nameTranspiled}
                                     func: ${test.functionName}
                                 }`).join(', ')}
                             ]
@@ -274,13 +299,14 @@ class BsBenchPlugin implements CompilerPlugin {
                 }
                 config.variants ??= {};
 
-                const info = this.getSuiteOrTestInfo(namespaceStatement);
+                const info = this.getSuiteOrTestInfo(file, namespaceStatement);
 
                 const suite: Suite = {
                     key: this.getKey(info.name),
                     namespaceStatement: namespaceStatement,
                     config: config,
                     name: info.name,
+                    nameTranspiled: info.nameTranspiled,
                     description: info.description,
                     file: file
                 };
@@ -302,7 +328,7 @@ class BsBenchPlugin implements CompilerPlugin {
      * Find all the information about a suite or a test based on its annotation
      * @returns
      */
-    private getSuiteOrTestInfo(node: FunctionStatement | NamespaceStatement) {
+    private getSuiteOrTestInfo(file: BrsFile, node: FunctionStatement | NamespaceStatement) {
         //find the @suite or @test annotation
         const annotation = node.annotations?.find(x => {
             return ['suite', 'test'].includes(x.name.toLowerCase())
@@ -322,6 +348,9 @@ class BsBenchPlugin implements CompilerPlugin {
 
         return {
             name: name,
+            nameTranspiled: annotation?.call?.args?.[0]
+                ? new SourceNode(null, null, null, annotation.call.args[0].transpile(new BrsTranspileState(file)) as any).toString() :
+                `"${name}"`,
             //if we have an annotation object param with a `description` prop, use it. otherwise undefined
             description: (arg0 as any)?.description?.toString() ?? undefined
         };
@@ -332,12 +361,13 @@ class BsBenchPlugin implements CompilerPlugin {
             .findChildren<FunctionStatement>(isFunctionStatement)
             .map(func => {
                 const annotation = func.annotations?.find(x => x.name.toLowerCase() === 'test');
-                const info = this.getSuiteOrTestInfo(func);
+                const info = this.getSuiteOrTestInfo(suite.file, func);
                 return {
                     key: this.getKey(info.name),
                     functionStatement: func,
                     annotation: annotation,
                     name: info.name,
+                    nameTranspiled: info.nameTranspiled,
                     description: info.description,
                     functionName: func.getName(ParseMode.BrightScript)
                 }
@@ -415,8 +445,8 @@ class BsBenchPlugin implements CompilerPlugin {
                 startTime: __benchmarkStartTime
                 endTime: __benchmarkEndTime
                 iterations: iterations
-                name: "${test.name}"
-                suiteName: "${suite.name}"
+                testKey: "${test.key}"
+                suiteKey: "${suite.key}"
             }`).ast.statements[0] as ReturnStatement;
             editor.arrayPush(test.functionStatement.func.body.statements, returnStatement);
         }
@@ -426,6 +456,7 @@ class BsBenchPlugin implements CompilerPlugin {
 interface Suite {
     key: string;
     name: string;
+    nameTranspiled: string;
     description: string;
     namespaceStatement: NamespaceStatement;
     /**

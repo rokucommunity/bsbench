@@ -6,7 +6,12 @@ sub main()
     screen.show()
     m.global = screen.getGlobalNode()
 
-    bsbench.runSync({} as RunOptions)
+    'generate a unqiue ID for this run
+    runID = CreateObject("roDeviceInfo").GetRandomUUID()
+
+    bsbench.runSync({
+        runId: runID
+    } as RunOptions)
     'small sleep so we can finish printing the results
     sleep(2000)
 end sub
