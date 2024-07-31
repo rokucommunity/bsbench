@@ -3,6 +3,7 @@ import pluginFactory from './Plugin';
 import * as fsExtra from 'fs-extra';
 import { expect } from "chai";
 import { Formatter } from 'brighterscript-formatter';
+import { undent } from 'undent';
 
 const tempDir = s`${__dirname}/../../.tmp`;
 const rootDir = s`${tempDir}/rootDir`;
@@ -46,7 +47,11 @@ describe('Plugin', () => {
                 end function
             `);
 
-            expect(text).to.eql(expectedText);
+            expect(
+                undent(text)
+            ).to.eql(
+                undent(expectedText)
+            );
         }
 
         it('handles simple names', async () => {
@@ -66,6 +71,81 @@ describe('Plugin', () => {
                         tests: [
                             {
                                 name: "TestOne"
+                                func: AlphaSuite_TestOne
+                            }
+                        ]
+                    }
+                ]
+            `);
+        });
+
+        it('handles string suite and test names', async () => {
+            program.setFile('source/benchmarks/simple.bs', `
+                @suite("alpha")
+                namespace AlphaSuite
+                    @test("test1")
+                    function TestOne()
+                    end function
+                end namespace
+            `);
+            await doTest(`
+                [
+                    {
+                        name: "alpha"
+                        variant: {}
+                        tests: [
+                            {
+                                name: "test1"
+                                func: AlphaSuite_TestOne
+                            }
+                        ]
+                    }
+                ]
+            `);
+        });
+
+        it('handles template string suite and test names', async () => {
+            program.setFile('source/benchmarks/simple.bs', `
+                @suite(\`alpha\`)
+                namespace AlphaSuite
+                    @test(\`test1\`)
+                    function TestOne()
+                    end function
+                end namespace
+            `);
+            await doTest(`
+                [
+                    {
+                        name: "alpha"
+                        variant: {}
+                        tests: [
+                            {
+                                name: "test1"
+                                func: AlphaSuite_TestOne
+                            }
+                        ]
+                    }
+                ]
+            `);
+        });
+
+        it('handles template string suite and test names in objects', async () => {
+            program.setFile('source/benchmarks/simple.bs', `
+                @suite({ name: \`alpha\` })
+                namespace AlphaSuite
+                    @test({ name: \`test1\` })
+                    function TestOne()
+                    end function
+                end namespace
+            `);
+            await doTest(`
+                [
+                    {
+                        name: "alpha"
+                        variant: {}
+                        tests: [
+                            {
+                                name: "test1"
                                 func: AlphaSuite_TestOne
                             }
                         ]

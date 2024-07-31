@@ -29,7 +29,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/mocha": "^5.2.5",
     "@types/yargs": "^15.0.5",
-    "brighterscript": "^1.0.0-alpha.34",
+    "brighterscript": "^1.0.0-alpha.35",
     "brighterscript-formatter": "^1.7.4",
     "chai": "^4.2.0",
     "fs-extra": "^11.2.0",
@@ -39,6 +39,7 @@
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
+    "undent": "^0.1.0",
     "vscode-languageserver-textdocument": "^1.0.11"
   },
   "mocha": {
