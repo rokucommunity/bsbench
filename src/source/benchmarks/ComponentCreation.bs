@@ -1,6 +1,6 @@
 @suite()
 namespace ComponentCreation
-    @test(`CreateObject("roSGNode", "Group").update(...)`)
+    @test(`CreateObject('roSGNode', 'Group').update(...)`)
     sub _()
         obj = CreateObject("roSGNode", "Group")
         obj.update([{
@@ -46,13 +46,13 @@ namespace ComponentCreation
         }] as dynamic, true)
     end sub
 
-    @test(`createObject("roSGNode", "BrsComponent")`)
+    @test(`createObject('roSGNode', 'BrsComponent')`)
     sub _()
         obj = CreateObject("roSGNode", "BrsComponent")
     end sub
 
 
-    @test(`createObject("roSGNode", "XmlComponent")`)
+    @test(`createObject('roSGNode', 'XmlComponent')`)
     sub _()
         obj = CreateObject("roSGNode", "XmlComponent")
     end sub

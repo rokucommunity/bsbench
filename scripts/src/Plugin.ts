@@ -142,25 +142,23 @@ class BsBenchPlugin implements CompilerPlugin {
             tag: 'bsbench',
             fileUri: util.pathToUri(event.file.srcPath)
         })
+
         //add all the setup variables to each method in the suite
         for (const suite of this.findSuites(event.file)) {
             const setupFunction = this.findFunction(suite, 'setup');
-            //if there's no setup method, skip this suite
-            if (!setupFunction) {
-                return;
-            }
+
             this.validateName(event.program, suite);
 
             for (const test of this.findTests(suite)) {
-                //skip adding setup symbols to itself
-                if (test.functionStatement === setupFunction) {
-                    continue;
-                }
-                //add every variable from the setup method to this method
-                test.functionStatement.func.body.getSymbolTable().addSibling(
-                    setupFunction.func.body.getSymbolTable()
-                );
                 this.validateName(event.program, test);
+
+                //add symbols if we HAVE a setup function this test isn't the setup function
+                if (setupFunction && test.functionStatement !== setupFunction) {
+                    //add every variable from the setup method to this method
+                    test.functionStatement.func.body.getSymbolTable().addSibling(
+                        setupFunction.func.body.getSymbolTable()
+                    );
+                }
             }
         }
     }
