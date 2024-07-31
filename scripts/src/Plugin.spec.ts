@@ -67,10 +67,12 @@ describe('Plugin', () => {
                 [
                     {
                         name: "AlphaSuite"
+                        key: "alpha-suite"
                         variant: {}
                         tests: [
                             {
                                 name: "TestOne"
+                                key: "test-one"
                                 func: AlphaSuite_TestOne
                             }
                         ]
@@ -92,10 +94,12 @@ describe('Plugin', () => {
                 [
                     {
                         name: "alpha"
+                        key: "alpha"
                         variant: {}
                         tests: [
                             {
                                 name: "test1"
+                                key: "test1"
                                 func: AlphaSuite_TestOne
                             }
                         ]
@@ -117,10 +121,12 @@ describe('Plugin', () => {
                 [
                     {
                         name: "alpha"
+                        key: "alpha"
                         variant: {}
                         tests: [
                             {
                                 name: "test1"
+                                key: "test1"
                                 func: AlphaSuite_TestOne
                             }
                         ]
@@ -142,10 +148,12 @@ describe('Plugin', () => {
                 [
                     {
                         name: "alpha"
+                        key: "alpha"
                         variant: {}
                         tests: [
                             {
                                 name: "test1"
+                                key: "test1"
                                 func: AlphaSuite_TestOne
                             }
                         ]

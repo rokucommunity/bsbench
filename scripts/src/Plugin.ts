@@ -243,10 +243,12 @@ class BsBenchPlugin implements CompilerPlugin {
                     const code = `
                         aa = {
                             name: ${variantText ? `"${suite.name}" + "${variantText}"` : `"${suite.name}"`}
+                            key: "${suite.key}"
                             variant: ${JSON.stringify(variant)}
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
                                     name: "${test.name}"
+                                    key: "${test.key}"
                                     func: ${test.functionName}
                                 }`).join(', ')}
                             ]
