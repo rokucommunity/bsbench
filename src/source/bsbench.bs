@@ -8,6 +8,7 @@ namespace bsbench
         for each suite in suites
             runSuite(suite, options)
         end for
+        print "bsbench: done"
     end function
 
     function runAsync()
@@ -36,7 +37,7 @@ namespace bsbench
                 result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
                 results.push(result)
                 print `${test.name} (sample ${i + 1} of ${samples})`
-                bsbench.reportStatus(suite.name, test.name, i, result.iterations, result.startTime, result.endTime)
+                bsbench.reportStatus(options.runId, suite.key, test.key, i, result.iterations, result.startTime, result.endTime)
             end for
             opsPerSec = average(results, "operationsPerSecond")
             print `${test.name} (Done: ${numberToString(result.operationsPerSecond)} ops/sec)`
@@ -275,10 +276,11 @@ namespace bsbench
         return result
     end function
 
-    function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
+    function reportStatus(runId as string, suiteKey as string, testKey as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
         print "bsbenchStatus: " FormatJson({
-            suiteName: suiteName,
-            testName: testName,
+            runId: runId,
+            suiteKey: suiteKey,
+            testKey: testKey,
             sampleNumber: sampleNumber,
             iterations: iterations,
             startTime: bsbench.getEpoch(startTime),
@@ -290,16 +292,20 @@ end namespace
 
 interface BenchmarkSuite
     name as string
+    key as string
     tests as BenchmarkTest[]
     variant as roAssociativeArray
 end interface
 
 interface BenchmarkTest
     name as string
+    key as string
     func as function
 end interface
 
 interface RunOptions
+    'a UUID generated for just this run. Useful for the client to track the run
+    runId as string
 end interface
 
 interface BenchmarkResult

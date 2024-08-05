@@ -2,8 +2,12 @@ import * as readline from 'readline';
 import { TelnetMonitor } from './TelnetMonitor';
 import { logger } from './logging';
 import { execSync } from 'child_process';
-import { rokuDeploy } from 'roku-deploy';
-import { LogLevel, standardizePath as s } from 'brighterscript';
+import { DeviceInfo, rokuDeploy } from 'roku-deploy';
+import { Deferred, standardizePath as s } from 'brighterscript';
+import * as fsExtra from 'fs-extra';
+import { suiteCatalogPath, SuiteInfo } from './common';
+import * as dayjs from 'dayjs';
+import * as dotenv from 'dotenv';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -18,27 +22,35 @@ export class Runner {
             cwd?: string;
         }
     ) {
+        dotenv.config();
         this.options.cwd = s`${__dirname}/../../`;
+
+        this.options.host ??= process.env.ROKU_HOST;
+        this.options.password ??= process.env.ROKU_PASSWORD;
 
         this.telnetMonitor = new TelnetMonitor(options);
         this.telnetMonitor.on('lines', (event) => {
             for (const line of event.lines) {
+                if (/^\s*bebench: done\s*$/.test(line)) {
+                    this.finalize();
+                }
+
                 let statusJson = /^\s*bsbenchStatus:\s*(.+?)$/.exec(line)?.[1];
                 if (statusJson) {
-                    const status = JSON.parse(statusJson);
-                    logger.log('Found test result', status);
-                    this.results.push(status);
+                    const testSample = JSON.parse(statusJson) as RawTestSampleData;
+                    logger.log('Found test result', statusJson);
+                    this.storeTestSample(testSample);
                 }
-                console.log(line);
             }
         });
     }
 
-    private results = [] as TestResult[];
-
     async run() {
         logger.log('Running');
         await this.telnetMonitor.connect();
+
+        //load the deviceInfo about this roku device
+        this.deviceInfo = await rokuDeploy.getDeviceInfo({ host: this.options.host, enhance: true })
 
         //build the app
         await this.buildApp();
@@ -47,9 +59,25 @@ export class Runner {
         await this.sideload();
 
         //register a long interval to keep the process alive, resolve a promise when it is finished
-        await new Promise((resolve) => {
-            setInterval(resolve, 1_000_000_000);
-        });
+        await this.keepaliveDeferred.promise;
+        this.keepaliveInterval = setInterval(() => { }, 1_000_000_000);
+    }
+
+    private keepaliveDeferred = new Deferred();
+
+    private keepaliveInterval: NodeJS.Timeout;
+
+    private finalize() {
+        //write the results
+        for (let suiteKey in this.results) {
+            let suite = this.results[suiteKey];
+            let dateText = dayjs().format('YYYY-mm-dd');
+            fsExtra.outputJsonSync(s`${__dirname}/../../data/${dateText}/${suiteKey}/${this.deviceInfo.deviceId}.json`, suite, { spaces: 4 });
+        }
+
+        //kill the keepalive interval
+        clearInterval(this.keepaliveInterval);
+        this.keepaliveDeferred.resolve();
     }
 
     private buildApp() {
@@ -78,7 +106,80 @@ export class Runner {
         await rokuDeploy.sideload(options);
     }
 
+    private deviceInfo: DeviceInfo;
+
     private telnetMonitor: TelnetMonitor;
+
+    /**
+     * Loaded on-demand by the first call to `getSuiteInfo`
+     */
+    private suiteCatalog: Record<string, SuiteInfo>;
+
+    private getSuiteInfo(suiteKey: string): SuiteInfo {
+        //load all the suite data
+        if (!this.suiteCatalog) {
+            this.suiteCatalog = fsExtra.readJsonSync(suiteCatalogPath);
+        }
+        return this.suiteCatalog[suiteKey];
+    }
+
+    private lastSeenRunId = undefined;
+
+    private storeTestSample(sample: RawTestSampleData) {
+        //if we got a brand new runId, clear all data and start fresh (we somehow read data from a previous run...)
+        if (this.lastSeenRunId !== sample.runId) {
+            this.results = {};
+            console.error(`Found a new runId. We must have been tracking last run's data. Clearing all data and starting fresh`);
+        }
+        let suiteInfo = this.getSuiteInfo(sample.suiteKey);
+
+        //create the suite if it doesn't exist
+        if (!this.results[sample.suiteKey]) {
+            this.results[sample.suiteKey] = {
+                date: Date.now(),
+                modelNumber: this.deviceInfo.modelNumber,
+                softwareVersion: this.deviceInfo.softwareVersion,
+                softwareBuild: this.deviceInfo.softwareBuild?.toString(),
+                key: sample.suiteKey,
+                tests: [],
+                title: suiteInfo.name,
+                description: suiteInfo.description,
+                setupCode: suiteInfo.setupCode,
+                teardownCode: suiteInfo.teardownCode
+            };
+        }
+        const suite = this.results[sample.suiteKey];
+
+        let test = suite.tests.find(x => x.key === sample.testKey);
+        //create the test if it doesn't exist
+        if (!test) {
+            const testInfo = suiteInfo.tests.find(x => x.key === sample.testKey);
+            test = {
+                key: sample.testKey,
+                name: testInfo.name,
+                setupCode: testInfo.setupCode,
+                teardownCode: testInfo.teardownCode,
+                code: testInfo.code,
+                description: testInfo.description,
+                samples: []
+            };
+            suite.tests.push(test);
+        }
+
+        //add the sample
+        test.samples.push({
+            startTime: sample.startTime,
+            endTime: sample.endTime,
+            iterations: sample.iterations,
+            targetDuration: sample.targetDuration
+        });
+    }
+
+    /**
+     * Dictionary of all suite results. The key is the suiteKey, the results is the full object for that suite
+     */
+    private results = {} as Record<string, BenchmarkSuiteResult>;
+
 
     public dispose() {
         rl.close();
@@ -86,17 +187,105 @@ export class Runner {
     }
 }
 
-interface TestResult {
+interface RawTestSampleData {
     /**
-     * The name of the suite that this test belongs to
+     * Unique ID for this run. This is the same for all tests in a single run.
      */
-    suiteName: string;
+    runId: string;
+    suiteKey: string;
+    testKey: string;
+    iterations: number;
+    targetDuration: number;
+    startTime: number;
+    endTime: number;
+}
+
+interface BenchmarkSuiteResult {
     /**
-     * The name of the test
+     * The date the suite result was generated (in unix epoch milliseconds).
+     * This equates to the time we received the first benchmark result from this suite's first test.
      */
-    testName: string;
+    date: number;
     /**
-     * The operations per second this test was able to achieve
+     * Key for this suite (derived from the title, also same as one of the folder names)
      */
-    operationsPerSecond: number;
+    key: string;
+    /**
+     * The title of the suite.
+     */
+    title: string;
+    /**
+     * The description of the benchmark. May be empty, and can contain markdown.
+     */
+    description?: string;
+    /**
+     * The body of any `setup` function for this suite, which is not included in the benchmark timings
+     */
+    setupCode?: string;
+    /**
+     * The body of any `teardown` function for this suite, which is not included in the benchmark timings
+     */
+    teardownCode?: string;
+    /**
+     * Model number of the device this suite was run on
+     */
+    modelNumber: string;
+    /**
+     * The version of the RokuOS this suite was run on
+     */
+    softwareVersion: string;
+    /**
+     * The build number of the OS this suite was run on.
+     */
+    softwareBuild: string;
+    /**
+     * The list of tests
+     */
+    tests: Array<{
+        /**
+         * Key for this test
+         */
+        key: string;
+        /**
+         * The name of this test
+         */
+        name: string;
+        /**
+         * The description of this test. Can contain markdown
+         */
+        description?: string;
+        /**
+         * Setup code defined just for this test, which is not included in the benchmark timings
+         */
+        setupCode?: string;
+        /**
+         * The code for this test. This is what is timed
+         */
+        code: string;
+        /**
+         * Teardown code defined just for this test, which is not included in the benchmark timings
+         */
+        teardownCode?: string;
+        /**
+         * The list of samples run for this suite
+         */
+        samples: Array<{
+            /**
+             * The number of iterations that will be run for the testing loop
+             */
+            iterations: number;
+            /**
+             * The number of milliseconds this sample was supposed to run for
+             */
+            targetDuration: number;
+            /**
+             * Time the test start (in unix epoch milliseconds)
+             */
+            startTime: number;
+            /**
+             * Time the test start (in unix epoch milliseconds)
+             */
+            endTime: number;
+        }>
+    }>;
 }

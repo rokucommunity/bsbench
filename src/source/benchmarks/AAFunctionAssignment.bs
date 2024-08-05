@@ -1,4 +1,5 @@
 @suite()
+@only()
 namespace AAFunctionAssignment
     sub setup()
         keys = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]

@@ -18,6 +18,12 @@
             "label": "benchmark",
             "type": "shell",
             "command": "npm run benchmark -- --host 192.168.1.33 --password aaaa",
+            "problemMatcher": []
+        },
+        {
+            "label": "benchmark",
+            "type": "shell",
+            "command": "npm run test:nocover",
             "problemMatcher": [],
             "group": {
                 "kind": "test",

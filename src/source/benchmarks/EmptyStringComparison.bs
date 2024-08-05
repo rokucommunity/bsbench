@@ -6,17 +6,17 @@ namespace EmptyStringComparison
         nonemptyVar = "nonempty"
     end sub
 
-    @test(""""" = """"")
+    @test("'' = ''")
     sub _()
         result = "" = ""
     end sub
 
-    @test("emptyVar = """"")
+    @test("emptyVar = ''")
     sub _()
         result = emptyVar = ""
     end sub
 
-    @test(""""".isEmpty()")
+    @test("''.isEmpty()")
     sub _()
         result = "".isEmpty()
     end sub
@@ -26,17 +26,17 @@ namespace EmptyStringComparison
         result = emptyVar.isEmpty()
     end sub
 
-    @test("""nonempty"" = """"")
+    @test("'nonempty' = ''")
     sub _()
         result = "nonempty" = ""
     end sub
 
-    @test("nonemptyVar = """"")
+    @test("nonemptyVar = ''")
     sub _()
         result = nonemptyVar = ""
     end sub
 
-    @test("""nonempty"".isEmpty()")
+    @test("'nonempty'.isEmpty()")
     sub _()
         result = "nonempty".isEmpty()
     end sub

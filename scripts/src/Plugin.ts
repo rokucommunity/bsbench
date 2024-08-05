@@ -1,26 +1,106 @@
-import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import {
+    standardizePath as s,
+    AfterFileAddEvent,
+    AfterProgramCreateEvent,
+    AfterProgramValidateEvent,
+    AfterWriteProgramEvent,
+    ArrayLiteralExpression,
+    AssignmentStatement,
+    BeforeBuildProgramEvent,
+    BeforeFileValidateEvent,
+    BrsFile,
+    BscFile,
+    CompilerPlugin,
+    ConstStatement,
+    Editor,
+    ForStatement,
+    FunctionParameterExpression,
+    FunctionStatement,
+    NamespaceStatement,
+    ParseMode,
+    Parser,
+    ReturnStatement,
+    TypeExpression,
+    createIdentifier,
+    createVariableExpression,
+    isArrayLiteralExpression,
+    isBrsFile,
+    isConstStatement,
+    isFunctionStatement,
+    isNamespaceStatement,
+    createVisitor,
+    VariableExpression,
+    AstNode,
+    util,
+    BrsTranspileState,
+    Program,
+    AALiteralExpression,
+    Location,
+    AnnotationExpression
+} from "brighterscript";
+import * as fsExtra from 'fs-extra';
+import { suiteCatalogPath, SuiteInfo } from "./common";
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { SourceNode } from "source-map";
+
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
 
+    /**
+     * After the program is written to disk,
+     * @param event
+     */
+    afterWriteProgram(event: AfterWriteProgramEvent) {
+        fsExtra.outputJsonSync(suiteCatalogPath, this.suiteCatalog, { spaces: 2 });
+    }
+
+    private suiteCatalog = {} as Record<string, SuiteInfo>;
+
     afterProgramCreate(event: AfterProgramCreateEvent) {
+    }
+
+    /**
+     * Converts a name into a key that can be used safely in URls and such
+     * @param name
+     */
+    private getKey(name: string) {
+        return name
+            .replace(/[^a-zA-Z0-9]/g, '-') // Remove non-alphanumeric characters
+            .replace(/([a-z])([A-Z])/g, '$1-$2') // Replace pascalCase with pascal-case
+            .replace(/-+/g, '-') // Replace multiple hyphens with a single hyphen
+            .replace(/-$/g, '') // Remove trailing hyphens
+            .toLowerCase();
     }
 
     afterFileAdd(event: AfterFileAddEvent<BscFile>) {
         if (isBrsFile(event.file)) {
             for (const suite of this.findSuites(event.file)) {
+
                 //inject a `variant` parameter
-                this.findFunction(suite, 'setup')?.func.parameters.push(new FunctionParameterExpression({
+                const setupFunction = this.findFunction(suite, 'setup');
+                setupFunction?.func.parameters.push(new FunctionParameterExpression({
                     name: createIdentifier('variant')
                 }));
                 //inject a `variant` parameter
-                this.findFunction(suite, 'teardown')?.func.parameters.push(new FunctionParameterExpression({
+                const teardownFunction = this.findFunction(suite, 'teardown')
+                teardownFunction?.func.parameters.push(new FunctionParameterExpression({
                     name: createIdentifier('variant')
                 }));
+
+                const suiteInfo = this.suiteCatalog[suite.key] = {
+                    key: suite.key,
+                    name: suite.name,
+                    description: suite.description,
+                    setupCode: this.getTextAtRange(event.file, setupFunction?.func?.body),
+                    teardownCode: this.getTextAtRange(event.file, teardownFunction?.func?.body),
+                    tests: []
+                };
 
                 const tests = this.findTests(suite);
                 for (let i = 0; i < tests.length; i++) {
                     const test = tests[i];
+
                     //if the function is named `_`, give it an auto-generated name instead to prevent collisions
                     if (test.functionStatement.tokens.name.text === '_') {
                         test.functionStatement.tokens.name.text = `test${i}`;
@@ -29,30 +109,70 @@ class BsBenchPlugin implements CompilerPlugin {
                     test.functionStatement.func.parameters.push(new FunctionParameterExpression({
                         name: createIdentifier('variant')
                     }));
+
+                    suiteInfo.tests.push({
+                        key: test.key,
+                        name: test.name,
+                        description: test.description,
+                        setupCode: undefined,
+                        code: this.getTextAtRange(event.file, test.functionStatement?.func?.body),
+                        teardownCode: undefined
+                    });
                 }
             }
         }
     }
 
+    /**
+     * Get the text at the given range
+     * @param file
+     * @param node
+     * @returns
+     */
+    private getTextAtRange(file: BrsFile, node: AstNode): string {
+        if (!file || !node) {
+            return;
+        }
+        const d = TextDocument.create(node.location.uri, 'brightscript', 0, file.fileContents);
+        return d.getText(node.location.range);
+    }
+
     beforeFileValidate(event: BeforeFileValidateEvent) {
+        event.program.diagnostics.clearByFilter({
+            tag: 'bsbench',
+            fileUri: util.pathToUri(event.file.srcPath)
+        })
+
         //add all the setup variables to each method in the suite
         for (const suite of this.findSuites(event.file)) {
             const setupFunction = this.findFunction(suite, 'setup');
-            //if there's no setup method, skip this suite
-            if (!setupFunction) {
-                return;
-            }
+
+            this.validateName(event.program, suite);
 
             for (const test of this.findTests(suite)) {
-                //skip adding setup symbols to itself
-                if (test.functionStatement === setupFunction) {
-                    continue;
+                this.validateName(event.program, test);
+
+                //add symbols if we HAVE a setup function this test isn't the setup function
+                if (setupFunction && test.functionStatement !== setupFunction) {
+                    //add every variable from the setup method to this method
+                    test.functionStatement.func.body.getSymbolTable().addSibling(
+                        setupFunction.func.body.getSymbolTable()
+                    );
                 }
-                //add every variable from the setup method to this method
-                test.functionStatement.func.body.getSymbolTable().addSibling(
-                    setupFunction.func.body.getSymbolTable()
-                );
             }
+        }
+    }
+
+    private validateName(program: Program, item: Suite | Test) {
+        //don't allow certain chars in the suite name
+        if (/["\r\n]/.test(item.name)) {
+            program.diagnostics.register({
+                location: item.nameLocation,
+                message: 'Name cannot contain quotes or newlines',
+                code: 'invalid-name'
+            }, {
+                tags: ['bsbench']
+            });
         }
     }
 
@@ -120,11 +240,13 @@ class BsBenchPlugin implements CompilerPlugin {
                         : '';
                     const code = `
                         aa = {
-                            name: "${suite.name}${variantText}",
-                            variant: ${JSON.stringify(variant)},
+                            name: ${variantText ? `"${suite.name}" + "${variantText}"` : `"${suite.name}"`}
+                            key: "${suite.key}"
+                            variant: ${JSON.stringify(variant)}
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
                                     name: "${test.name}"
+                                    key: "${test.key}"
                                     func: ${test.functionName}
                                 }`).join(', ')}
                             ]
@@ -189,21 +311,26 @@ class BsBenchPlugin implements CompilerPlugin {
         }
         return file.ast.findChildren<NamespaceStatement>((node) => {
             return isNamespaceStatement(node) && !!node.annotations?.find(x => x.name.toLowerCase() === 'suite');
-        }).map(x => {
+        }).map(namespaceStatement => {
             try {
                 let config = {} as any;
-                const arg0 = x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0];
+                const arg0 = namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0];
                 if (typeof arg0 === 'string') {
                     config.name = arg0;
-                } else if (typeof arg0 === 'object') {
+                } else if (arg0 && typeof arg0 === 'object') {
                     config = arg0;
                 }
                 config.variants ??= {};
 
+                const info = this.getSuiteOrTestInfo(namespaceStatement);
+
                 const suite: Suite = {
-                    namespaceStatement: x,
+                    key: this.getKey(info.name),
+                    namespaceStatement: namespaceStatement,
                     config: config,
-                    name: this.getNameFromAnnotation(x),
+                    name: info.name,
+                    nameLocation: info.nameLocation,
+                    description: info.description,
                     file: file
                 };
 
@@ -220,29 +347,56 @@ class BsBenchPlugin implements CompilerPlugin {
         return suite.namespaceStatement.findChild<FunctionStatement>(x => isFunctionStatement(x) && x.tokens.name.text.toLowerCase() === name.toLowerCase());
     }
 
-    private getNameFromAnnotation(node: FunctionStatement | NamespaceStatement) {
-        const annotation = node.annotations?.find(x => x.name.toLowerCase() === 'test');
+    /**
+     * Find all the information about a suite or a test based on its annotation
+     * @returns
+     */
+    private getSuiteOrTestInfo(node: FunctionStatement | NamespaceStatement) {
+        //find the @suite or @test annotation
+        const annotation = node.annotations?.find(x => {
+            return ['suite', 'test'].includes(x.name.toLowerCase())
+        });
+        //get the first argument from the annotation (if there is one)
         const arg0 = annotation?.getArguments()[0] as string | Record<string, any> | undefined;
-        //get the name of the test (either the string from the `@test` annotation or the function name)
+        let name: string;
+        let nameLocation: Location;
+
+        //if the first argument is a string, then this is the name of the test
         if (typeof arg0 === 'string') {
-            return arg0;
+            name = arg0;
+            nameLocation = annotation.call.args[0].location;
         } else if (typeof arg0?.name === 'string') {
-            return arg0.name;
-        } else {
-            return node.getName(ParseMode.BrightScript);
+            name = arg0.name;
+            nameLocation = (annotation.call.args[0] as AALiteralExpression).elements.find(x => x.tokens.key.text.toLowerCase() === 'name').location;
+        } else if (isNamespaceStatement(node)) {
+            name = node.getName(ParseMode.BrighterScript);
+            nameLocation = node.nameExpression.location;
+        } else if (isFunctionStatement(node)) {
+            name = node.tokens.name.text;
+            nameLocation = node.tokens.name.location;
         }
+
+        return {
+            name: name,
+            nameLocation: nameLocation,
+            //if we have an annotation object param with a `description` prop, use it. otherwise undefined
+            description: (arg0 as any)?.description?.toString() ?? undefined
+        };
     }
 
-    private findTests(suite: Suite) {
+    private findTests(suite: Suite): Test[] {
         return suite.namespaceStatement.body
             .findChildren<FunctionStatement>(isFunctionStatement)
             .map(func => {
                 const annotation = func.annotations?.find(x => x.name.toLowerCase() === 'test');
-
+                const info = this.getSuiteOrTestInfo(func);
                 return {
+                    key: this.getKey(info.name),
                     functionStatement: func,
                     annotation: annotation,
-                    name: this.getNameFromAnnotation(func),
+                    name: info.name,
+                    nameLocation: info.nameLocation,
+                    description: info.description,
                     functionName: func.getName(ParseMode.BrightScript)
                 }
             })
@@ -319,8 +473,8 @@ class BsBenchPlugin implements CompilerPlugin {
                 startTime: __benchmarkStartTime
                 endTime: __benchmarkEndTime
                 iterations: iterations
-                name: "${test.name}"
-                suiteName: "${suite.name}"
+                testKey: "${test.key}"
+                suiteKey: "${suite.key}"
             }`).ast.statements[0] as ReturnStatement;
             editor.arrayPush(test.functionStatement.func.body.statements, returnStatement);
         }
@@ -328,7 +482,10 @@ class BsBenchPlugin implements CompilerPlugin {
 }
 
 interface Suite {
+    key: string;
     name: string;
+    nameLocation: Location;
+    description: string;
     namespaceStatement: NamespaceStatement;
     /**
      * The configuration for this suite
@@ -340,6 +497,16 @@ interface Suite {
         variants: Record<string, any[]>
     };
     file: BrsFile;
+}
+
+interface Test {
+    key: string;
+    functionStatement: FunctionStatement;
+    annotation: AnnotationExpression;
+    name: string;
+    nameLocation: Location;
+    description: string;
+    functionName: string;
 }
 
 export default () => {
