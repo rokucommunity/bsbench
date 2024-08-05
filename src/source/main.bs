@@ -1,3 +1,14 @@
+' import "bsbench.bs"
+
+namespace bsbench2
+    sub runSync(options)
+    end sub
+end namespace
+
+sub test2()
+    bsbench2.runSync({})
+end sub
+
 sub main()
     screen = createObject("roSGScreen")
     m.port = createObject("roMessagePort")
@@ -9,9 +20,13 @@ sub main()
     'generate a unqiue ID for this run
     runID = CreateObject("roDeviceInfo").GetRandomUUID()
 
-    bsbench.runSync({
+    bsbench2.runSync({
         runId: runID
-    } as RunOptions)
+    } as dynamic)
+
+    ' bsbench.runSync({
+    '     runId: runID
+    ' } as RunOptions)
     'small sleep so we can finish printing the results
     sleep(2000)
 end sub

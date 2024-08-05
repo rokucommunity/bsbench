@@ -23,7 +23,7 @@
         {
             "label": "benchmark",
             "type": "shell",
-            "command": "npm run test",
+            "command": "npm run test:nocover",
             "problemMatcher": [],
             "group": {
                 "kind": "test",

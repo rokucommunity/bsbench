@@ -92,8 +92,8 @@ class BsBenchPlugin implements CompilerPlugin {
                     key: suite.key,
                     name: suite.name,
                     description: suite.description,
-                    setupCode: this.serialize(event.file, setupFunction?.func?.body),
-                    teardownCode: this.serialize(event.file, teardownFunction?.func?.body),
+                    setupCode: this.getTextAtRange(event.file, setupFunction?.func?.body),
+                    teardownCode: this.getTextAtRange(event.file, teardownFunction?.func?.body),
                     tests: []
                 };
 
@@ -115,7 +115,7 @@ class BsBenchPlugin implements CompilerPlugin {
                         name: test.name,
                         description: test.description,
                         setupCode: undefined,
-                        code: this.serialize(event.file, test.functionStatement?.func?.body),
+                        code: this.getTextAtRange(event.file, test.functionStatement?.func?.body),
                         teardownCode: undefined
                     });
                 }
@@ -129,7 +129,7 @@ class BsBenchPlugin implements CompilerPlugin {
      * @param node
      * @returns
      */
-    private serialize(file: BrsFile, node: AstNode): string {
+    private getTextAtRange(file: BrsFile, node: AstNode): string {
         if (!file || !node) {
             return;
         }

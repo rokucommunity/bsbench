@@ -5,8 +5,8 @@ import { Runner } from './Runner';
 let options = yargs
     .usage('$0', 'bsbench, a benchmarking tool for Roku\'s BrightScript language')
     .help('help', 'View help information about this tool.')
-    .option('host', { type: 'string', description: 'The hostname for the roku to test against', demandOption: true })
-    .option('password', { type: 'string', description: 'The password for the roku to test against', demandOption: true })
+    .option('host', { type: 'string', description: 'The hostname for the roku to test against' })
+    .option('password', { type: 'string', description: 'The password for the roku to test against' })
     .argv;
 
 const runner = new Runner(options);

@@ -3,9 +3,11 @@ import { TelnetMonitor } from './TelnetMonitor';
 import { logger } from './logging';
 import { execSync } from 'child_process';
 import { DeviceInfo, rokuDeploy } from 'roku-deploy';
-import { standardizePath as s } from 'brighterscript';
+import { Deferred, standardizePath as s } from 'brighterscript';
 import * as fsExtra from 'fs-extra';
 import { suiteCatalogPath, SuiteInfo } from './common';
+import * as dayjs from 'dayjs';
+import * as dotenv from 'dotenv';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -20,18 +22,25 @@ export class Runner {
             cwd?: string;
         }
     ) {
+        dotenv.config();
         this.options.cwd = s`${__dirname}/../../`;
+
+        this.options.host ??= process.env.ROKU_HOST;
+        this.options.password ??= process.env.ROKU_PASSWORD;
 
         this.telnetMonitor = new TelnetMonitor(options);
         this.telnetMonitor.on('lines', (event) => {
             for (const line of event.lines) {
+                if (/^\s*bebench: done\s*$/.test(line)) {
+                    this.finalize();
+                }
+
                 let statusJson = /^\s*bsbenchStatus:\s*(.+?)$/.exec(line)?.[1];
                 if (statusJson) {
                     const testSample = JSON.parse(statusJson) as RawTestSampleData;
                     logger.log('Found test result', statusJson);
                     this.storeTestSample(testSample);
                 }
-                console.log(line);
             }
         });
     }
@@ -50,9 +59,25 @@ export class Runner {
         await this.sideload();
 
         //register a long interval to keep the process alive, resolve a promise when it is finished
-        await new Promise((resolve) => {
-            setInterval(resolve, 1_000_000_000);
-        });
+        await this.keepaliveDeferred.promise;
+        this.keepaliveInterval = setInterval(() => { }, 1_000_000_000);
+    }
+
+    private keepaliveDeferred = new Deferred();
+
+    private keepaliveInterval: NodeJS.Timeout;
+
+    private finalize() {
+        //write the results
+        for (let suiteKey in this.results) {
+            let suite = this.results[suiteKey];
+            let dateText = dayjs().format('YYYY-mm-dd');
+            fsExtra.outputJsonSync(s`${__dirname}/../../data/${dateText}/${suiteKey}/${this.deviceInfo.deviceId}.json`, suite, { spaces: 4 });
+        }
+
+        //kill the keepalive interval
+        clearInterval(this.keepaliveInterval);
+        this.keepaliveDeferred.resolve();
     }
 
     private buildApp() {
@@ -115,7 +140,7 @@ export class Runner {
                 modelNumber: this.deviceInfo.modelNumber,
                 softwareVersion: this.deviceInfo.softwareVersion,
                 softwareBuild: this.deviceInfo.softwareBuild?.toString(),
-                suiteKey: sample.suiteKey,
+                key: sample.suiteKey,
                 tests: [],
                 title: suiteInfo.name,
                 description: suiteInfo.description,
@@ -125,12 +150,12 @@ export class Runner {
         }
         const suite = this.results[sample.suiteKey];
 
-        let test = suite.tests.find(x => x.testKey === sample.testKey);
+        let test = suite.tests.find(x => x.key === sample.testKey);
         //create the test if it doesn't exist
         if (!test) {
             const testInfo = suiteInfo.tests.find(x => x.key === sample.testKey);
             test = {
-                testKey: sample.testKey,
+                key: sample.testKey,
                 name: testInfo.name,
                 setupCode: testInfo.setupCode,
                 teardownCode: testInfo.teardownCode,
@@ -184,7 +209,7 @@ interface BenchmarkSuiteResult {
     /**
      * Key for this suite (derived from the title, also same as one of the folder names)
      */
-    suiteKey: string;
+    key: string;
     /**
      * The title of the suite.
      */
@@ -220,7 +245,7 @@ interface BenchmarkSuiteResult {
         /**
          * Key for this test
          */
-        testKey: string;
+        key: string;
         /**
          * The name of this test
          */
