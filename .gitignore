@@ -2,3 +2,5 @@ node_modules
 roku_modules
 out
 dist
+coverage
+.nyc_output
