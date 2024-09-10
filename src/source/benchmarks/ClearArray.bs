@@ -63,6 +63,13 @@ namespace ClearArray
         arr.clear()
     end sub
 
+    @test("huge append")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(huge)
+    end sub
+
     @test("huge assignment")
     sub _()
         'setup
