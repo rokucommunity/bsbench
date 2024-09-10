@@ -1,0 +1,6 @@
+@suite()
+namespace Baseline
+    @test("does literally nothing")
+    sub _()
+    end sub
+end namespace
