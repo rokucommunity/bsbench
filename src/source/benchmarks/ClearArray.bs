@@ -1,0 +1,83 @@
+@suite()
+@only()
+namespace ClearArray
+    'these tests aren't completely accurate, because we don't currently have a way to do setup during every iteration, so we're also
+    'benchmarking the time it takes to create the array in the first place. However, this is still a good approximation of the time it takes
+    'as long as you compare the results of each item relative to the other
+    sub setup()
+        empty = []
+        medium = [1, 2, 3, 4, 5]
+        large = []
+        for i = 0 to 100
+            large.push(i)
+        end for
+        huge = []
+        for i = 0 to 10000
+            huge.push(i)
+        end for
+    end sub
+
+    @test("empty assignment")
+    sub _()
+        empty = []
+    end sub
+
+    @test("empty .clear()")
+    sub _()
+        empty.Clear()
+    end sub
+
+    @test("medium assignment")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(medium)
+
+        arr = []
+    end sub
+
+    @test("medium .clear()")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(medium)
+
+        arr.clear()
+    end sub
+
+    @test("large assignment")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(large)
+
+        arr = []
+    end sub
+
+    @test("large .clear()")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(large)
+
+        arr.clear()
+    end sub
+
+    @test("huge assignment")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(huge)
+
+        arr = []
+    end sub
+
+    @test("huge .clear()")
+    sub _()
+        'setup
+        arr = []
+        arr.Append(huge)
+
+        arr.clear()
+    end sub
+end namespace
