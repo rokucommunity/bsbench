@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace MakeNewAA
     @test("empty = {}")
     sub _()
