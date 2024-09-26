@@ -1,0 +1,13 @@
+@suite()
+@only()
+namespace MakeNewArray
+    @test("empty = []")
+    sub _()
+        empty = []
+    end sub
+
+    @test("empty = createObject")
+    sub _()
+        empty = createObject("roArray", 0, true)
+    end sub
+end namespace

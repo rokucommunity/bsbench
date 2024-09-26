@@ -1,0 +1,13 @@
+@suite()
+@only()
+namespace MakeNewAA
+    @test("empty = {}")
+    sub _()
+        empty = {}
+    end sub
+
+    @test("empty = createObject")
+    sub _()
+        empty = createObject("roAssociativeArray")
+    end sub
+end namespace
