@@ -24,7 +24,7 @@ namespace ArrayAccessDirectVsNode
     x = parent["components"][size - 1].id
   end sub
 
-  @test("iterate calling arrayofnodes[]")
+  @test("arrayofnodes[]")
   sub _()
     x = children[size - 1].id
   end sub
