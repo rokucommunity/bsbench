@@ -14,7 +14,7 @@ namespace ArrayAccessDirectVsNode
     parent.update({ components: children }, true)
   end sub
 
-  @test("iterate calling parent.getChild")
+  @test("parent.getChild")
   sub _()
     x = parent.getChild(size - 1).id
   end sub
