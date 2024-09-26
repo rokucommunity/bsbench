@@ -1,19 +1,22 @@
 @suite()
 @only()
 namespace FilterArray
-    sub setup()
-
-        medium = []
-        for i = 0 to 100
-            medium.push(i)
+    @test("small(10): new array - remove 10%")
+    sub _()
+        array = []
+        for i = 0 to 10
+            array.push(i mod 10)
         end for
-        large = []
-        for i = 0 to 1000
-            large.push(i)
+
+        result = []
+        for each item in array
+            if item = 0
+                result.push(item)
+            end if
         end for
     end sub
 
-    @test("small: new array")
+    @test("small(10): new array - remove 50%")
     sub _()
         array = []
         for i = 0 to 10
@@ -28,7 +31,37 @@ namespace FilterArray
         end for
     end sub
 
-    @test("small: delete")
+    @test("small(10): new array - remove 90%")
+    sub _()
+        array = []
+        for i = 0 to 10
+            array.push(i mod 10)
+        end for
+
+        result = []
+        for each item in array
+            if item > 0
+                result.push(item)
+            end if
+        end for
+    end sub
+
+
+    @test("small(10): delete - remove 10%")
+    sub _()
+        array = []
+        for i = 0 to 10
+            array.push(i mod 10)
+        end for
+
+        for i = array.count() - 1 to 0 step -1
+            if array[i] = 0 then
+                array.delete(i)
+            end if
+        next
+    end sub
+
+    @test("small(10): delete - remove 50%")
     sub _()
         array = []
         for i = 0 to 10
@@ -42,7 +75,38 @@ namespace FilterArray
         next
     end sub
 
-    @test("medium: new array")
+    @test("small(10): delete - remove 90%")
+    sub _()
+        array = []
+        for i = 0 to 10
+            array.push(i mod 10)
+        end for
+
+        for i = array.count() - 1 to 0 step -1
+            if array[i] > 0 then
+                array.delete(i)
+            end if
+        next
+    end sub
+
+
+
+    @test("medium(100): new array - remove 10%")
+    sub _()
+        array = []
+        for i = 0 to 100
+            array.push(i mod 10)
+        end for
+
+        result = []
+        for each item in array
+            if item = 0
+                result.push(item)
+            end if
+        end for
+    end sub
+
+    @test("medium(100): new array - remove 50%")
     sub _()
         array = []
         for i = 0 to 100
@@ -57,7 +121,37 @@ namespace FilterArray
         end for
     end sub
 
-    @test("medium: delete")
+    @test("medium(100): new array - remove 90%")
+    sub _()
+        array = []
+        for i = 0 to 100
+            array.push(i mod 10)
+        end for
+
+        result = []
+        for each item in array
+            if item > 0
+                result.push(item)
+            end if
+        end for
+    end sub
+
+
+    @test("medium(100): delete - remove 10%")
+    sub _()
+        array = []
+        for i = 0 to 100
+            array.push(i mod 10)
+        end for
+
+        for i = array.count() - 1 to 0 step -1
+            if array[i] = 0 then
+                array.delete(i)
+            end if
+        next
+    end sub
+
+    @test("medium(100): delete - remove 50%")
     sub _()
         array = []
         for i = 0 to 100
@@ -71,7 +165,39 @@ namespace FilterArray
         next
     end sub
 
-    @test("large: new array")
+    @test("medium(100): delete - remove 90%")
+    sub _()
+        array = []
+        for i = 0 to 100
+            array.push(i mod 10)
+        end for
+
+        for i = array.count() - 1 to 0 step -1
+            if array[i] > 0 then
+                array.delete(i)
+            end if
+        next
+    end sub
+
+
+
+
+    @test("large(1000): new array - remove 10%")
+    sub _()
+        array = []
+        for i = 0 to 1000
+            array.push(i mod 10)
+        end for
+
+        result = []
+        for each item in array
+            if item = 0
+                result.push(item)
+            end if
+        end for
+    end sub
+
+    @test("large(1000): new array - remove 50%")
     sub _()
         array = []
         for i = 0 to 1000
@@ -86,7 +212,37 @@ namespace FilterArray
         end for
     end sub
 
-    @test("large: delete")
+    @test("large(1000): new array - remove 90%")
+    sub _()
+        array = []
+        for i = 0 to 1000
+            array.push(i mod 10)
+        end for
+
+        result = []
+        for each item in array
+            if item > 0
+                result.push(item)
+            end if
+        end for
+    end sub
+
+
+    @test("large(1000): delete - remove 10%")
+    sub _()
+        array = []
+        for i = 0 to 1000
+            array.push(i mod 10)
+        end for
+
+        for i = array.count() - 1 to 0 step -1
+            if array[i] = 0 then
+                array.delete(i)
+            end if
+        next
+    end sub
+
+    @test("large(1000): delete - remove 50%")
     sub _()
         array = []
         for i = 0 to 1000
@@ -95,6 +251,20 @@ namespace FilterArray
 
         for i = array.count() - 1 to 0 step -1
             if array[i] = 0 then
+                array.delete(i)
+            end if
+        next
+    end sub
+
+    @test("large(1000): delete - remove 90%")
+    sub _()
+        array = []
+        for i = 0 to 1000
+            array.push(i mod 10)
+        end for
+
+        for i = array.count() - 1 to 0 step -1
+            if array[i] > 0 then
                 array.delete(i)
             end if
         next
