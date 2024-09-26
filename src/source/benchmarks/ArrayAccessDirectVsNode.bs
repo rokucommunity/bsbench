@@ -19,7 +19,7 @@ namespace ArrayAccessDirectVsNode
     x = parent.getChild(size - 1).id
   end sub
 
-  @test("iterate calling parent.arrayfield[]")
+  @test("parent.arrayfield[]")
   sub _()
     x = parent["components"][size - 1].id
   end sub
