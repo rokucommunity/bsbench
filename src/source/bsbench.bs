@@ -276,14 +276,16 @@ namespace bsbench
     end function
 
     function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
-        print "bsbenchStatus: " FormatJson({
-            suiteName: suiteName,
-            testName: testName,
-            sampleNumber: sampleNumber,
-            iterations: iterations,
-            startTime: bsbench.getEpoch(startTime),
-            endTime: bsbench.getEpoch(endTime)
-        })
+        #if PRINT_STATUS
+            print "bsbenchStatus: " FormatJson({
+                suiteName: suiteName,
+                testName: testName,
+                sampleNumber: sampleNumber,
+                iterations: iterations,
+                startTime: bsbench.getEpoch(startTime),
+                endTime: bsbench.getEpoch(endTime)
+            })
+        #end if
     end function
 
 end namespace

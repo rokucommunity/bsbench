@@ -11,6 +11,10 @@
             "files": [
                 "**/*"
             ],
+            "bsConst": {
+                //hide the bsbenchStatus prints during a debug session
+                "PRINT_STATUS": false
+            },
             // "debugServer": 4711,
             "stopDebuggerOnAppExit": true,
             "enableDebugProtocol": true
