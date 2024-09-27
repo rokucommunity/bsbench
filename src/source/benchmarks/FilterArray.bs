@@ -1,13 +1,30 @@
-@suite()
+@suite({
+    variants: {
+        size: [10, 100, 1000],
+        percent: [10, 50, 90]
+    }
+})
 @only()
 namespace FilterArray
-    @test("small(10): new array - remove 10%")
-    sub _()
+    function fillArray(size, percentZero)
         array = []
-        for i = 0 to 10
-            array.push(i mod 10)
-        end for
+        ' Calculate how many zeros to include
+        numZeros = int(size * (percentZero / 100))
 
+        ' Fill the array with zeros up to the numZeros, the rest with other integers
+        for i = 0 to size - 1
+            if i < numZeros then
+                array.push(0)
+            else
+                array.push(i)
+            end if
+        end for
+        return array
+    end function
+
+    @test("new array")
+    sub _()
+        array = fillArray(variant.size, variant.percent)
         result = []
         for each item in array
             if item = 0
@@ -16,257 +33,20 @@ namespace FilterArray
         end for
     end sub
 
-    @test("small(10): new array - remove 50%")
+    @test("delete")
     sub _()
-        array = []
-        for i = 0 to 10
-            array.push(i mod 2)
-        end for
-
-        result = []
-        for each item in array
+        result = fillArray(variant.size, variant.percent)
+        for each item in result
             if item = 0
-                result.push(item)
+                result.delete(item)
             end if
         end for
     end sub
 
-    @test("small(10): new array - remove 90%")
+    @test("JSON")
     sub _()
-        array = []
-        for i = 0 to 10
-            array.push(i mod 10)
-        end for
+        array = fillArray(variant.size, variant.percent)
 
-        result = []
-        for each item in array
-            if item > 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-
-    @test("small(10): delete - remove 10%")
-    sub _()
-        array = []
-        for i = 0 to 10
-            array.push(i mod 10)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] = 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-    @test("small(10): delete - remove 50%")
-    sub _()
-        array = []
-        for i = 0 to 10
-            array.push(i mod 2)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] = 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-    @test("small(10): delete - remove 90%")
-    sub _()
-        array = []
-        for i = 0 to 10
-            array.push(i mod 10)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] > 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-
-
-    @test("medium(100): new array - remove 10%")
-    sub _()
-        array = []
-        for i = 0 to 100
-            array.push(i mod 10)
-        end for
-
-        result = []
-        for each item in array
-            if item = 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-    @test("medium(100): new array - remove 50%")
-    sub _()
-        array = []
-        for i = 0 to 100
-            array.push(i mod 2)
-        end for
-
-        result = []
-        for each item in array
-            if item = 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-    @test("medium(100): new array - remove 90%")
-    sub _()
-        array = []
-        for i = 0 to 100
-            array.push(i mod 10)
-        end for
-
-        result = []
-        for each item in array
-            if item > 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-
-    @test("medium(100): delete - remove 10%")
-    sub _()
-        array = []
-        for i = 0 to 100
-            array.push(i mod 10)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] = 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-    @test("medium(100): delete - remove 50%")
-    sub _()
-        array = []
-        for i = 0 to 100
-            array.push(i mod 2)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] = 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-    @test("medium(100): delete - remove 90%")
-    sub _()
-        array = []
-        for i = 0 to 100
-            array.push(i mod 10)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] > 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-
-
-
-    @test("large(1000): new array - remove 10%")
-    sub _()
-        array = []
-        for i = 0 to 1000
-            array.push(i mod 10)
-        end for
-
-        result = []
-        for each item in array
-            if item = 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-    @test("large(1000): new array - remove 50%")
-    sub _()
-        array = []
-        for i = 0 to 1000
-            array.push(i mod 2)
-        end for
-
-        result = []
-        for each item in array
-            if item = 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-    @test("large(1000): new array - remove 90%")
-    sub _()
-        array = []
-        for i = 0 to 1000
-            array.push(i mod 10)
-        end for
-
-        result = []
-        for each item in array
-            if item > 0
-                result.push(item)
-            end if
-        end for
-    end sub
-
-
-    @test("large(1000): delete - remove 10%")
-    sub _()
-        array = []
-        for i = 0 to 1000
-            array.push(i mod 10)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] = 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-    @test("large(1000): delete - remove 50%")
-    sub _()
-        array = []
-        for i = 0 to 1000
-            array.push(i mod 2)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] = 0 then
-                array.delete(i)
-            end if
-        next
-    end sub
-
-    @test("large(1000): delete - remove 90%")
-    sub _()
-        array = []
-        for i = 0 to 1000
-            array.push(i mod 10)
-        end for
-
-        for i = array.count() - 1 to 0 step -1
-            if array[i] > 0 then
-                array.delete(i)
-            end if
-        next
+        result = parseJSON(formatJSON(array).replace(",0,", "").replace("0,", "").replace(",0", ""))
     end sub
 end namespace
