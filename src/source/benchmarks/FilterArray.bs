@@ -4,7 +4,6 @@
         percent: [10, 50, 90]
     }
 })
-@only()
 namespace FilterArray
     function fillArray(size, percentZero)
         array = []

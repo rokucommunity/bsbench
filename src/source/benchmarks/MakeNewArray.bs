@@ -5,8 +5,13 @@ namespace MakeNewArray
         empty = []
     end sub
 
-    @test("empty = createObject")
+    @test("empty = createObject (resize true)")
     sub _()
         empty = createObject("roArray", 0, true)
+    end sub
+
+    @test("empty = createObject (resize false)")
+    sub _()
+        empty = createObject("roArray", 0, false)
     end sub
 end namespace

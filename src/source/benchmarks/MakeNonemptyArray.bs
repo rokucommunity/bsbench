@@ -1,0 +1,33 @@
+@suite()
+namespace MakeNonemptyArray
+    sub setup()
+        data = [1, 2, 3, 4, 5]
+    end sub
+
+    @test("empty = []")
+    sub _()
+        empty = [1, 2, 3, 4, 5]
+    end sub
+
+    @test("append preexisting")
+    sub _()
+        empty = createObject("roArray", 0, true)
+        empty.Append(data)
+    end sub
+
+    @test("append anonymous one")
+    sub _()
+        empty = createObject("roArray", 0, true)
+        empty.Append([1, 2, 3, 4, 5])
+    end sub
+
+    @test("push")
+    sub _()
+        empty = createObject("roArray", 0, true)
+        empty.Push(1)
+        empty.Push(2)
+        empty.Push(3)
+        empty.Push(4)
+        empty.Push(5)
+    end sub
+end namespace
