@@ -1,0 +1,70 @@
+@suite()
+namespace DataTypeComparisons
+    sub setup()
+        result = invalid
+        int32One = 1
+        int32Two = 2
+        int64One = 9876543210&
+        int64Two = 9876543212&
+        smallStringOne = "1"
+        smallStringTwo = "2"
+        mediumStringOne = "medium text"
+        mediumStringTwo = "medium text2"
+        largeStringOne = "this is a long piece of text that is used for comparison"
+        largeStringTwo = "this is a long piece of text that is used for comparison2"
+    end sub
+
+
+    @test("string hit (small")
+    sub _()
+        result = smallStringOne = smallStringOne
+    end sub
+
+    @test("string hit (medium)")
+    sub _()
+        result = mediumStringOne = mediumStringOne
+    end sub
+
+    @test("string hit (large)")
+    sub _()
+        result = largeStringOne = largeStringOne
+    end sub
+
+
+    @test("string miss (small")
+    sub _()
+        result = smallStringOne = smallStringTwo
+    end sub
+
+    @test("string miss (medium)")
+    sub _()
+        result = mediumStringOne = mediumStringTwo
+    end sub
+
+    @test("string miss (large)")
+    sub _()
+        result = largeStringOne = largeStringTwo
+    end sub
+
+
+    @test("int32 (hit)")
+    sub _()
+        result = int32One = int32One
+    end sub
+
+    @test("int32 (miss)")
+    sub _()
+        result = int32One = int32Two
+    end sub
+
+
+    @test("int64 (hit)")
+    sub _()
+        result = int64One = int64One
+    end sub
+
+    @test("int64 (miss)")
+    sub _()
+        result = int64One = int64Two
+    end sub
+end namespace
