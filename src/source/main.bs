@@ -1189,37 +1189,6 @@ end sub
 '     end function)
 ' end sub
 
-' sub intTypeCheck()
-'     runTest("type call each time - equality", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = type(text) = "Integer" or type(text) = "roInt"
-'         end for
-'     end function)
-
-'     runTest("lifted type call - equality", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             valueType = type(text)
-'             result = valueType = "Integer" or valueType = "roInt"
-'         end for
-'     end function)
-
-'     runTest("type call each time - instr", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             result = instr(1, type(text), "Integer") or type(text) = "roInt"
-'         end for
-'     end function)
-
-'     runTest("lifted type call - instr", function(opCount)
-'         text = m.longText
-'         for i = 0 to opCount
-'             valueType = type(text)
-'             result = instr(1, valueType, "Integer") or valueType = "roInt"
-'         end for
-'     end function)
-' end sub
 
 ' ' Test various ways of running `type` to see which is fastest
 ' sub typePerf()
