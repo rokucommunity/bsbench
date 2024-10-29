@@ -1,5 +1,4 @@
 @suite()
-@Only()
 namespace MakePrepopulatedArray
     @test("a = [ 1, 2, 3, 4, 5 ]")
     sub _()
