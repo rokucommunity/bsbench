@@ -1,0 +1,54 @@
+@suite()
+namespace FindZInIsoString
+    sub setup()
+        withZ = "2023-03-12T08:00:00Z"
+        withoutZ = "2023-03-12T08:00:00"
+        regex = CreateObject("roRegex", "Z", "")
+    end sub
+
+
+    @test("regex hit")
+    sub _()
+        regex = CreateObject("roRegex", "Z", "")
+        result = regex.IsMatch(withZ)
+    end sub
+
+    @test("regex miss")
+    sub _()
+        regex = CreateObject("roRegex", "Z", "")
+        result = regex.IsMatch(withoutZ)
+    end sub
+
+
+    @test("cached regex hit")
+    sub _()
+        result = regex.IsMatch(withZ)
+    end sub
+
+    @test("cached regex miss")
+    sub _()
+        result = regex.IsMatch(withoutZ)
+    end sub
+
+
+    @test("instr hit")
+    sub _()
+        result = withZ.instr(0, "Z") < 0
+    end sub
+
+    @test("instr miss")
+    sub _()
+        result = withoutZ.instr(0, "Z") < 0
+    end sub
+
+
+    @test("mid hit")
+    sub _()
+        result = Mid(withZ, 20, 1) = "Z"
+    end sub
+
+    @test("mid miss")
+    sub _()
+        result = Mid(withoutZ, 20, 1) = "Z"
+    end sub
+end namespace
