@@ -1,0 +1,329 @@
+@suite()
+@only()
+namespace BrightScriptObjectCreations
+
+    sub setup()
+        bitmap = createObject("roBitmap", { width: 1, height: 1, alphaEnable: true })
+    end sub
+
+    @test("baseline: 1 + 1")
+    sub _()
+        result = 1 + 1
+    end sub
+
+    @test("roAppInfo")
+    sub _()
+        result = createObject("roAppInfo")
+    end sub
+
+    @test("roAppManager")
+    sub _()
+        result = createObject("roAppManager")
+    end sub
+
+    @test("roAppMemoryMonitor")
+    sub _()
+        result = createObject("roAppMemoryMonitor")
+    end sub
+
+    @test("roArray")
+    sub _()
+        result = createObject("roArray", 10, true)
+    end sub
+
+    @test("roAssociativeArray")
+    sub _()
+        result = createObject("roAssociativeArray")
+    end sub
+
+    @test("roAudioGuide")
+    sub _()
+        result = createObject("roAudioGuide")
+    end sub
+
+    @test("roAudioMetadata")
+    sub _()
+        result = createObject("roAudioMetadata")
+    end sub
+
+    @test("roAudioPlayer")
+    sub _()
+        result = createObject("roAudioPlayer")
+    end sub
+
+    @test("roAudioResource")
+    sub _()
+        result = createObject("roAudioResource", "pkg:/beep1.wav")
+    end sub
+
+    @test("roBitmap")
+    sub _()
+        result = createObject("roBitmap", { width: 100, height: 100, alphaEnable: true })
+    end sub
+
+    @test("roBoolean")
+    sub _()
+        result = createObject("roBoolean")
+    end sub
+
+    @test("roByteArray")
+    sub _()
+        result = createObject("roByteArray")
+    end sub
+
+    @test("roCECStatus")
+    sub _()
+        result = createObject("roCECStatus")
+    end sub
+
+    @test("roChannelStore")
+    sub _()
+        result = createObject("roChannelStore")
+    end sub
+
+    @test("roCompositor")
+    sub _()
+        result = createObject("roCompositor")
+    end sub
+
+    @test("roDataGramSocket")
+    sub _()
+        result = createObject("roDataGramSocket")
+    end sub
+
+    @test("roDateTime")
+    sub _()
+        result = createObject("roDateTime")
+    end sub
+
+    @test("roDeviceInfo")
+    sub _()
+        result = createObject("roDeviceInfo")
+    end sub
+
+    @test("roDouble")
+    sub _()
+        result = createObject("roDouble")
+    end sub
+
+    @test("roDeviceCrypto")
+    sub _()
+        result = createObject("roDeviceCrypto")
+    end sub
+
+    @test("roDsa")
+    sub _()
+        result = createObject("roDsa")
+    end sub
+
+    @test("roEVPCipher")
+    sub _()
+        result = createObject("roEVPCipher")
+    end sub
+
+    @test("roEVPDigest")
+    sub _()
+        result = createObject("roEVPDigest")
+    end sub
+
+    @test("roFileSystem")
+    sub _()
+        result = createObject("roFileSystem")
+    end sub
+
+    @test("roFloat")
+    sub _()
+        result = createObject("roFloat")
+    end sub
+
+    @test("roFont")
+    sub _()
+        result = createObject("roFont")
+    end sub
+
+    @test("roFontRegistry")
+    sub _()
+        result = createObject("roFontRegistry")
+    end sub
+
+    @test("roFunction")
+    sub _()
+        result = createObject("roFunction")
+    end sub
+
+    @test("roHdmiStatus")
+    sub _()
+        result = createObject("roHdmiStatus")
+    end sub
+
+    @test("roHMAC")
+    sub _()
+        result = createObject("roHMAC")
+    end sub
+
+    @test("roHttpAgent")
+    sub _()
+        result = createObject("roHttpAgent")
+    end sub
+
+    @test("roImageMetaData")
+    sub _()
+        result = createObject("roImageMetaData")
+    end sub
+
+    @test("roInput")
+    sub _()
+        result = createObject("roInput")
+    end sub
+
+    @test("roInt")
+    sub _()
+        result = createObject("roInt")
+    end sub
+
+    @test("roInvalid")
+    sub _()
+        result = createObject("roInvalid")
+    end sub
+
+    @test("roList")
+    sub _()
+        result = createObject("roList")
+    end sub
+
+    @test("roLocalization")
+    sub _()
+        result = createObject("roLocalization")
+    end sub
+
+    @test("roLongInteger")
+    sub _()
+        result = createObject("roLongInteger")
+    end sub
+
+    @test("roMessagePort")
+    sub _()
+        result = createObject("roMessagePort")
+    end sub
+
+    @test("roMicrophone")
+    sub _()
+        result = createObject("roMicrophone")
+    end sub
+
+    @test("roPath")
+    sub _()
+        result = createObject("roPath", "pkg:/source/appMain.brs")
+    end sub
+
+    @test("roProgramGuide")
+    sub _()
+        result = createObject("roProgramGuide")
+    end sub
+
+    @test("roRegex")
+    sub _()
+        result = createObject("roRegex", "a", "i")
+    end sub
+
+    @test("roRegion")
+    sub _()
+        result = createObject("roRegion", bitmap, 1, 1, 1, 1)
+    end sub
+
+    @test("roRegistry")
+    sub _()
+        result = createObject("roRegistry")
+    end sub
+
+    @test("roRegistrySection")
+    sub _()
+        result = createObject("roRegistrySection", "Authentication")
+    end sub
+
+    @test("roRemoteInfo")
+    sub _()
+        result = createObject("roRemoteInfo")
+    end sub
+
+    @test("roRSA")
+    sub _()
+        result = createObject("roRSA")
+    end sub
+
+    @test("roScreen")
+    sub _()
+        result = createObject("roScreen")
+    end sub
+
+    @test("roSGScreen")
+    sub _()
+        result = createObject("roSGScreen")
+    end sub
+
+    @test("roSocketAddress")
+    sub _()
+        result = createObject("roSocketAddress")
+    end sub
+
+    @test("roSprite")
+    sub _()
+        result = createObject("roSprite")
+    end sub
+
+    @test("roStreamSocket")
+    sub _()
+        result = createObject("roStreamSocket")
+    end sub
+
+    @test("roString")
+    sub _()
+        result = createObject("roString")
+    end sub
+
+    @test("roSystemlog")
+    sub _()
+        result = createObject("roSystemlog")
+    end sub
+
+    @test("roTextToSpeech")
+    sub _()
+        result = createObject("roTextToSpeech")
+    end sub
+
+    @test("roTextureManager")
+    sub _()
+        result = createObject("roTextureManager")
+    end sub
+
+    @test("roTextureRequest")
+    sub _()
+        result = CreateObject("roTextureRequest", "pkg:/assets/comet.jpg")
+    end sub
+
+    @test("roTimespan")
+    sub _()
+        result = createObject("roTimespan")
+    end sub
+
+    @test("roUrlTransfer")
+    sub _()
+        result = createObject("roUrlTransfer")
+    end sub
+
+    @test("roVideoPlayer")
+    sub _()
+        result = createObject("roVideoPlayer")
+    end sub
+
+    @test("roXMLElement")
+    sub _()
+        result = createObject("roXMLElement")
+    end sub
+
+    @test("roXMLList")
+    sub _()
+        result = createObject("roXMLList")
+    end sub
+
+end namespace
