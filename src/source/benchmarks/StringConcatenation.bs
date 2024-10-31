@@ -1,0 +1,55 @@
+@suite()
+namespace StringConcatenation
+    sub setup()
+        value = 1
+    end sub
+
+    @test("literal")
+    sub _()
+        value = "alphabetacharliedeltaechofoxtrotgolfhotelindiajulietkilolimamikenovemberoscarpapaquebecromeosierratangouniformvictorwhiskeyxrayyankeezulu"
+    end sub
+
+    @test("concat")
+    sub _()
+        value = "alpha" + "beta" + "charlie" + "delta" + "echo" + "foxtrot" + "golf" + "hotel" + "india" + "juliet" + "kilo" + "lima" + "mike" + "november" + "oscar" + "papa" + "quebec" + "romeo" + "sierra" + "tango" + "uniform" + "victor" + "whiskey" + "xray" + "yankee" + "zulu"
+    end sub
+
+    @test("literal join")
+    sub _()
+        array = ["alpha", "beta", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "xray", "yankee", "zulu"]
+        result = array.Join("")
+    end sub
+
+    @test("push and join")
+    sub _()
+        array = []
+        array.push("alpha")
+        array.push("beta")
+        array.push("charlie")
+        array.push("delta")
+        array.push("echo")
+        array.push("foxtrot")
+        array.push("golf")
+        array.push("hotel")
+        array.push("india")
+        array.push("juliet")
+        array.push("kilo")
+        array.push("lima")
+        array.push("mike")
+        array.push("november")
+        array.push("oscar")
+        array.push("papa")
+        array.push("quebec")
+        array.push("romeo")
+        array.push("sierra")
+        array.push("tango")
+        array.push("uniform")
+        array.push("victor")
+        array.push("whiskey")
+        array.push("xray")
+        array.push("yankee")
+        array.push("zulu")
+        result = array.Join("")
+    end sub
+
+end namespace
