@@ -1,0 +1,25 @@
+@suite()
+@only()
+namespace CIntVsHandwritten
+    sub setup()
+        value = 1
+    end sub
+
+    @test("native cint")
+    sub _()
+        result = cint(2.5)
+    end sub
+
+    @test("handwritten cint")
+    sub _()
+        result = round(2.5)
+    end sub
+
+    function round(x as float)
+        if x >= 0 then
+            return int(x + 0.5)
+        else
+            return int(x - 0.5)
+        end if
+    end function
+end namespace
