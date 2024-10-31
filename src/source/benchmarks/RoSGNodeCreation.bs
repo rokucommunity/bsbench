@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace RoSGNodeCreation
 
     @test("baseline: 1 + 1")

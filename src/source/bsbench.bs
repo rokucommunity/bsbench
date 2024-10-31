@@ -172,7 +172,12 @@ namespace bsbench
         return result
     end function
 
-    function printSuiteResults(suiteResults as BenchmarkResult[])
+    function printSuiteResults(suiteResults as BenchmarkResult[], sort = false)
+        'sort the results by operations per second (descending)
+        if sort then
+            suiteResults.sortBy("operationsPerSecond", "r")
+        end if
+
         'print a few blank-ish lines to separate the results
         print `‌‌ \n‌‌ `
         print `${suiteResults[0].suiteName} -- RESULTS:`
