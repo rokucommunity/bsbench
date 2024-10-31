@@ -53,7 +53,9 @@ namespace bsbench
 
 
         'do a timed run and return some stats
-        timedRun = function(testFunction as function, iterations as integer, variant as roAssociativeArray, targetDurationMs as integer) as TimedRunResult
+        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMs as integer) as TimedRunResult
+            'force iterations to be an integer, and ensure there's at least 1 iteration
+            iterations = max(Cint(iterations), 1)
             testResult = testFunction(iterations, variant)
             elapsedMs = bsbench.getMilliseconds(testResult.endTime) - bsbench.getMilliseconds(testResult.startTime)
 
@@ -286,6 +288,13 @@ namespace bsbench
                 endTime: bsbench.getEpoch(endTime)
             })
         #end if
+    end function
+
+    function max(a as integer, b as integer) as integer
+        if a > b
+            return a
+        end if
+        return b
     end function
 
 end namespace
