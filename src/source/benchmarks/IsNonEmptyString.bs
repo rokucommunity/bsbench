@@ -1,0 +1,52 @@
+@suite()
+@only()
+namespace IsNonEmptyString
+    sub setup()
+        text = "full"
+        number = 1 as dynamic
+    end sub
+
+
+    @test("invalid check and getInterface() and isEmpty() - hit")
+    sub _()
+        result = text <> invalid and GetInterface(text, "ifString") <> invalid and not text.isEmpty()
+    end sub
+
+    @test("invalid check and getInterface() and isEmpty() - miss")
+    sub _()
+        result = number <> invalid and GetInterface(number, "ifString") <> invalid and not number.isEmpty()
+    end sub
+
+
+    @test("getInterface() and isEmpty() - hit")
+    sub _()
+        result = GetInterface(text, "ifString") <> invalid and not text.isEmpty()
+    end sub
+
+    @test("getInterface() and isEmpty() - miss")
+    sub _()
+        result = GetInterface(number, "ifString") <> invalid and not number.isEmpty()
+    end sub
+
+
+    @test("getInterface() and value <> emptyString - hit")
+    sub _()
+        result = GetInterface(text, "ifString") <> invalid and text <> ""
+    end sub
+
+    @test("getInterface() and value <> emptyString - miss")
+    sub _()
+        result = GetInterface(number, "ifString") <> invalid and number <> ""
+    end sub
+
+
+    @test("type() and empty string compare - hit")
+    sub _()
+        result = (type(text) = "String" or type(text) = "roString") and text <> ""
+    end sub
+
+    @test("type() and empty string compare - miss")
+    sub _()
+        result = (type(number) = "String" or type(number) = "roString") and number <> ""
+    end sub
+end namespace
