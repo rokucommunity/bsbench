@@ -1,0 +1,464 @@
+@suite()
+@only()
+namespace RoSGNodeCreation
+
+    @test("baseline: 1 + 1")
+    sub _()
+        result = 1 + 1
+    end sub
+
+    @test("animation")
+    sub _()
+        result = createObject("roSGNode", "animation")
+    end sub
+
+    @test("animationbase")
+    sub _()
+        result = createObject("roSGNode", "animationbase")
+    end sub
+
+    @test("arraygrid")
+    sub _()
+        result = createObject("roSGNode", "arraygrid")
+    end sub
+
+    @test("audio")
+    sub _()
+        result = createObject("roSGNode", "audio")
+    end sub
+
+    @test("busyspinner")
+    sub _()
+        result = createObject("roSGNode", "busyspinner")
+    end sub
+
+    @test("button")
+    sub _()
+        result = createObject("roSGNode", "button")
+    end sub
+
+    @test("buttongroup")
+    sub _()
+        result = createObject("roSGNode", "buttongroup")
+    end sub
+
+    @test("channelstore")
+    sub _()
+        result = createObject("roSGNode", "channelstore")
+    end sub
+
+    @test("checklist")
+    sub _()
+        result = createObject("roSGNode", "checklist")
+    end sub
+
+    @test("colorfieldinterpolator")
+    sub _()
+        result = createObject("roSGNode", "colorfieldinterpolator")
+    end sub
+
+    @test("componentlibrary")
+    sub _()
+        result = createObject("roSGNode", "componentlibrary")
+    end sub
+
+    @test("contentnode")
+    sub _()
+        result = createObject("roSGNode", "contentnode")
+    end sub
+
+    @test("dialog")
+    sub _()
+        result = createObject("roSGNode", "dialog")
+    end sub
+
+    @test("dynamiccustomkeyboard")
+    sub _()
+        result = createObject("roSGNode", "dynamiccustomkeyboard")
+    end sub
+
+    @test("dynamickeyboard")
+    sub _()
+        result = createObject("roSGNode", "dynamickeyboard")
+    end sub
+
+    @test("dynamickeyboardbase")
+    sub _()
+        result = createObject("roSGNode", "dynamickeyboardbase")
+    end sub
+
+    @test("dynamickeygrid")
+    sub _()
+        result = createObject("roSGNode", "dynamickeygrid")
+    end sub
+
+    @test("dynamicminikeyboard")
+    sub _()
+        result = createObject("roSGNode", "dynamicminikeyboard")
+    end sub
+
+    @test("dynamicpinpad")
+    sub _()
+        result = createObject("roSGNode", "dynamicpinpad")
+    end sub
+
+    @test("floatfieldinterpolator")
+    sub _()
+        result = createObject("roSGNode", "floatfieldinterpolator")
+    end sub
+
+    @test("font")
+    sub _()
+        result = createObject("roSGNode", "font")
+    end sub
+
+    @test("gridpanel")
+    sub _()
+        result = createObject("roSGNode", "gridpanel")
+    end sub
+
+    @test("group")
+    sub _()
+        result = createObject("roSGNode", "group")
+    end sub
+
+    @test("infopane")
+    sub _()
+        result = createObject("roSGNode", "infopane")
+    end sub
+
+    @test("keyboard")
+    sub _()
+        result = createObject("roSGNode", "keyboard")
+    end sub
+
+    @test("keyboarddialog")
+    sub _()
+        result = createObject("roSGNode", "keyboarddialog")
+    end sub
+
+    @test("label")
+    sub _()
+        result = createObject("roSGNode", "label")
+    end sub
+
+    @test("labelbase")
+    sub _()
+        result = createObject("roSGNode", "labelbase")
+    end sub
+
+    @test("labellist")
+    sub _()
+        result = createObject("roSGNode", "labellist")
+    end sub
+
+    @test("layoutgroup")
+    sub _()
+        result = createObject("roSGNode", "layoutgroup")
+    end sub
+
+    @test("listpanel")
+    sub _()
+        result = createObject("roSGNode", "listpanel")
+    end sub
+
+    @test("markupgrid")
+    sub _()
+        result = createObject("roSGNode", "markupgrid")
+    end sub
+
+    @test("markuplist")
+    sub _()
+        result = createObject("roSGNode", "markuplist")
+    end sub
+
+    @test("maskgroup")
+    sub _()
+        result = createObject("roSGNode", "maskgroup")
+    end sub
+
+    @test("minikeyboard")
+    sub _()
+        result = createObject("roSGNode", "minikeyboard")
+    end sub
+
+    @test("multistylelabel")
+    sub _()
+        result = createObject("roSGNode", "multistylelabel")
+    end sub
+
+    @test("node")
+    sub _()
+        result = createObject("roSGNode", "node")
+    end sub
+
+    @test("overhang")
+    sub _()
+        result = createObject("roSGNode", "overhang")
+    end sub
+
+    @test("overhangpanelsetscene")
+    sub _()
+        result = createObject("roSGNode", "overhangpanelsetscene")
+    end sub
+
+    @test("panel")
+    sub _()
+        result = createObject("roSGNode", "panel")
+    end sub
+
+    @test("panelset")
+    sub _()
+        result = createObject("roSGNode", "panelset")
+    end sub
+
+    @test("parallelanimation")
+    sub _()
+        result = createObject("roSGNode", "parallelanimation")
+    end sub
+
+    @test("parentalcontrolpinpad")
+    sub _()
+        result = createObject("roSGNode", "parentalcontrolpinpad")
+    end sub
+
+    @test("pindialog")
+    sub _()
+        result = createObject("roSGNode", "pindialog")
+    end sub
+
+    @test("pinpad")
+    sub _()
+        result = createObject("roSGNode", "pinpad")
+    end sub
+
+    @test("poster")
+    sub _()
+        result = createObject("roSGNode", "poster")
+    end sub
+
+    @test("postergrid")
+    sub _()
+        result = createObject("roSGNode", "postergrid")
+    end sub
+
+    @test("progressdialog")
+    sub _()
+        result = createObject("roSGNode", "progressdialog")
+    end sub
+
+    @test("radiobuttonlist")
+    sub _()
+        result = createObject("roSGNode", "radiobuttonlist")
+    end sub
+
+    @test("rectangle")
+    sub _()
+        result = createObject("roSGNode", "rectangle")
+    end sub
+
+    @test("rowlist")
+    sub _()
+        result = createObject("roSGNode", "rowlist")
+    end sub
+
+    @test("rsgpalette")
+    sub _()
+        result = createObject("roSGNode", "rsgpalette")
+    end sub
+
+    @test("scene")
+    sub _()
+        result = createObject("roSGNode", "scene")
+    end sub
+
+    @test("scrollabletext")
+    sub _()
+        result = createObject("roSGNode", "scrollabletext")
+    end sub
+
+    @test("scrollinglabel")
+    sub _()
+        result = createObject("roSGNode", "scrollinglabel")
+    end sub
+
+    @test("sequentialanimation")
+    sub _()
+        result = createObject("roSGNode", "sequentialanimation")
+    end sub
+
+    @test("simplelabel")
+    sub _()
+        result = createObject("roSGNode", "simplelabel")
+    end sub
+
+    @test("soundeffect")
+    sub _()
+        result = createObject("roSGNode", "soundeffect")
+    end sub
+
+    @test("standarddialog")
+    sub _()
+        result = createObject("roSGNode", "standarddialog")
+    end sub
+
+    @test("standardkeyboarddialog")
+    sub _()
+        result = createObject("roSGNode", "standardkeyboarddialog")
+    end sub
+
+    @test("standardmessagedialog")
+    sub _()
+        result = createObject("roSGNode", "standardmessagedialog")
+    end sub
+
+    @test("standardpinpaddialog")
+    sub _()
+        result = createObject("roSGNode", "standardpinpaddialog")
+    end sub
+
+    @test("standardprogressdialog")
+    sub _()
+        result = createObject("roSGNode", "standardprogressdialog")
+    end sub
+
+    @test("stddlgactioncarditem")
+    sub _()
+        result = createObject("roSGNode", "stddlgactioncarditem")
+    end sub
+
+    @test("stddlgareabase")
+    sub _()
+        result = createObject("roSGNode", "stddlgareabase")
+    end sub
+
+    @test("stddlgbullettextitem")
+    sub _()
+        result = createObject("roSGNode", "stddlgbullettextitem")
+    end sub
+
+    @test("stddlgbutton")
+    sub _()
+        result = createObject("roSGNode", "stddlgbutton")
+    end sub
+
+    @test("stddlgbuttonarea")
+    sub _()
+        result = createObject("roSGNode", "stddlgbuttonarea")
+    end sub
+
+    @test("stddlgcontentarea")
+    sub _()
+        result = createObject("roSGNode", "stddlgcontentarea")
+    end sub
+
+    @test("stddlgcustomitem")
+    sub _()
+        result = createObject("roSGNode", "stddlgcustomitem")
+    end sub
+
+    @test("stddlgdeterminateprogressitem")
+    sub _()
+        result = createObject("roSGNode", "stddlgdeterminateprogressitem")
+    end sub
+
+    @test("stddlggraphicitem")
+    sub _()
+        result = createObject("roSGNode", "stddlggraphicitem")
+    end sub
+
+    @test("stddlgitembase")
+    sub _()
+        result = createObject("roSGNode", "stddlgitembase")
+    end sub
+
+    @test("stddlgitemgroup")
+    sub _()
+        result = createObject("roSGNode", "stddlgitemgroup")
+    end sub
+
+    @test("stddlgkeyboarditem")
+    sub _()
+        result = createObject("roSGNode", "stddlgkeyboarditem")
+    end sub
+
+    @test("stddlgmultistyletextitem")
+    sub _()
+        result = createObject("roSGNode", "stddlgmultistyletextitem")
+    end sub
+
+    @test("stddlgprogressitem")
+    sub _()
+        result = createObject("roSGNode", "stddlgprogressitem")
+    end sub
+
+    @test("stddlgsidecardarea")
+    sub _()
+        result = createObject("roSGNode", "stddlgsidecardarea")
+    end sub
+
+    @test("stddlgtextitem")
+    sub _()
+        result = createObject("roSGNode", "stddlgtextitem")
+    end sub
+
+    @test("stddlgtitlearea")
+    sub _()
+        result = createObject("roSGNode", "stddlgtitlearea")
+    end sub
+
+    @test("targetgroup")
+    sub _()
+        result = createObject("roSGNode", "targetgroup")
+    end sub
+
+    @test("targetlist")
+    sub _()
+        result = createObject("roSGNode", "targetlist")
+    end sub
+
+    @test("targetset")
+    sub _()
+        result = createObject("roSGNode", "targetset")
+    end sub
+
+    @test("task")
+    sub _()
+        result = createObject("roSGNode", "task")
+    end sub
+
+    @test("texteditbox")
+    sub _()
+        result = createObject("roSGNode", "texteditbox")
+    end sub
+
+    @test("timegrid")
+    sub _()
+        result = createObject("roSGNode", "timegrid")
+    end sub
+
+    @test("timer")
+    sub _()
+        result = createObject("roSGNode", "timer")
+    end sub
+
+    @test("vector2dfieldinterpolator")
+    sub _()
+        result = createObject("roSGNode", "vector2dfieldinterpolator")
+    end sub
+
+    @test("video")
+    sub _()
+        result = createObject("roSGNode", "video")
+    end sub
+
+    @test("voicetexteditbox")
+    sub _()
+        result = createObject("roSGNode", "voicetexteditbox")
+    end sub
+
+    @test("zoomrowlist")
+    sub _()
+        result = createObject("roSGNode", "zoomrowlist")
+    end sub
+end namespace
