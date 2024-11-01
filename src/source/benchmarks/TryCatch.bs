@@ -1,0 +1,30 @@
+@suite()
+namespace TryCatch
+    sub setup()
+        m.is = {
+            there: true
+        }
+        value = 1
+    end sub
+
+    @test("no try")
+    sub _()
+        value = m.is.there
+    end sub
+
+    @test("try not thrown")
+    sub _()
+        try
+            value = m.is.there
+        catch e
+        end try
+    end sub
+
+    @test("try thrown")
+    sub _()
+        try
+            value = m.not.there
+        catch e
+        end try
+    end sub
+end namespace
