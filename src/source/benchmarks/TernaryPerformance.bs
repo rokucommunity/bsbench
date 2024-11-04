@@ -1,0 +1,42 @@
+@suite()
+namespace TernaryPerformance
+    sub setup()
+        aa = {
+            true: true,
+            false: false
+        }
+    end sub
+
+    @test("baseline if else")
+    sub _()
+        if aa.true then
+            result = true
+        else
+            result = false
+        end if
+    end sub
+
+    @test("bslib_ternary")
+    sub _()
+        result = ternary(aa.true, true, false)
+    end sub
+
+    @test("IIFE")
+    sub _()
+        result = (function(aa)
+            if aa.true then
+                return true
+            else
+                return false
+            end if
+        end function)(aa)
+    end sub
+
+    function ternary(condition, consequent, alternate)
+        if condition then
+            return consequent
+        else
+            return alternate
+        end if
+    end function
+end namespace
