@@ -1,4 +1,5 @@
-import { AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import { SourceNode } from 'source-map';
 
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
@@ -108,20 +109,34 @@ class BsBenchPlugin implements CompilerPlugin {
 
         let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites : allSuites;
-
         if (allSuitesConstArray) {
             //create an AA for every variation of every suite
             const suitesAst = suitesToRun.map(suite => {
                 const variants = this.getVariants(suite);
                 let statements = [];
                 for (const variant of variants) {
+
+                    const variantValues = Object.fromEntries(
+                        Object.entries(variant).map(([key, value]) => {
+                            return [
+                                key,
+                                new SourceNode(
+                                    null,
+                                    null,
+                                    suite.file.srcPath,
+                                    value.transpile(new BrsTranspileState(suite.file)) as any,
+                                ).toString().replace(/^"/, "'").replace(/"$/, "'")
+                            ];
+                        })
+                    );
+
                     const variantText = Object.keys(variant).length > 0
-                        ? ' (' + Object.keys(variant).map(x => `${x}: ${JSON.stringify(variant[x])}`).join(', ') + ')'
+                        ? ' (' + Object.keys(variant).map(variantKey => `${variantKey}: ${variantValues[variantKey]}`).join(', ') + ')'
                         : '';
                     const code = `
                         aa = {
                             name: "${suite.name}${variantText}",
-                            variant: ${JSON.stringify(variant)},
+                            variant: invalid,
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
                                     name: "${test.name}"
@@ -131,6 +146,16 @@ class BsBenchPlugin implements CompilerPlugin {
                         }
                     `;
                     const parser = Parser.parse(code);
+                    //push the variant expressions into a new AA for this specific variant
+                    (parser.ast.findChild<AALiteralExpression>(isAALiteralExpression).elements[1].value as any) = new AALiteralExpression({
+                        elements: Object.keys(variant).map(key => {
+                            return new AAMemberExpression({
+                                key: createToken(TokenKind.StringLiteral, key),
+                                value: variant[key]
+                            });
+                        })
+                    });
+
                     if (parser.diagnostics.length > 0) {
                         throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
                     }
@@ -152,7 +177,7 @@ class BsBenchPlugin implements CompilerPlugin {
      */
     private getVariants(suite: Suite) {
         // Start with an initial list containing an empty object
-        let currentCombinations = [{}];
+        let currentCombinations: Array<Record<string, Expression>> = [{}];
 
         // Process each key in the variant map
         for (const key of Object.keys(suite.config.variants)) {
@@ -192,13 +217,13 @@ class BsBenchPlugin implements CompilerPlugin {
         }).map(x => {
             try {
                 let config = {} as any;
-                const arg0 = x.annotations?.find(x => x.name.toLowerCase() === 'suite').getArguments()[0];
+                const suiteAnnotation = x.annotations?.find(x => x.name.toLowerCase() === 'suite');
+                const arg0 = suiteAnnotation.getArguments()[0];
                 if (typeof arg0 === 'string') {
                     config.name = arg0;
                 } else if (typeof arg0 === 'object') {
                     config = arg0;
                 }
-                config.variants ??= {};
 
                 const suite: Suite = {
                     namespaceStatement: x,
@@ -206,6 +231,26 @@ class BsBenchPlugin implements CompilerPlugin {
                     name: this.getNameFromAnnotation(x),
                     file: file
                 };
+
+                //transform the variants object to contain the original expressions for each variant
+                const variants = (suiteAnnotation.call.args[0] as AALiteralExpression)?.elements?.find(x => x?.tokens?.key?.text === 'variants')?.value;
+                if (isAALiteralExpression(variants)) {
+                    suite.config.variants = {};
+                    for (const element of variants.elements) {
+                        const key = element.tokens.key.text;
+                        const value = element.value;
+
+                        suite.config.variants[key] = [];
+
+                        if (isArrayLiteralExpression(value)) {
+                            for (const item of value.elements) {
+                                suite.config.variants[key].push(item);
+                            }
+                        } else {
+                            console.error('Unsupported variant type');
+                        }
+                    }
+                }
 
                 suite.config.variants ??= {};
                 return suite;
@@ -337,7 +382,7 @@ interface Suite {
         /**
          * Every entry is the name of a local variable, with an array of values (each value is one variant of the benchmark suite)
          */
-        variants: Record<string, any[]>
+        variants: Record<string, Expression[]>
     };
     file: BrsFile;
 }

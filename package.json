@@ -28,6 +28,7 @@
     "@rokucommunity/logger": "^0.3.9",
     "@rokucommunity/promises": "^0.2.0",
     "eventemitter3": "^5.0.1",
+    "sourcemap": "^0.1.0",
     "yargs": "^16.2.0"
   }
 }

@@ -1,0 +1,32 @@
+@suite({
+    variants: {
+        value: [1, 1&, 1.1, "1.1", true, false, invalid]
+    }
+})
+namespace IsInteger
+    sub setup()
+        value = variant.value
+    end sub
+    @test("double type check")
+    sub _()
+        result = type(value) = "Integer" or type(value) = "roInt" or type(value) = "roInteger" or type(value) = "LongInteger"
+    end sub
+
+    @test("double type check lifted")
+    sub _()
+        valueType = type(value)
+        result = valueType = "Integer" or valueType = "roInt" or valueType = "roInteger" or valueType = "LongInteger"
+    end sub
+
+    @test("instr")
+    sub _()
+        result = instr(1, type(value), "Integer") > 0 or type(value) = "roInt"
+    end sub
+
+    @test("instr lifted")
+    sub _()
+        valueType = type(value)
+        result = instr(1, valueType, "Integer") > 0 or valueType = "roInt"
+    end sub
+
+end namespace
