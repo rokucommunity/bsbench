@@ -1,0 +1,17 @@
+@suite()
+namespace ManyType
+    sub setup()
+        node = CreateObject("roSGNode", "ContentNode")
+    end sub
+
+    @test("lifted")
+    sub _()
+        valueType = type(node)
+        result = valueType = "String" or valueType = "roString" or valueType = "Integer" or valueType = "roInt" or valueType = "roInteger" or valueType = "LongInteger" or valueType = "Float" or valueType = "roFloat" or valueType = "Double" or valueType = "roDouble" or valueType = "roIntrinsicDouble" or valueType = "roAssociativeArray" or valueType = "roArray"
+    end sub
+
+    @test(`inline`)
+    sub _()
+        result = type(node) = "String" or type(node) = "roString" or type(node) = "Integer" or type(node) = "roInt" or type(node) = "roInteger" or type(node) = "LongInteger" or type(node) = "Float" or type(node) = "roFloat" or type(node) = "Double" or type(node) = "roDouble" or type(node) = "roIntrinsicDouble" or type(node) = "roAssociativeArray" or type(node) = "roArray"
+    end sub
+end namespace
