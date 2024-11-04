@@ -1,0 +1,44 @@
+@suite()
+namespace GlobalContentNodeLookup
+    sub setup()
+        localAA = {
+            message: "Hello, world"
+        }
+        m.aa = localAA
+        localNode = createObject("roSGNode", "ContentNode")
+        localNode.addFields({ message: "Hello, World!" })
+        m.node = localNode
+        m.global.addFields({ message: "Hello world" })
+        m.global.addFields({ node: localNode })
+    end sub
+
+    @test("localAA.message")
+    sub _()
+        result = localAA.message
+    end sub
+
+    @test("localNode.message")
+    sub _()
+        result = (localNode as dynamic).message
+    end sub
+
+    @test("m.aa.message")
+    sub _()
+        result = m.aa.message
+    end sub
+
+    @test("m.node.message")
+    sub _()
+        result = m.node.message
+    end sub
+
+    @test("global.message")
+    sub _()
+        result = m.global.message
+    end sub
+
+    @test("global.node.message")
+    sub _()
+        result = m.global.node.message
+    end sub
+end namespace
