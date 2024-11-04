@@ -1,0 +1,22 @@
+@suite()
+@only()
+namespace Grouping
+    sub setup()
+        value = 1
+    end sub
+
+    @test("unwrapped")
+    sub _()
+        value = 1 + 1
+    end sub
+
+    @test("wrapped")
+    sub _()
+        value = (1 + 1)
+    end sub
+
+    @test("doublewrap")
+    sub _()
+        value = ((1 + 1))
+    end sub
+end namespace
