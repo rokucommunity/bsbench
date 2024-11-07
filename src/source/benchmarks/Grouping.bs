@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace Grouping
     sub setup()
         value = 1

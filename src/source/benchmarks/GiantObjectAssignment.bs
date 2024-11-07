@@ -1,0 +1,29 @@
+@suite()
+namespace GiantObjectAssignment
+    sub setup()
+        tinyArray = []
+        giantArray = []
+        'generate a big array of big objects
+        for i = 0 to 500
+            obj = {}
+            for j = 0 to 100
+                obj[`key${j}`] = j
+            end for
+            giantArray.push(obj)
+        end for
+    end sub
+
+    sub teardown()
+        m.delete("result")
+    end sub
+
+    @test("tiny")
+    sub _()
+        m.result = tinyArray
+    end sub
+
+    @test("giant")
+    sub _()
+        m.result = giantArray
+    end sub
+end namespace
