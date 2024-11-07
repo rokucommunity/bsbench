@@ -1,0 +1,30 @@
+@suite()
+namespace FunctionCall
+    sub setup()
+        m.one = 1
+    end sub
+
+    @test("1 + 1")
+    sub _()
+        result = 1 + 1
+    end sub
+
+    @test("add(1, 1)")
+    sub _()
+        result = add(1, 1)
+    end sub
+
+    function add(num1, num2)
+        return num1 + num2
+    end function
+
+    @test("add - no clones")
+    sub _()
+        result = addFromM()
+    end sub
+
+    function addFromM()
+        return m.one + m.one
+    end function
+
+end namespace
