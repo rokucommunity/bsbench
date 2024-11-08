@@ -1,0 +1,62 @@
+@suite()
+@only()
+namespace SetPropsOnObject
+    sub setup()
+        baseObject = {}
+        m.baseObject = {}
+    end sub
+
+    @test("return from function")
+    sub _()
+        baseObject = {}
+        baseObject.thing = getObject()
+    end sub
+
+    @test("set in function")
+    sub _()
+        baseObject = {}
+        setOnObject(baseObject)
+    end sub
+
+    @test("set on m var")
+    sub _()
+        m.baseObject = {}
+        setOnMVar()
+    end sub
+
+    @test("set in function predefined")
+    sub _()
+        setOnObject(baseObject)
+    end sub
+
+    @test("return from function predefined")
+    sub _()
+        baseObject.thing = getObject()
+    end sub
+
+    @test("set on m var predefined")
+    sub _()
+        setOnMVar()
+    end sub
+
+    function getObject()
+        return {
+            title: "Title",
+            subtitle: "Subtitle"
+        }
+    end function
+
+    sub setOnObject(obj)
+        obj.thing = {
+            title: "Title",
+            subtitle: "Subtitle"
+        }
+    end sub
+
+    sub setOnMVar()
+        m.baseObject.thing = {
+            title: "Title",
+            subtitle: "Subtitle"
+        }
+    end sub
+end namespace
