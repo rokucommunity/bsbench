@@ -1,31 +1,60 @@
-@suite("increment m vs field vs local")
+@suite({
+    variants: {
+        valueType: ["number", "smallString", "largeString"]
+    }
+})
 namespace mVsFieldVsLocal
     sub setup()
+        node = createObject("roSGNode", "Node") as roSGNodeWithSequence
+        if variant.valueType = "number"
+            valueToSet = 1
+            node.addField("value", "integer", false)
+        else if variant.valueType = "smallString"
+            valueToSet = "alpha beta"
+            node.addField("value", "string", false)
+        else if variant.valueType = "largeString"
+            valueToSet = "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega"
+            node.addField("value", "string", false)
+        end if
+
         result = invalid
-        m.sequence = 0
-        node = createObject("roSGNode", "Node")
-        node.addField("sequence", "integer", false)
-        sequence = 0
+        m.value = 0
+        value = 0
     end sub
 
     interface roSGNodeWithSequence extends roSGNode
-        sequence as integer
+        value as string or integer
     end interface
 
-    @test("node field")
+    @test("node field set")
     sub _()
-        node = createObject("roSGNode", "Node") as roSGNodeWithSequence
-        node.addField("sequence", "integer", false)
-        node.sequence++
+        node.value = valueToSet
     end sub
 
-    @test("m prop")
+    @test("m prop set")
     sub _()
-        m.sequence++
+        m.value = valueToSet
     end sub
 
-    @test("local")
+    @test("local set")
     sub _()
-        sequence++
+        value = valueToSet
+    end sub
+
+
+
+    @test("node field get")
+    sub _()
+        result = node.value
+    end sub
+
+    @test("m prop get")
+    sub _()
+        result = m.value
+    end sub
+
+    @test("local get")
+    sub _()
+        result = value
     end sub
 end namespace
