@@ -1,0 +1,71 @@
+@suite()
+namespace NodeCloningDeep
+    interface roSGNodeWithValue extends roSGNode
+        value as roAssociativeArray
+    end interface
+
+    sub setup()
+        node = createObject("roSGNode", "Node") as roSGNodeWithValue
+        node.addField("value", "AssocArray", false)
+
+        m.giantObject = makeObject(10, function()
+            return makeObject(10, function()
+                return makeObject(10, function()
+                    return makeObject(10, function()
+                        return 1
+                    end function)
+                end function)
+            end function)
+        end function)
+        node.value = m.giantObject
+    end sub
+
+    function makeObject(numItems, factory)
+        obj = {}
+        for i = 0 to numItems
+            obj[`key${i}`] = factory()
+        end for
+        return obj
+    end function
+
+    @test("node: 0 levels deep")
+    sub _()
+        result = node.value
+    end sub
+
+    @test("node: 1 level deep")
+    sub _()
+        result = node.value.key0
+    end sub
+
+    @test("node: 2 levels deep")
+    sub _()
+        result = node.value.key0.key0
+    end sub
+
+    @test("node: 3 levels deep")
+    sub _()
+        result = node.value.key0.key0.key0
+    end sub
+
+
+    @test("local: 0 levels deep")
+    sub _()
+        result = m.giantObject
+    end sub
+
+    @test("local: 1 level deep")
+    sub _()
+        result = m.giantObject.key0
+    end sub
+
+    @test("local: 2 levels deep")
+    sub _()
+        result = m.giantObject.key0.key0
+    end sub
+
+    @test("local: 3 levels deep")
+    sub _()
+        result = m.giantObject.key0.key0.key0
+    end sub
+end namespace
