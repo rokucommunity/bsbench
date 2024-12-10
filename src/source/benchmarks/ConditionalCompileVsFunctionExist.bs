@@ -1,0 +1,90 @@
+@suite()
+@only()
+namespace ConditionalCompileVsFunctionExist
+    sub setup()
+        value = 1
+    end sub
+
+    @test("#IF FALSE on outside")
+    sub _()
+        #if false
+            'don't actually print, this test is about function existence
+            result = 1 + 1
+        #end if
+    end sub
+
+    @test("#IF FALSE on inside")
+    sub _()
+        writeLogConditionalCompileFalse("message")
+    end sub
+
+    @test("#IF TRUE on outside")
+    sub _()
+        #if true
+            'don't actually print, this test is about function existence
+            result = 1 + 1
+        #end if
+    end sub
+
+    @test("#IF TRUE on inside")
+    sub _()
+        writeLogConditionalCompileTrue("message")
+    end sub
+
+    @test("type() = 'Function' outside false")
+    sub _()
+        if type(writeLogMissing) = "Function" then 'bs:disable-line
+            writeLogMissing("message") 'bs:disable-line
+        end if
+    end sub
+
+    @test("type() = 'Function' outside true")
+    sub _()
+        if type(writeLog) = "Function" then
+            writeLog("message")
+        end if
+    end sub
+
+    @test("type() = 'Function' inside false")
+    sub _()
+        writeLogFuncCheckMissing("message")
+    end sub
+
+    @test("type() = 'Function' inside true")
+    sub _()
+        writeLogFuncCheckExist("message")
+    end sub
+
+    function writeLogConditionalCompileFalse(message)
+        #if false
+            'don't actually print, this test is about function existence
+            result = 1 + 1
+        #end if
+    end function
+
+
+    function writeLogConditionalCompileTrue(message)
+        #if true
+            'don't actually print, this test is about function existence
+            result = 1 + 1
+        #end if
+    end function
+
+    function writeLogFuncCheckMissing(message)
+        if type(writeLogMissing) = "Function" then 'bs:disable-line
+            writeLogMissingInside("message") 'bs:disable-line
+        end if
+    end function
+
+    function writeLogFuncCheckExist(message)
+        if type(writeLog) = "Function" then
+            writeLog("message")
+        end if
+    end function
+
+    function writeLog(message)
+        'don't actually print, this test is about function existence
+        result = 1 + 1
+    end function
+
+end namespace
