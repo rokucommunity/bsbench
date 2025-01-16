@@ -1,0 +1,20 @@
+@suite()
+namespace ThreadInfo
+    sub setup()
+        node1 = CreateObject("roSGNode", "Node")
+        node2 = CreateObject("roSGNode", "Node")
+        node2.update({
+            "thread": node1.threadInfo()
+        })
+    end sub
+
+    @test("fresh threadInfo every time")
+    sub _()
+        result = node1.threadInfo()
+    end sub
+
+    @test("baseline aa clone")
+    sub _()
+        result = (node2 as dynamic).thread
+    end sub
+end namespace
