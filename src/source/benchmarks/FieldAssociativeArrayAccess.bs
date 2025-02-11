@@ -1,0 +1,25 @@
+@suite()
+namespace FieldAssociativeArrayAccess
+    sub setup()
+        theVar = { name: "Big Buck Bunny", runtime: 23, mediaType: "movie" }
+        m.theVar = theVar
+        node = createObject("roSGNode", "Node") as dynamic
+        node.addFields({ "theVar": theVar })
+        result = invalid
+    end sub
+
+    @test("local var")
+    sub _()
+        result = theVar.name
+    end sub
+
+    @test("m var")
+    sub _()
+        result = m.theVar.name
+    end sub
+
+    @test("node var")
+    sub _()
+        result = node.theVar.name
+    end sub
+end namespace

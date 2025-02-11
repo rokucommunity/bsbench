@@ -1,0 +1,25 @@
+@suite()
+namespace FieldSmallStringAccess
+    sub setup()
+        theVar = "a short string"
+        m.theVar = theVar
+        node = createObject("roSGNode", "Node") as dynamic
+        node.addFields({ "theVar": theVar })
+        result = invalid
+    end sub
+
+    @test("local var")
+    sub _()
+        result = theVar
+    end sub
+
+    @test("m var")
+    sub _()
+        result = m.theVar
+    end sub
+
+    @test("node var")
+    sub _()
+        result = node.theVar
+    end sub
+end namespace

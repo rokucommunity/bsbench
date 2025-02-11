@@ -1,0 +1,29 @@
+@suite()
+namespace FieldNodeStructureAccess
+    sub setup()
+        theVar = { alpha: { beta: { charlie: { name: "Delta" } } } }
+        m.theVar = theVar
+        node = createObject("roSGNode", "Node") as dynamic
+        node.addFields({ "theVar": createObject("roSGNode", "Node") })
+        node.theVar.addFields({ "alpha": createObject("roSGNode", "Node") })
+        node.theVar.alpha.addFields({ "beta": createObject("roSGNode", "Node") })
+        node.theVar.alpha.beta.addFields({ "charlie": createObject("roSGNode", "Node") })
+        node.theVar.alpha.beta.charlie.addFields({ "name": "Delta" })
+        result = invalid
+    end sub
+
+    @test("local var")
+    sub _()
+        result = theVar.alpha.beta.charlie.name
+    end sub
+
+    @test("m var")
+    sub _()
+        result = m.theVar.alpha.beta.charlie.name
+    end sub
+
+    @test("node structure var")
+    sub _()
+        result = node.theVar.alpha.beta.charlie.name
+    end sub
+end namespace

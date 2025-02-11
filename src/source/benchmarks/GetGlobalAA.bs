@@ -1,0 +1,13 @@
+@suite()
+namespace GetGlobalAA
+
+    @test("getGlobalAA()")
+    sub _()
+        result = GetGlobalAA() 'bs:disable-line
+    end sub
+
+    @test("m")
+    sub _()
+        result = m
+    end sub
+end namespace

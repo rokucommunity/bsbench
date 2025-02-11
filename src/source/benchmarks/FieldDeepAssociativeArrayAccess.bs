@@ -1,0 +1,25 @@
+@suite()
+namespace FieldDeepAssociativeArrayAccess
+    sub setup()
+        theVar = { alpha: { beta: { charlie: { name: "Delta" } } } }
+        m.theVar = theVar
+        node = createObject("roSGNode", "Node") as dynamic
+        node.addFields({ "theVar": theVar })
+        result = invalid
+    end sub
+
+    @test("local var")
+    sub _()
+        result = theVar.alpha.beta.charlie.name
+    end sub
+
+    @test("m var")
+    sub _()
+        result = m.theVar.alpha.beta.charlie.name
+    end sub
+
+    @test("node var")
+    sub _()
+        result = node.theVar.alpha.beta.charlie.name
+    end sub
+end namespace
