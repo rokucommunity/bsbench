@@ -8,7 +8,7 @@
         "**/node_modules": true,
         "**/out": false
     },
-    "brightscript.bsdk": "node_modules/brighterscript",
+    "brightscript.bsdk": "1.0.0-alpha.44",
     "cSpell.words": [
         "allsuites",
         "bsbench"

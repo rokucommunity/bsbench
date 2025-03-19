@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/yargs": "^15.0.5",
-    "brighterscript": "^1.0.0-alpha.33",
+    "brighterscript": "^1.0.0-alpha.44",
     "roku-deploy": "^4.0.0-alpha.1",
     "ropm": "^0.10.23",
     "ts-node": "^10.9.2",

@@ -1,4 +1,4 @@
-import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
 import { SourceNode } from 'source-map';
 
 class BsBenchPlugin implements CompilerPlugin {
@@ -139,7 +139,7 @@ class BsBenchPlugin implements CompilerPlugin {
                             variant: invalid,
                             tests: [
                                 ${this.findTests(suite).map((test) => `{
-                                    name: "${test.name}"
+                                    name: ${this.toBrsString(test.name)}
                                     func: ${test.functionName}
                                 }`).join(', ')}
                             ]
@@ -168,6 +168,21 @@ class BsBenchPlugin implements CompilerPlugin {
             //push suite data to the allSuites array
             event.editor.arrayPush(allSuitesConstArray.elements, ...suitesAst);
         }
+    }
+
+    /**
+     * Convert a string to a brightscript-safe string (including the leading and trailing quotemarks).
+     * This will escape quotes, encode newline chars, etc
+     */
+    private toBrsString(text: string) {
+        const parser = Parser.parse(`s = \`${text}\``);
+        const chunks = parser.ast.findChild(isTemplateStringExpression).transpile(
+            new BrsTranspileState(
+                new BrsFile({ srcPath: '', destPath: '', program: new Program({}) })
+            )
+        );
+        const result = new SourceNode(null, null, null, chunks as any).toString();
+        return result;
     }
 
     /**
@@ -268,14 +283,16 @@ class BsBenchPlugin implements CompilerPlugin {
     private getNameFromAnnotation(node: FunctionStatement | NamespaceStatement) {
         const annotation = node.annotations?.find(x => x.name.toLowerCase() === 'test');
         const arg0 = annotation?.getArguments()[0] as string | Record<string, any> | undefined;
+        let result = '';
         //get the name of the test (either the string from the `@test` annotation or the function name)
         if (typeof arg0 === 'string') {
-            return arg0;
+            result = arg0;
         } else if (typeof arg0?.name === 'string') {
-            return arg0.name;
+            result = arg0.name;
         } else {
-            return node.getName(ParseMode.BrightScript);
+            result = node.getName(ParseMode.BrightScript);
         }
+        return result;
     }
 
     private findTests(suite: Suite) {
