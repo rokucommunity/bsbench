@@ -1,0 +1,32 @@
+@suite()
+namespace ArrayAccessDirectVsNode
+
+  sub setup()
+    size = 1
+    childData = []
+    for i = 0 to size - 1
+      childData.push({ subtype: "ContentNode", id: `child-${i}` })
+    end for
+    parent = createObject("roSGNode", "ContentNode")
+    parent.update({ children: childData }, true)
+    children = parent.getChildren(size, 0)
+    parent.addField("components", "array", false)
+    parent.update({ components: children }, true)
+  end sub
+
+  @test("parent.getChild")
+  sub _()
+    x = parent.getChild(size - 1).id
+  end sub
+
+  @test("parent.arrayfield[]")
+  sub _()
+    x = parent["components"][size - 1].id
+  end sub
+
+  @test("arrayofnodes[]")
+  sub _()
+    x = children[size - 1].id
+  end sub
+
+end namespace
