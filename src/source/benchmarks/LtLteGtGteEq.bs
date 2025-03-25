@@ -1,0 +1,56 @@
+@suite()
+namespace LtLteGtGteEq
+    function setup()
+        result = invalid
+    end function
+
+    @test("lt miss")
+    sub _()
+        result = 1 < 2
+    end sub
+
+    @test("lt hit")
+    sub _()
+        result = 1 < 0
+    end sub
+
+    @test("lte miss")
+    sub _()
+        result = 1 <= 3
+    end sub
+
+    @test("lte hit")
+    sub _()
+        result = 1 <= 1
+    end sub
+
+    @test("gt miss")
+    sub _()
+        result = 1 > 2
+    end sub
+
+    @test("gt hit")
+    sub _()
+        result = 1 > 0
+    end sub
+
+    @test("gte miss")
+    sub _()
+        result = 1 >= 3
+    end sub
+
+    @test("gte hit")
+    sub _()
+        result = 1 >= 0
+    end sub
+
+    @test("eq miss")
+    sub _()
+        result = 1 = 0
+    end sub
+
+    @test("eq hit")
+    sub _()
+        result = 1 = 1
+    end sub
+end namespace
