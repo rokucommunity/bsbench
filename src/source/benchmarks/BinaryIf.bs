@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace BinaryIf
     sub setup()
         result = invalid
@@ -27,7 +26,7 @@ namespace BinaryIf
     end function
 
     function getResultNested(i as integer)
-        if i <= 4 '1,2,3,4
+        if i <= 4 '0, 1,2,3,4
             if i <= 2 '1,2
                 if i <= 1
                     return 1
