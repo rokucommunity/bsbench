@@ -1,0 +1,25 @@
+@suite({
+    variants: {
+        value: [1, [], {}]
+    }
+})
+namespace IsArray
+    sub setup()
+        value = variant.value
+    end sub
+
+    @test("double type check")
+    sub _()
+        result = type(value) = "roArray" or type(value) = "roList"
+    end sub
+
+    @test("getInterface")
+    sub _()
+        result = getInterface(value, "ifArrayGet") <> invalid
+    end sub
+
+    @test("findMemberFunction")
+    sub _()
+        result = findMemberFunction(value, "getEntry") <> invalid
+    end sub
+end namespace
