@@ -1,0 +1,36 @@
+@suite()
+@only()
+namespace ThrowCatch
+    sub setup()
+        result = 0
+    end sub
+
+    @test("normal divide")
+    sub _()
+        result = 1 / 1
+    end sub
+
+    @test("try catch normal divide")
+    sub _()
+        try
+            result = 1 / 1
+        catch e
+        end try
+    end sub
+
+    @test("try catch divide by zero")
+    sub _()
+        try
+            result = 1 / 0
+        catch e
+        end try
+    end sub
+
+    @test("try catch custom message")
+    sub _()
+        try
+            throw "custom error message"
+        catch e
+        end try
+    end sub
+end namespace
