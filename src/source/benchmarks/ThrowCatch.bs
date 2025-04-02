@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace ThrowCatch
     sub setup()
         result = 0
