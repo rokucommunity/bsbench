@@ -15,7 +15,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/yargs": "^15.0.5",
-    "brighterscript": "^1.0.0-alpha.44",
+    "brighterscript": "https://github.com/rokucommunity/brighterscript/releases/download/v0.0.0-packages/brighterscript-1.0.0-alpha.44-merge-master-into-v1-dbfd744.20250403143759.tgz",
     "roku-deploy": "^4.0.0-alpha.1",
     "ropm": "^0.10.23",
     "ts-node": "^10.9.2",

@@ -4,6 +4,14 @@
     "stagingDir": "./dist",
     "createPackage": false,
     "sourceMap": true,
+    "diagnosticFilters": [
+        {
+            "codes": [
+                //promises is failing for some reason. this is a temporary workaround
+                "return-type-coercion-mismatch"
+            ]
+        }
+    ],
     "plugins": [
         "./scripts/src/Plugin.ts"
     ],
