@@ -3,10 +3,12 @@
         value: [1, 1&, 1.1, "1.1", true, false, invalid]
     }
 })
+@only()
 namespace IsInteger
     sub setup()
         value = variant.value
     end sub
+
     @test("double type check")
     sub _()
         result = type(value) = "Integer" or type(value) = "roInt" or type(value) = "roInteger" or type(value) = "LongInteger"
@@ -27,6 +29,16 @@ namespace IsInteger
     sub _()
         valueType = type(value)
         result = instr(1, valueType, "Integer") > 0 or valueType = "roInt"
+    end sub
+
+    @test("getInterface")
+    sub _()
+        result = GetInterface(value, "ifint") <> invalid or GetInterface(value, "ifLongInt") <> invalid
+    end sub
+
+    @test("Type().instr")
+    sub _()
+        result = Type(value).instr("Int") > -1
     end sub
 
 end namespace
