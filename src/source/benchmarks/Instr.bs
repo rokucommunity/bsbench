@@ -1,5 +1,4 @@
 @suite()
-@only
 namespace InstrFunc
     @test("2 arg start hit")
     sub _()
@@ -8,7 +7,7 @@ namespace InstrFunc
 
     @test("3 arg start hit")
     sub _()
-        result = instr(1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "a")
+        result = instr(0, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "a")
     end sub
 
 
@@ -19,7 +18,7 @@ namespace InstrFunc
 
     @test("3 arg end hit")
     sub _()
-        result = instr(1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "B")
+        result = instr(0, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "B")
     end sub
 
 
@@ -30,6 +29,6 @@ namespace InstrFunc
 
     @test("3 arg miss")
     sub _()
-        result = instr(1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "C")
+        result = instr(0, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "C")
     end sub
 end namespace

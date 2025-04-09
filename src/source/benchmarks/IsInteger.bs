@@ -3,7 +3,6 @@
         value: [1, 1&, 1.1, "1.1", true, false, invalid]
     }
 })
-@only()
 namespace IsInteger
     sub setup()
         value = variant.value
@@ -20,15 +19,20 @@ namespace IsInteger
         result = valueType = "Integer" or valueType = "roInt" or valueType = "roInteger" or valueType = "LongInteger"
     end sub
 
-    @test("instr")
+    @test("instr 2 arg")
     sub _()
-        result = instr(1, type(value), "Integer") > 0 or type(value) = "roInt"
+        result = instr(type(value), "Integer") > 0 or type(value) = "roInt" 'bs:disable-line
     end sub
 
-    @test("instr lifted")
+    @test("instr 3 arg")
+    sub _()
+        result = instr(1, type(value), "Integer") > 0 or type(value) = "roInt" 'bs:disable-line
+    end sub
+
+    @test("instr 3 arg lifted")
     sub _()
         valueType = type(value)
-        result = instr(1, valueType, "Integer") > 0 or valueType = "roInt"
+        result = instr(1, valueType, "Integer") > 0 or valueType = "roInt" 'bs:disable-line
     end sub
 
     @test("getInterface")
