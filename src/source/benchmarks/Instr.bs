@@ -1,0 +1,35 @@
+@suite()
+@only
+namespace InstrFunc
+    @test("2 arg start hit")
+    sub _()
+        result = instr("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "a") 'bs:disable-line
+    end sub
+
+    @test("3 arg start hit")
+    sub _()
+        result = instr(1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "a")
+    end sub
+
+
+    @test("2 arg end hit")
+    sub _()
+        result = instr("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "B") 'bs:disable-line
+    end sub
+
+    @test("3 arg end hit")
+    sub _()
+        result = instr(1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "B")
+    end sub
+
+
+    @test("2 arg miss")
+    sub _()
+        result = instr("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "C") 'bs:disable-line
+    end sub
+
+    @test("3 arg miss")
+    sub _()
+        result = instr(1, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB", "C")
+    end sub
+end namespace
