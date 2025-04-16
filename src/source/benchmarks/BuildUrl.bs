@@ -1,0 +1,65 @@
+@suite()
+@only()
+namespace BuildUrl
+    function setup()
+        uri = "https://imgx.fubo.tv/profile_avatars/02.png"
+        queryParameters = {
+            auto: "compress"
+            cs: "strip"
+            fm: "webp"
+            h: "48"
+            w: "48"
+            "corner-radius": "12"
+			mask: "corners"
+            fit: "crop",
+            crop: "crop"
+        }
+        result = invalid
+    end function
+
+    @test("appendQueriesToUri + encode")
+    sub _()
+        result = appendQueriesToUri(uri, queryParameters, true)
+    end sub
+
+    @test("appendQueriesToUri no encode")
+    sub _()
+        result = appendQueriesToUri(uri, queryParameters, false)
+    end sub
+
+    @test("concat hardcoded props")
+    sub _()
+        result = uri + "?auto=" + queryParameters.auto + "&cs=" + queryParameters.cs + "&fm=" + queryParameters.fm + "&h=" + queryParameters.h + "&w=" + queryParameters.w + "&corner-radius=" + queryParameters["corner-radius"] + "&mask=" + queryParameters.mask + "&fit=" + queryParameters.fit + "&crop=" + queryParameters.crop
+    end sub
+
+    @test("concat hardcode querystring")
+    sub _()
+        result = uri + "?auto=compress&cs=strip&fm=webp&h=48&w=48&corner-radius=12&mask=corners&fit=crop&crop=crop"
+    end sub
+
+    function appendQueriesToUri(uri as string, queryParameters as dynamic, encode = true as boolean) as string
+        if (type(uri) = "String" or type(uri) = "roString") and uri <> "" and type(queryParameters) = "roAssociativeArray" and not queryParameters.isEmpty() then
+            first = (inStr(0, uri, "?") = 0)
+
+            for each key in queryParameters
+                value = queryParameters[key]
+
+                if (type(value) = "String" or type(value) = "roString") and value <> "" then
+                    if first then
+                        uri += "?"
+                        first = false
+                    else
+                        uri += "&"
+                    end if
+
+                    if encode then
+                        uri += (key.escape() + "=" + value.escape())
+                    else
+                        uri += (key + "=" + value)
+                    end if
+                end if
+            end for
+        end if
+        return uri
+    end function
+end namespace
