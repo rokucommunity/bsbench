@@ -1,0 +1,50 @@
+@suite()
+namespace EndsWith
+    sub setup()
+        smallString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ALMOST_END THE_END"
+        smallStringEndLocation = instr(0, smallString, "THE_END")
+
+        mediumString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed nisl eu purus volutpat fermentum in et dolor. Etiam a finibus purus. Sed pellentesque, sapien ac commodo interdum, eros nisl pharetra leo, vel tincidunt justo dolor at mi. Vivamus porttitor sit amet nisl sit amet dignissim. Nam porttitor augue non sem facilisis, et porttitor est pellentesque. Curabitur nisi libero, tincidunt vel ante at, ultrices mollis nibh. Fusce rutrum luctus ligula sed viverra. Aenean interdum eleifend accumsan. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed tempus nunc turpis, a volutpat felis malesuada sit amet. Vestibulum accumsan sodales vulputate. Aenean euismod imperdiet dui, in consectetur diam egestas id. Integer molestie non nibh efficitur elementum. Duis blandit sapien eu nisi blandit, a pretium libero maximus. ALMOST_END THE_END"
+        mediumStringEndLocation = instr(0, mediumString, "THE_END")
+
+        largeString = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed nisl eu purus volutpat fermentum in et dolor. Etiam a finibus purus. Sed pellentesque, sapien ac commodo interdum, eros nisl pharetra leo, vel tincidunt justo dolor at mi. Vivamus porttitor sit amet nisl sit amet dignissim. Nam porttitor augue non sem facilisis, et porttitor est pellentesque. Curabitur nisi libero, tincidunt vel ante at, ultrices mollis nibh. Fusce rutrum luctus ligula sed viverra. Aenean interdum eleifend accumsan. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed tempus nunc turpis, a volutpat felis malesuada sit amet. Vestibulum accumsan sodales vulputate. Aenean euismod imperdiet dui, in consectetur diam egestas id. Integer molestie non nibh efficitur elementum. Duis blandit sapien eu nisi blandit, a pretium libero maximus. Etiam at libero dapibus, auctor nisi non, ultricies nunc. Donec eget leo tortor. Curabitur fringilla at leo nec mattis. Nulla libero ligula, scelerisque ac dolor sed, gravida malesuada tellus. Duis a dui id nunc porta vulputate sed nec nisi. Nulla tincidunt enim in quam condimentum facilisis. Vivamus eu convallis odio. Vestibulum et dolor et sapien porttitor commodo. Quisque nibh orci, varius tincidunt enim ut, commodo dapibus urna. Aliquam sed eros dapibus, varius risus fringilla, vehicula ipsum. Ut lorem ante, commodo ut nunc et, gravida imperdiet quam. Vestibulum dignissim leo blandit tincidunt porttitor. Aenean aliquet, mi malesuada pretium pharetra, diam diam dignissim ex, nec maximus ante quam et magna. Integer bibendum ipsum sit amet neque placerat pretium. Donec eget arcu eu nisi pharetra sodales non sit amet dolor. Pellentesque et arcu non augue feugiat maximus tincidunt eu libero. Vivamus nec ligula a orci varius viverra. Mauris sagittis eu lacus eu accumsan. Nullam molestie mi nec ante fermentum auctor. Morbi consectetur nulla sed dignissim luctus. Donec sollicitudin volutpat ligula, et dapibus arcu volutpat quis. Ut lectus elit, interdum et bibendum eget, rhoncus vitae massa. ALMOST_END THE_END"
+        largeStringEndLocation = instr(0, largeString, "THE_END")
+
+        result = invalid
+    end sub
+
+    @test("endsWith hit")
+    sub _()
+        result = smallString.endsWith("THE_END")
+        result = mediumString.endsWith("THE_END")
+        result = largeString.endsWith("THE_END")
+    end sub
+
+    @test("endsWith miss")
+    sub _()
+        result = smallString.endsWith("NOT_THE_END")
+        result = mediumString.endsWith("NOT_THE_END")
+        result = largeString.endsWith("NOT_THE_END")
+    end sub
+
+    @test("instr hit")
+    sub _()
+        result = instr(smallString, "THE_END") = smallStringEndLocation 'bs:disable-line
+        result = instr(mediumString, "THE_END") = mediumStringEndLocation 'bs:disable-line
+        result = instr(largeString, "THE_END") = largeStringEndLocation 'bs:disable-line
+    end sub
+
+    @test("instr miss close")
+    sub _()
+        result = instr(smallString, "ALMOST_END") = smallStringEndLocation'bs:disable-line
+        result = instr(mediumString, "ALMOST_END") = mediumStringEndLocation 'bs:disable-line
+        result = instr(largeString, "ALMOST_END") = largeStringEndLocation'bs:disable-line
+    end sub
+
+    @test("instr miss far")
+    sub _()
+        result = instr(smallString, "Lorem") = smallStringEndLocation'bs:disable-line
+        result = instr(mediumString, "Lorem") = mediumStringEndLocation 'bs:disable-line
+        result = instr(largeString, "Lorem") = largeStringEndLocation'bs:disable-line
+    end sub
+end namespace

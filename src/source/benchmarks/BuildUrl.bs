@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace BuildUrl
     function setup()
         uri = "https://imgx.fubo.tv/profile_avatars/02.png"
