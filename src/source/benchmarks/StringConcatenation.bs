@@ -11,45 +11,375 @@ namespace StringConcatenation
 
     @test("concat")
     sub _()
-        value = "alpha" + "beta" + "charlie" + "delta" + "echo" + "foxtrot" + "golf" + "hotel" + "india" + "juliet" + "kilo" + "lima" + "mike" + "november" + "oscar" + "papa" + "quebec" + "romeo" + "sierra" + "tango" + "uniform" + "victor" + "whiskey" + "xray" + "yankee" + "zulu"
+        value = "Alpha" + "Beta" + "Charlie" + "Delta" + "Echo" + "Foxtrot" + "Golf" + "Hotel" + "India" + "Juliet" + "Kilo" + "Lima" + "Mike" + "November" + "Oscar" + "Papa" + "Quebec" + "Romeo" + "Sierra" + "Tango" + "Uniform" + "Victor" + "Whiskey" + "Xray" + "Yankee" + "Zulu"
     end sub
 
     @test("literal join")
     sub _()
-        array = ["alpha", "beta", "charlie", "delta", "echo", "foxtrot", "golf", "hotel", "india", "juliet", "kilo", "lima", "mike", "november", "oscar", "papa", "quebec", "romeo", "sierra", "tango", "uniform", "victor", "whiskey", "xray", "yankee", "zulu"]
+        array = ["Alpha", "Beta", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo", "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu"]
         result = array.Join("")
     end sub
 
     @test("push and join")
     sub _()
         array = []
-        array.push("alpha")
-        array.push("beta")
-        array.push("charlie")
-        array.push("delta")
-        array.push("echo")
-        array.push("foxtrot")
-        array.push("golf")
-        array.push("hotel")
-        array.push("india")
-        array.push("juliet")
-        array.push("kilo")
-        array.push("lima")
-        array.push("mike")
-        array.push("november")
-        array.push("oscar")
-        array.push("papa")
-        array.push("quebec")
-        array.push("romeo")
-        array.push("sierra")
-        array.push("tango")
-        array.push("uniform")
-        array.push("victor")
-        array.push("whiskey")
-        array.push("xray")
-        array.push("yankee")
-        array.push("zulu")
+        array.push("Alpha")
+        array.push("Beta")
+        array.push("Charlie")
+        array.push("Delta")
+        array.push("Echo")
+        array.push("Foxtrot")
+        array.push("Golf")
+        array.push("Hotel")
+        array.push("India")
+        array.push("Juliet")
+        array.push("Kilo")
+        array.push("Lima")
+        array.push("Mike")
+        array.push("November")
+        array.push("Oscar")
+        array.push("Papa")
+        array.push("Quebec")
+        array.push("Romeo")
+        array.push("Sierra")
+        array.push("Tango")
+        array.push("Uniform")
+        array.push("Victor")
+        array.push("Whiskey")
+        array.push("Xray")
+        array.push("Yankee")
+        array.push("Zulu")
         result = array.Join("")
     end sub
 
+    @test("push and join")
+    sub _()
+        array = []
+        array.push("Alpha")
+        array.push("Beta")
+        array.push("Charlie")
+        array.push("Delta")
+        array.push("Echo")
+        array.push("Foxtrot")
+        array.push("Golf")
+        array.push("Hotel")
+        array.push("India")
+        array.push("Juliet")
+        array.push("Kilo")
+        array.push("Lima")
+        array.push("Mike")
+        array.push("November")
+        array.push("Oscar")
+        array.push("Papa")
+        array.push("Quebec")
+        array.push("Romeo")
+        array.push("Sierra")
+        array.push("Tango")
+        array.push("Uniform")
+        array.push("Victor")
+        array.push("Whiskey")
+        array.push("Xray")
+        array.push("Yankee")
+        array.push("Zulu")
+        result = array.Join("")
+    end sub
+
+    @test(".format with 26 args")
+    sub _()
+        result = "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format("Alpha", "Beta", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo", "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu")
+    end sub
+
+    @test(".format with blocks of 5")
+    sub _()
+        result = "%s%s%s%s%s".format("Alpha", "Beta", "Charlie", "Delta", "Echo")
+        result = "%s%s%s%s%s%s".format(result, "Foxtrot", "Golf", "Hotel", "India", "Juliet")
+        result = "%s%s%s%s%s%s".format(result, "Kilo", "Lima", "Mike", "November", "Oscar")
+        result = "%s%s%s%s%s%s".format(result, "Papa", "Quebec", "Romeo", "Sierra", "Tango")
+        result = "%s%s%s%s%s%s".format(result, "Uniform", "Victor", "Whiskey", "Xray", "Yankee")
+        result = "%s%s".format(result, "Zulu")
+    end sub
+
+    @test("custom stringJoin with 26 args")
+    sub _()
+        result = stringJoin(["Alpha", "Beta", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo", "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu"])
+    end sub
+
+
+    @test("custom stringJoin cached with 26 args")
+    sub _()
+        result = stringJoinCached(["Alpha", "Beta", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel", "India", "Juliet", "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", "Quebec", "Romeo", "Sierra", "Tango", "Uniform", "Victor", "Whiskey", "Xray", "Yankee", "Zulu"])
+    end sub
+
+
+    @test("substitute 2 at a time")
+    sub _()
+        result = substitute("{1}{2}{3}", "Alpha", "Beta", "Charlie")
+        result = substitute("{1}{2}{3}", result, "Delta", "Echo")
+        result = substitute("{1}{2}{3}", result, "Foxtrot", "Golf")
+        result = substitute("{1}{2}{3}", result, "Hotel", "India")
+        result = substitute("{1}{2}{3}", result, "Juliet", "Kilo")
+        result = substitute("{1}{2}{3}", result, "Lima", "Mike")
+        result = substitute("{1}{2}{3}", result, "November", "Oscar")
+        result = substitute("{1}{2}{3}", result, "Papa", "Quebec")
+        result = substitute("{1}{2}{3}", result, "Romeo", "Sierra")
+        result = substitute("{1}{2}{3}", result, "Tango", "Uniform")
+        result = substitute("{1}{2}{3}", result, "Victor", "Whiskey")
+        result = substitute("{1}{2}{3}", result, "Xray", "Yankee")
+        result = substitute("{1}{2}{3}", result, "Zulu")
+    end sub
+
+    ' Calls the supplied function with the supplied arguments
+    ' @param {Function} callback - The function to be called
+    ' @param {dynamic} args - The arguments to pass to the callback. Max 32 arguments.
+    ' @return {dynamic} The result of the callback
+    function stringJoin(args)
+        if type(args) = "roArray" then
+            argsCount = args.count()
+
+            if argsCount < 16 then ' 0-15 args
+                if argsCount < 8 then ' 0-7 args
+                    if argsCount < 4 then ' 0-3 args
+                        if argsCount < 2 then ' 0-1 args
+                            if argsCount = 0 then ' 0 args
+                                return ""
+                            else ' 1 arg
+                                result = args[0]
+                            end if
+                        else ' 2-3 args
+                            if argsCount = 2 then ' 2 args
+                                return "%s%s".format(args[0], args[1])
+                            else ' 3 args
+                                return "%s%s%s".format(args[0], args[1], args[2])
+                            end if
+                        end if
+                    else ' 4-7 args
+                        if argsCount < 6 then
+                            if argsCount = 4 then ' 4 args
+                                return "%s%s%s%s".format(args[0], args[1], args[2], args[3])
+                            else ' 5 args
+                                return "%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4])
+                            end if
+                        else ' 6-7 args
+                            if argsCount = 6 then ' 6 args
+                                return "%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5])
+                            else ' 7 args
+                                return "%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+                            end if
+                        end if
+                    end if
+                else ' 8-15 args
+                    if argsCount < 12 then ' 8-11 args
+                        if argsCount < 10 then ' 8-9 args
+                            if argsCount = 8 then ' 8 args
+                                return "%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+                            else ' 9 args
+                                return "%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8])
+                            end if
+                        else ' 10-11 args
+                            if argsCount = 10 then ' 10 args
+                                return "%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9])
+                            else ' 11 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10])
+                            end if
+                        end if
+                    else ' 12-15 args
+                        if argsCount < 14 then ' 12-13 args
+                            if argsCount = 12 then ' 12 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
+                            else ' 13 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12])
+                            end if
+                        else ' 14-15 args
+                            if argsCount = 14 then ' 14 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13])
+                            else ' 15 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14])
+                            end if
+                        end if
+                    end if
+                end if
+            else ' 16-32 args
+                if argsCount < 24 then ' 16-23 args
+                    if argsCount < 20 then ' 16-19 args
+                        if argsCount < 18 then ' 16-17 args
+                            if argsCount = 16 then ' 16 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15])
+                            else ' 17 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16])
+                            end if
+                        else ' 18-19 args
+                            if argsCount = 18 then ' 18 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17])
+                            else ' 19 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18])
+                            end if
+                        end if
+                    else ' 20-23 args
+                        if argsCount < 22 then ' 20-21 args
+                            if argsCount = 20 then ' 20 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19])
+                            else ' 21 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20])
+                            end if
+                        else ' 22-23 args
+                            if argsCount = 22 then ' 22 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21])
+                            else ' 23 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22])
+                            end if
+                        end if
+                    end if
+                else ' 24-32 args
+                    if argsCount < 28 then ' 24-27 args
+                        if argsCount < 26 then ' 24-25 args
+                            if argsCount = 24 then ' 24 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23])
+                            else ' 25 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24])
+                            end if
+                        else ' 26-27 args
+                            if argsCount = 26 then ' 26 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25])
+                            else ' 27 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26])
+                            end if
+                        end if
+                    else ' 28-32 args
+                        if argsCount < 30 then ' 28-29 args
+                            if argsCount = 28 then ' 28 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27])
+                            else ' 29 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28])
+                            end if
+                        else ' 30-32 args
+                            if (argsCount = 30) then ' 30 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28], args[29])
+
+                            else if argsCount = 31 then ' 31 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28], args[29], args[30])
+                            else ' 32 args
+                                return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28], args[29], args[30], args[31])
+                            end if
+                        end if
+                    end if
+                end if
+            end if
+        end if
+
+        return ""
+    end function
+
+    ' Calls the supplied function with the supplied arguments
+    ' @param {Function} callback - The function to be called
+    ' @param {dynamic} args - The arguments to pass to the callback. Max 32 arguments.
+    ' @return {dynamic} The result of the callback
+    function stringJoinCached(args)
+        if type(args) = "roArray" then
+            if m.stringJoinCache = invalid then
+                m.stringJoinCache = {
+                    "0": function(args)
+                        return args[0]
+                    end function
+                    "1": function(args)
+                        return args[0]
+                    end function
+                    "2": function(args)
+                        return "%s%s".format(args[0], args[1])
+                    end function
+                    "3": function(args)
+                        return "%s%s%s".format(args[0], args[1], args[2])
+                    end function
+                    "4": function(args)
+                        return "%s%s%s%s".format(args[0], args[1], args[2], args[3])
+                    end function
+                    "5": function(args)
+                        return "%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4])
+                    end function
+                    "6": function(args)
+                        return "%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5])
+                    end function
+                    "7": function(args)
+                        return "%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6])
+                    end function
+                    "8": function(args)
+                        return "%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
+                    end function
+                    "9": function(args)
+                        return "%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8])
+                    end function
+                    "10": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9])
+                    end function
+                    "11": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10])
+                    end function
+                    "12": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11])
+                    end function
+                    "13": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12])
+                    end function
+                    "14": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13])
+                    end function
+                    "15": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14])
+                    end function
+                    "16": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15])
+                    end function
+                    "17": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16])
+                    end function
+                    "18": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17])
+                    end function
+                    "19": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18])
+                    end function
+                    "20": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19])
+                    end function
+                    "21": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20])
+                    end function
+                    "22": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21])
+                    end function
+                    "23": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22])
+                    end function
+                    "24": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23])
+                    end function
+                    "25": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24])
+                    end function
+                    "26": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25])
+                    end function
+                    "27": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26])
+                    end function
+                    "28": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27])
+                    end function
+                    "29": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28])
+                    end function
+                    "30": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28], args[29])
+                    end function
+                    "31": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28], args[29], args[30])
+                    end function
+                    "32": function(args)
+                        return "%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s".format(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12], args[13], args[14], args[15], args[16], args[17], args[18], args[19], args[20], args[21], args[22], args[23], args[24], args[25], args[26], args[27], args[28], args[29], args[30], args[31])
+                    end function
+                }
+            end if
+            return m.stringJoinCache[args.count().toStr()](args)
+        end if
+        return ""
+    end function
 end namespace
