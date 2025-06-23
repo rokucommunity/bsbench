@@ -1,0 +1,44 @@
+@suite()
+@only()
+namespace StringFieldSize
+    sub setup()
+        node = createObject("roSGNode", "Node") as dynamic
+        node.addField("stringField", "string", false)
+    end sub
+
+    @test("5 chars")
+    sub _()
+        node.stringField = "12345"
+    end sub
+
+    @test("10 chars")
+    sub _()
+        node.stringField = "1234567890"
+    end sub
+
+    @test("15 chars")
+    sub _()
+        node.stringField = "123456789012345"
+    end sub
+
+    @test("20 chars")
+    sub _()
+        node.stringField = "12345678901234567890"
+    end sub
+
+    @test("40 chars")
+    sub _()
+        node.stringField = "1234567890123456789012345678901234567890"
+    end sub
+
+    @test("60 chars")
+    sub _()
+        node.stringField = "123456789012345678901234567890123456789012345678901234567890"
+    end sub
+
+    @test("80 chars")
+    sub _()
+        node.stringField = "12345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    end sub
+
+end namespace
