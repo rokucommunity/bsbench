@@ -1,5 +1,4 @@
 @suite()
-@only()
 namespace StringFieldSize
     sub setup()
         node = createObject("roSGNode", "Node") as dynamic
