@@ -1,0 +1,96 @@
+@suite()
+namespace OptionalChainVsLoopGet
+    sub setup()
+        aa = {
+            alpha: {
+                name: "alpha"
+                beta: {
+                    name: "beta"
+                    charlie: {
+                        name: "charlie"
+                        delta: {
+                            name: "delta"
+                            echo: {
+                                name: "echo"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    end sub
+
+    @test("optional chain hit shallow")
+    sub _()
+        value = aa?.alpha?.name
+    end sub
+
+    @test("loop get hit shallow")
+    sub _()
+        value = getString(aa, "alpha.name")
+    end sub
+
+
+    @test("optional chain miss shallow")
+    sub _()
+        value = aa?.notThere?.name
+    end sub
+
+    @test("loop get miss shallow")
+    sub _()
+        value = getString(aa, "notThere.name")
+    end sub
+
+
+    @test("optional chain hit deep")
+    sub _()
+        value = aa?.alpha?.beta?.charlie?.delta?.echo?.name
+    end sub
+
+    @test("loop get hit deep")
+    sub _()
+        value = getString(aa, "alpha.beta.charlie.delta.echo.name")
+    end sub
+
+
+    @test("optional chain miss deep")
+    sub _()
+        value = aa?.alpha?.beta?.charlie?.delta?.notThere?.name
+    end sub
+
+    @test("loop get miss deep")
+    sub _()
+        value = getString(aa, "alpha.beta.charlie.delta.notThere.name")
+    end sub
+
+
+    function getString(target as dynamic, keyPath as string, fallback = "" as string) as string
+        for each key in keyPath.split(".")
+            targetType = type(target)
+            if targetType = "roAssociativeArray" or targetType = "roSGNode" then
+                target = target[key]
+            else if targetType = "roArray" or targetType = "roList" then
+                index = val(key, 10)
+                if index = 0 and key <> "0" then
+                    return fallback
+                end if
+
+                target = target[index]
+            else
+                ' item was not a container
+                return fallback
+            end if
+
+            if target = invalid then
+                return fallback
+            end if
+        end for
+
+        finalValueType = type(target)
+        if finalValueType = "String" or finalValueType = "roString" then
+            return target
+        end if
+
+        return fallback
+    end function
+end namespace
