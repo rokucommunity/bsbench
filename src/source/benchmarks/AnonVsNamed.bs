@@ -1,0 +1,16 @@
+@suite()
+namespace AnonVsNamed
+    @test("call anon func")
+    sub _()
+        result = (function()
+        end function)()
+    end sub
+
+    @test("call named func")
+    sub _()
+        result = theFunc()
+    end sub
+
+    function theFunc()
+    end function
+end namespace

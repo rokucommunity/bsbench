@@ -1,0 +1,204 @@
+@suite()
+namespace AppendVsDefineFuncs
+    sub setup()
+        template = {}
+        template.func1 = theFunc1
+        template.func2 = theFunc2
+        template.func3 = theFunc3
+        template.func4 = theFunc4
+        template.func5 = theFunc5
+        template.func6 = theFunc6
+        template.func7 = theFunc7
+        template.func8 = theFunc8
+        template.func9 = theFunc9
+        template.func10 = theFunc10
+        template.func11 = theFunc11
+        template.func12 = theFunc12
+        template.func13 = theFunc13
+        template.func14 = theFunc14
+        template.func15 = theFunc15
+        template.func16 = theFunc16
+        template.func17 = theFunc17
+        template.func18 = theFunc18
+        template.func19 = theFunc19
+        template.func20 = theFunc20
+        template.func21 = theFunc21
+        template.func22 = theFunc22
+        template.func23 = theFunc23
+        template.func24 = theFunc24
+        template.func25 = theFunc25
+        template.func26 = theFunc26
+        template.func27 = theFunc27
+        template.func28 = theFunc28
+        template.func29 = theFunc29
+        template.func30 = theFunc30
+    end sub
+
+    @test("assign each func directly")
+    sub _()
+        obj = {}
+        obj.func1 = theFunc1
+        obj.func2 = theFunc2
+        obj.func3 = theFunc3
+        obj.func4 = theFunc4
+        obj.func5 = theFunc5
+        obj.func6 = theFunc6
+        obj.func7 = theFunc7
+        obj.func8 = theFunc8
+        obj.func9 = theFunc9
+        obj.func10 = theFunc10
+        obj.func11 = theFunc11
+        obj.func12 = theFunc12
+        obj.func13 = theFunc13
+        obj.func14 = theFunc14
+        obj.func15 = theFunc15
+        obj.func16 = theFunc16
+        obj.func17 = theFunc17
+        obj.func18 = theFunc18
+        obj.func19 = theFunc19
+        obj.func20 = theFunc20
+        obj.func21 = theFunc21
+        obj.func22 = theFunc22
+        obj.func23 = theFunc23
+        obj.func24 = theFunc24
+        obj.func25 = theFunc25
+        obj.func26 = theFunc26
+        obj.func27 = theFunc27
+        obj.func28 = theFunc28
+        obj.func29 = theFunc29
+        obj.func30 = theFunc30
+
+    end sub
+
+    @test("assign each func in literal")
+    sub _()
+        obj = {
+            func1: theFunc1
+            func2: theFunc2
+            func3: theFunc3
+            func4: theFunc4
+            func5: theFunc5
+            func6: theFunc6
+            func7: theFunc7
+            func8: theFunc8
+            func9: theFunc9
+            func10: theFunc10
+            func11: theFunc11
+            func12: theFunc12
+            func13: theFunc13
+            func14: theFunc14
+            func15: theFunc15
+            func16: theFunc16
+            func17: theFunc17
+            func18: theFunc18
+            func19: theFunc19
+            func20: theFunc20
+            func21: theFunc21
+            func22: theFunc22
+            func23: theFunc23
+            func24: theFunc24
+            func25: theFunc25
+            func26: theFunc26
+            func27: theFunc27
+            func28: theFunc28
+            func29: theFunc29
+            func30: theFunc30
+        }
+    end sub
+
+    @test("object assign")
+    sub _()
+        obj = {}
+        obj.Append(template)
+    end sub
+
+    sub theFunc1()
+    end sub
+
+    sub theFunc2()
+    end sub
+
+    sub theFunc3()
+    end sub
+
+    sub theFunc4()
+    end sub
+
+    sub theFunc5()
+    end sub
+
+    sub theFunc6()
+    end sub
+
+    sub theFunc7()
+    end sub
+
+    sub theFunc8()
+    end sub
+
+    sub theFunc9()
+    end sub
+
+    sub theFunc10()
+    end sub
+
+    sub theFunc11()
+    end sub
+
+    sub theFunc12()
+    end sub
+
+    sub theFunc13()
+    end sub
+
+    sub theFunc14()
+    end sub
+
+    sub theFunc15()
+    end sub
+
+    sub theFunc16()
+    end sub
+
+    sub theFunc17()
+    end sub
+
+    sub theFunc18()
+    end sub
+
+    sub theFunc19()
+    end sub
+
+    sub theFunc20()
+    end sub
+
+    sub theFunc21()
+    end sub
+
+    sub theFunc22()
+    end sub
+
+    sub theFunc23()
+    end sub
+
+    sub theFunc24()
+    end sub
+
+    sub theFunc25()
+    end sub
+
+    sub theFunc26()
+    end sub
+
+    sub theFunc27()
+    end sub
+
+    sub theFunc28()
+    end sub
+
+    sub theFunc29()
+    end sub
+
+    sub theFunc30()
+    end sub
+end namespace
