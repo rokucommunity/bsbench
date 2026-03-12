@@ -1,0 +1,24 @@
+@suite()
+namespace SubtypeVsBoolean
+    sub setup()
+        node = createObject("roSGNode", "Rectangle")
+        node.setField("isBoolean", true)
+        (node as dynamic).isBoolean = true
+    end sub
+
+    @test("read subtype of component")
+    sub _()
+        result = node.subtype()
+    end sub
+
+    @test("read existing field of component")
+    sub _()
+        result = (node as dynamic).isBoolean
+    end sub
+
+    @test("read custom field of component")
+    sub _()
+        result = node.focusable
+    end sub
+
+end namespace
