@@ -6,9 +6,13 @@ sub main()
     screen.show()
     m.global = screen.getGlobalNode()
 
-    bsbench.runSync({} as RunOptions)
-    'small sleep so we can finish printing the results
-    sleep(2000)
+    promises.setMessagePort(m.port)
+
+    bsbench.runAsync()
+
+    while true
+        promises.wait2(0, m.port)
+    end while
 end sub
 
 sub runAllTests(iterations = 1)

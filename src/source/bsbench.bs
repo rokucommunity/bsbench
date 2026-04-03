@@ -3,17 +3,31 @@ namespace bsbench
     'This array is auto-generated during the build process
     const allSuites = [] as BenchmarkSuite[]
 
-    function runSync(options as RunOptions)
-        suites = allSuites
-        for each suite in suites
-            runSuite(suite, options)
-        end for
+    function runAsync() as object
+        return bsbench.promiseSeries(allSuites, function(suite, ctx) as object
+            return bsbench.runSuite(suite, {} as RunOptions)
+        end function)
     end function
 
-    function runAsync()
+    '
+    ' Like promises.all but sequential — calls callback(item, context) for each item in order,
+    ' waiting for each promise to resolve before starting the next.
+    ' Resolves with an array of all results in order.
+    ' Rejects immediately on the first failure, abandoning remaining items.
+    '
+    function promiseSeries(items as object, callback as function, context = {} as object, index = 0 as integer, results = [] as object) as object
+        if index >= items.count()
+            return promises.resolve(results)
+        end if
+        ctx = { items: items, index: index, callback: callback, userContext: context, results: results }
+        return promises.onThen(callback(items[index], context), function(result, ctx) as object
+            ctx.results.push(result)
+            return bsbench.promiseSeries(ctx.items, ctx.callback, ctx.userContext, ctx.index + 1, ctx.results)
+        end function, ctx)
     end function
 
-    function runSuite(suite as BenchmarkSuite, options as RunOptions)
+
+    function runSuite(suite as BenchmarkSuite, options as RunOptions) as object
         'print a ascii table style fenced header for the suite
         print `********************************************************************`
         print `           ${suite.name} `
@@ -52,6 +66,7 @@ namespace bsbench
         end for
 
         printSuiteResults(suiteResults)
+        return promises.resolve(suiteResults)
     end function
 
     '
