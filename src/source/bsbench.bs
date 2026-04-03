@@ -53,7 +53,7 @@ namespace bsbench
     end function
 
     function runAsync() as object
-        return bsbench.promiseSeries(getAllSuites(), function(suite, ctx) as object
+        return bsbench.promiseForEach(getAllSuites(), function(suite, ctx) as object
             return bsbench.runSuite(suite, {} as RunOptions)
         end function)
     end function
@@ -64,20 +64,15 @@ namespace bsbench
         print `********************************************************************`
 
         return promises.chain(promises.resolve(invalid), { suite: suite }).then(function(_, ctx)
-
-            return bsbench.promiseSeries(ctx.suite.tests, function(test, ctx)
-                'run test on the main thread
-                if false then
-                    return bsbench.runTest(ctx.suite.name, test.name)
-                    'run the test on the render thread
-                else if false
+            return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx)
+                if ctx.suite.threadTarget = "render"
                     mainScene = bsbench.getMainScene()
                     return mainScene@.runTest(ctx.suite.name, test.name)
-
-                    'run the test on a Task thread
-                else if true then
-                    testTask =  bsbench.getTestTask()
+                else if ctx.suite.threadTarget = "task"
+                    testTask = bsbench.getTestTask()
                     return testTask@.runTest(ctx.suite.name, test.name)
+                else
+                    return bsbench.runTest(ctx.suite.name, test.name)
                 end if
             end function, ctx)
 
@@ -97,7 +92,7 @@ namespace bsbench
             samples = 5
             print `${ctx.test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
             sampleIndexes = [0, 1, 2, 3, 4]
-            return promises.onThen(bsbench.promiseSeries(sampleIndexes, function(i, ctx) as object
+            return promises.onThen(bsbench.promiseForEach(sampleIndexes, function(i, ctx) as object
                 sample = ctx.test.func(ctx.iterationsForDuration, ctx.suite.variant) as SampleResult
                 sample.testName = ctx.test.name
                 sample.suiteName = ctx.suite.name
@@ -123,14 +118,14 @@ namespace bsbench
     ' Resolves with an array of all results in order.
     ' Rejects immediately on the first failure, abandoning remaining items.
     '
-    function promiseSeries(items as object, callback as function, context = {} as object, index = 0 as integer, results = [] as object) as object
+    function promiseForEach(items as object, callback as function, context = {} as object, index = 0 as integer, results = [] as object) as object
         if index >= items.count()
             return promises.resolve(results)
         end if
         ctx = { items: items, index: index, callback: callback, userContext: context, results: results }
         return promises.onThen(callback(items[index], context), function(result, ctx) as object
             ctx.results.push(result)
-            return bsbench.promiseSeries(ctx.items, ctx.callback, ctx.userContext, ctx.index + 1, ctx.results)
+            return bsbench.promiseForEach(ctx.items, ctx.callback, ctx.userContext, ctx.index + 1, ctx.results)
         end function, ctx)
     end function
 
@@ -416,6 +411,7 @@ interface BenchmarkSuite
     name as string
     tests as BenchmarkTest[]
     variant as roAssociativeArray
+    threadTarget as string
 end interface
 
 ' A single named test within a suite. func accepts (iterations, variant) and returns a SampleResult.

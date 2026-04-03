@@ -169,9 +169,10 @@ class BsBenchPlugin implements CompilerPlugin {
             //create an AA for every variation of every suite
             const suitesAst = suitesToRun.map(suite => {
                 const variants = this.getVariants(suite);
+                const threads = suite.config.supportedThreads;
+                const multipleThreads = threads.length > 1;
                 let statements = [];
                 for (const variant of variants) {
-
                     const variantValues = Object.fromEntries(
                         Object.entries(variant).map(([key, value]) => {
                             return [
@@ -189,34 +190,39 @@ class BsBenchPlugin implements CompilerPlugin {
                     const variantText = Object.keys(variant).length > 0
                         ? ' (' + Object.keys(variant).map(variantKey => `${variantKey}: ${variantValues[variantKey]}`).join(', ') + ')'
                         : '';
-                    const code = `
-                        aa = {
-                            name: "${suite.name}${variantText}",
-                            variant: invalid,
-                            tests: [
-                                ${this.findTests(suite).map((test) => `{
-                                    name: ${this.toBrsString(test.name)}
-                                    func: ${test.functionName}
-                                }`).join(', ')}
-                            ]
-                        }
-                    `;
-                    const parser = Parser.parse(code);
-                    //push the variant expressions into a new AA for this specific variant
-                    (parser.ast.findChild<AALiteralExpression>(isAALiteralExpression).elements[1].value as any) = new AALiteralExpression({
-                        elements: Object.keys(variant).map(key => {
-                            return new AAMemberExpression({
-                                key: createToken(TokenKind.StringLiteral, key),
-                                value: variant[key]
-                            });
-                        })
-                    });
 
-                    if (parser.diagnostics.length > 0) {
-                        throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
+                    for (const thread of threads) {
+                        const threadText = multipleThreads ? ` [${thread}]` : '';
+                        const code = `
+                            aa = {
+                                name: "${suite.name}${variantText}${threadText}",
+                                variant: invalid,
+                                threadTarget: "${thread}",
+                                tests: [
+                                    ${this.findTests(suite).map((test) => `{
+                                        name: ${this.toBrsString(test.name)}
+                                        func: ${test.functionName}
+                                    }`).join(', ')}
+                                ]
+                            }
+                        `;
+                        const parser = Parser.parse(code);
+                        //push the variant expressions into a new AA for this specific variant
+                        (parser.ast.findChild<AALiteralExpression>(isAALiteralExpression).elements[1].value as any) = new AALiteralExpression({
+                            elements: Object.keys(variant).map(key => {
+                                return new AAMemberExpression({
+                                    key: createToken(TokenKind.StringLiteral, key),
+                                    value: variant[key]
+                                });
+                            })
+                        });
+
+                        if (parser.diagnostics.length > 0) {
+                            throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
+                        }
+                        const ast = (parser.ast.statements[0] as AssignmentStatement).value;
+                        statements.push(ast);
                     }
-                    const ast = (parser.ast.statements[0] as AssignmentStatement).value;
-                    statements.push(ast);
                 }
                 return statements;
             }).flat();
@@ -324,6 +330,17 @@ class BsBenchPlugin implements CompilerPlugin {
                 }
 
                 suite.config.variants ??= {};
+
+                //parse supportedThreads from annotation, default to all three
+                const supportedThreadsArg = (suiteAnnotation.call.args[0] as AALiteralExpression)?.elements?.find(x => x?.tokens?.key?.text === 'supportedThreads')?.value;
+                if (isArrayLiteralExpression(supportedThreadsArg)) {
+                    suite.config.supportedThreads = supportedThreadsArg.elements.map(e => {
+                        return new SourceNode(null, null, suite.file.srcPath, e.transpile(new BrsTranspileState(suite.file)) as any).toString().replace(/^["']|["']$/g, '');
+                    });
+                } else {
+                    suite.config.supportedThreads = ['main', 'render', 'task'];
+                }
+
                 return suite;
             } catch (e) {
                 console.log(e);
@@ -491,7 +508,11 @@ interface Suite {
         /**
          * Every entry is the name of a local variable, with an array of values (each value is one variant of the benchmark suite)
          */
-        variants: Record<string, Expression[]>
+        variants: Record<string, Expression[]>;
+        /**
+         * The threads this suite should run on. Defaults to ["main", "render", "task"]
+         */
+        supportedThreads: string[];
     };
     file: BrsFile;
 }
