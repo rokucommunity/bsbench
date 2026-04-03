@@ -114,29 +114,31 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     private injectSuiteImports(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
-        const mainSceneXml = event.program.getFile<XmlFile>('components/MainScene.xml');
-        if (!isXmlFile(mainSceneXml)) {
-            return;
-        }
-        const elements = mainSceneXml.ast.componentElement.elements;
-        const alreadyImported = new Set(
-            mainSceneXml.ast.componentElement.scriptElements.map(s => s.getAttribute('uri')?.value)
-        );
-        let lastScriptIdx = -1;
-        for (let i = 0; i < elements.length; i++) {
-            if ((elements[i] as any).tokens?.startTagName?.text?.toLowerCase() === 'script') {
-                lastScriptIdx = i;
-            }
-        }
-        let insertIndex = lastScriptIdx + 1;
-        for (const suite of allSuites) {
-            const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs');
-            if (alreadyImported.has(uri)) {
+        for (const xmlPath of ['components/MainScene.xml', 'components/TestTask.xml']) {
+            const xmlFile = event.program.getFile<XmlFile>(xmlPath);
+            if (!isXmlFile(xmlFile)) {
                 continue;
             }
-            const script = createSGScript({ type: 'text/brightscript', uri });
-            event.editor.arraySplice(elements, insertIndex++, 0, script);
-            alreadyImported.add(uri);
+            const elements = xmlFile.ast.componentElement.elements;
+            const alreadyImported = new Set(
+                xmlFile.ast.componentElement.scriptElements.map(s => s.getAttribute('uri')?.value)
+            );
+            let lastScriptIdx = -1;
+            for (let i = 0; i < elements.length; i++) {
+                if ((elements[i] as any).tokens?.startTagName?.text?.toLowerCase() === 'script') {
+                    lastScriptIdx = i;
+                }
+            }
+            let insertIndex = lastScriptIdx + 1;
+            for (const suite of allSuites) {
+                const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs');
+                if (alreadyImported.has(uri)) {
+                    continue;
+                }
+                const script = createSGScript({ type: 'text/brightscript', uri });
+                event.editor.arraySplice(elements, insertIndex++, 0, script);
+                alreadyImported.add(uri);
+            }
         }
     }
 

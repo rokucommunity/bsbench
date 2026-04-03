@@ -25,6 +25,15 @@ namespace bsbench
         else
         end if
     end function
+
+    'Get (or create) the test task
+    function getTestTask() as roSGNodeTestTask
+        if m.testTask = invalid then
+            m.testTask = CreateObject("roSGNode", "TestTask")
+        end if
+        return m.testTask
+    end function
+
     interface TestInfo
         test as BenchmarkTest
         suite as BenchmarkSuite
@@ -59,15 +68,16 @@ namespace bsbench
             return bsbench.promiseSeries(ctx.suite.tests, function(test, ctx)
                 'run test on the main thread
                 if false then
-
+                    return bsbench.runTest(ctx.suite.name, test.name)
                     'run the test on the render thread
-                else if true
+                else if false
                     mainScene = bsbench.getMainScene()
                     return mainScene@.runTest(ctx.suite.name, test.name)
 
                     'run the test on a Task thread
-                else if false then
-                    'TODO
+                else if true then
+                    testTask =  bsbench.getTestTask()
+                    return testTask@.runTest(ctx.suite.name, test.name)
                 end if
             end function, ctx)
 
@@ -77,7 +87,10 @@ namespace bsbench
         end function).ToPromise()
     end function
 
-    function runTest(test as BenchmarkTest, suite as BenchmarkSuite) as object
+    function runTest(suiteName as string, testName as string) as object
+        testInfo = bsbench.getTestInfo(suiteName, testName)
+        suite = testInfo.suite
+        test = testInfo.test
         print `‌‌ `
         print `${test.name} (Warming up)`
         return promises.onThen(bsbench.calibrate(test.func, 500, suite.variant), function(iterationsForDuration, ctx) as object

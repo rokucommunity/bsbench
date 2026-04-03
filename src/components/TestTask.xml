@@ -1,0 +1,7 @@
+<component name="TestTask" extends="Task">
+    <script type="text/brightscript" uri="TestTask.bs" />
+    <interface>
+        <field id="testData" type="assocarray" />
+        <function name="runTest" />
+    </interface>
+</component>
