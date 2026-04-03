@@ -58,7 +58,7 @@ namespace NodeRefPassing5
     end sub
 
     @test("node children loop")
-    sub _(variant2)
+    sub _()
         for i = 0 to nodeWithChildren.getChildCount() - 1
             result = nodeWithChildren.getChild(i)
         end for

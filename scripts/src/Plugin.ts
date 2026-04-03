@@ -1,4 +1,4 @@
-import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, WalkMode, createIdentifier, createToken, createVariableExpression, isAALiteralExpression, isArrayLiteralExpression, isAssignmentStatement, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DiagnosticSeverity, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, TokenKind, TypeExpression, WalkMode, createIdentifier, createToken, createVariableExpression, createVisitor, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement, isTemplateStringExpression, isVariableExpression } from "brighterscript";
 import { SourceNode } from 'source-map';
 
 class BsBenchPlugin implements CompilerPlugin {
@@ -36,6 +36,20 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     beforeFileValidate(event: BeforeFileValidateEvent) {
+        for (const suite of this.findSuites(event.file)) {
+            for (const test of this.findTests(suite)) {
+                const userParams = test.functionStatement.func.parameters.filter(p => !!p.location?.uri);
+                if (userParams.length > 0) {
+                    event.program.diagnostics.register({
+                        location: userParams[0].location,
+                        severity: DiagnosticSeverity.Error,
+                        code: 'bsbench-test-params',
+                        message: `@test functions may not define parameters`
+                    });
+                }
+            }
+        }
+
         //add all the setup variables to each method in the suite
         for (const suite of this.findSuites(event.file)) {
             const setupFunction = this.findFunction(suite, 'setup');
@@ -390,10 +404,15 @@ class BsBenchPlugin implements CompilerPlugin {
 
             //suppress unused variable warnings for all locals and parameters in this function.
             //collect every variable name assigned anywhere in the function body, plus all parameters
-            const assignedNames = new Set<string>(
-                test.functionStatement.func.body.findChildren<AssignmentStatement>(isAssignmentStatement, { walkMode: WalkMode.visitStatements })
-                    .map(s => s.tokens.name.text)
-            );
+            const assignedNames = new Set<string>();
+            test.functionStatement.func.body.walk(createVisitor({
+                AssignmentStatement: (node) => { assignedNames.add(node.tokens.name.text); },
+                CatchStatement: (node) => {
+                    if (isVariableExpression(node.exceptionVariableExpression)) {
+                        assignedNames.add(node.exceptionVariableExpression.tokens.name.text);
+                    }
+                }
+            }), { walkMode: WalkMode.visitStatements });
             for (const param of test.functionStatement.func.parameters) {
                 assignedNames.add(param.tokens.name.text);
             }
