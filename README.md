@@ -23,3 +23,20 @@ npm run benchmark -- --host ROKU_IP_ADDRESS --password ROKU_DEV_PASSWORD
 ```
 
 ![Image](https://github.com/user-attachments/assets/b2204179-d681-40fd-95a8-6ecd986bc5f5)
+
+#### Running specific suites with `--only`
+Use `--only` to run a subset of suites by name. Each pattern is a case-insensitive regex matched against the suite name. Multiple patterns are OR'd together.
+
+```bash
+# Run a single suite
+npm run benchmark -- --host ROKU_IP_ADDRESS --password ROKU_DEV_PASSWORD --only roRegex
+
+# Run multiple suites
+npm run benchmark -- --host ROKU_IP_ADDRESS --password ROKU_DEV_PASSWORD --only roRegex StringConcat
+
+# Match suites starting with "Array"
+npm run benchmark -- --host ROKU_IP_ADDRESS --password ROKU_DEV_PASSWORD --only "^Array"
+
+# Match all Field* suites OR all String* suites
+npm run benchmark -- --host ROKU_IP_ADDRESS --password ROKU_DEV_PASSWORD --only "^Field" "^String"
+```

@@ -107,8 +107,20 @@ class BsBenchPlugin implements CompilerPlugin {
             return isConstStatement(x) && x.name.toLowerCase() === 'allsuites';
         })?.findChild(isArrayLiteralExpression) as ArrayLiteralExpression;
 
+        const filterPatterns: string[] = (event.program.options as any)?.bsbenchOptions?.only ?? [];
         let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
-        let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites : allSuites;
+        let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites
+            : filterPatterns.length > 0 ? allSuites.filter(x => filterPatterns.some(p => new RegExp(p, 'i').test(x.name)))
+            : allSuites;
+
+        if (atOnlySuites.length > 0) {
+            console.log(`[bsbench] Running ${suitesToRun.length} of ${allSuites.length} suites (@only):\n${suitesToRun.map(x => `  - ${x.name}`).join('\n')}`);
+        } else if (filterPatterns.length > 0) {
+            console.log(`[bsbench] Running ${suitesToRun.length} of ${allSuites.length} suites (--only: ${filterPatterns.map(p => `/${p}/i`).join(', ')}):\n${suitesToRun.map(x => `  - ${x.name}`).join('\n')}`);
+        }
+        if (suitesToRun.length === 0) {
+            throw new Error('[bsbench] No suites matched — nothing to run');
+        }
         if (allSuitesConstArray) {
             //create an AA for every variation of every suite
             const suitesAst = suitesToRun.map(suite => {
