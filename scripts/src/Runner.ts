@@ -1,9 +1,8 @@
 import * as readline from 'readline';
 import { TelnetMonitor } from './TelnetMonitor';
 import { logger } from './logging';
-import { execSync } from 'child_process';
 import { rokuDeploy } from 'roku-deploy';
-import { LogLevel, standardizePath as s } from 'brighterscript';
+import { ProgramBuilder, standardizePath as s } from 'brighterscript';
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -15,6 +14,7 @@ export class Runner {
         public options: {
             host: string;
             password: string;
+            only?: string[];
             cwd?: string;
         }
     ) {
@@ -52,9 +52,13 @@ export class Runner {
         });
     }
 
-    private buildApp() {
+    private async buildApp() {
         logger.log('Building app');
-        execSync('npm run build', { cwd: `${__dirname}/../../`, stdio: 'inherit' });
+        const builder = new ProgramBuilder();
+        await builder.run({
+            project: s`${__dirname}/../../bsconfig.json`,
+            ...(this.options.only?.length ? { bsbenchOptions: { only: this.options.only } } as any : {})
+        });
         logger.log('App finished building');
     }
 
