@@ -43,34 +43,34 @@ namespace bsbench
     function runTest(test as BenchmarkTest, suite as BenchmarkSuite) as object
         print `‌‌ `
         print `${test.name} (Warming up)`
-        iterationsForDuration = bsbench.getIterationsForDuration(test.func, 500, suite.variant)
-        samples = 5
-
-        sampleResults = [] as SampleResult[]
-        print `${test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
-        for i = 0 to samples - 1
-            sample = test.func(iterationsForDuration, suite.variant) as SampleResult
-            sample.testName = test.name
-            sample.suiteName = suite.name
-            sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
-            sampleResults.push(sample)
-            print `${test.name} (sample ${i + 1} of ${samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
-        end for
-
-        avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
-        print `${test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
-        return promises.resolve({
-            testName: test.name,
-            suiteName: suite.name,
-            operationsPerSecond: avgOpsPerSec,
-            samples: sampleResults
-        })
+        return promises.onThen(bsbench.getIterationsForDuration(test.func, 500, suite.variant), function(iterationsForDuration, ctx) as object
+            samples = 5
+            print `${ctx.test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
+            sampleIndexes = [0, 1, 2, 3, 4]
+            return promises.onThen(bsbench.promiseSeries(sampleIndexes, function(i, ctx) as object
+                sample = ctx.test.func(ctx.iterationsForDuration, ctx.suite.variant) as SampleResult
+                sample.testName = ctx.test.name
+                sample.suiteName = ctx.suite.name
+                sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
+                print `${ctx.test.name} (sample ${i + 1} of ${ctx.samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
+                return promises.resolve(sample)
+            end function, { test: ctx.test, suite: ctx.suite, iterationsForDuration: iterationsForDuration, samples: samples }), function(sampleResults, ctx) as object
+                avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
+                print `${ctx.test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
+                return promises.resolve({
+                    testName: ctx.test.name,
+                    suiteName: ctx.suite.name,
+                    operationsPerSecond: avgOpsPerSec,
+                    samples: sampleResults
+                })
+            end function, ctx)
+        end function, { test: test, suite: suite })
     end function
 
     '
     ' Run the test function with increasing iterations until we find an iteration count that runs for approximately `targetDurationMs`
     '
-    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as integer
+    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as object
 
 
         targetDurationMicroseconds = targetDurationMs * 1000&
@@ -165,7 +165,7 @@ namespace bsbench
 
         ' print "keeping the best iterations value from our various results"
 
-        return bestValue.iterations
+        return promises.resolve(bestValue.iterations)
     end function
 
     function average(values as dynamic[], key = invalid) as dynamic
