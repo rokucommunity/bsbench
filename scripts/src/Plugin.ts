@@ -1,4 +1,4 @@
-import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DiagnosticSeverity, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, TokenKind, TypeExpression, WalkMode, createIdentifier, createToken, createVariableExpression, createVisitor, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement, isTemplateStringExpression, isVariableExpression } from "brighterscript";
+import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DiagnosticSeverity, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, TokenKind, TypeExpression, WalkMode, XmlFile, createIdentifier, createSGScript, createToken, createVariableExpression, createVisitor, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement, isTemplateStringExpression, isVariableExpression, isXmlFile } from "brighterscript";
 import { SourceNode } from 'source-map';
 
 class BsBenchPlugin implements CompilerPlugin {
@@ -110,6 +110,34 @@ class BsBenchPlugin implements CompilerPlugin {
         }
 
         this.injectSuiteData(event, allSuites);
+        this.injectSuiteImports(event, allSuites);
+    }
+
+    private injectSuiteImports(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
+        const mainSceneXml = event.program.getFile<XmlFile>('components/MainScene.xml');
+        if (!isXmlFile(mainSceneXml)) {
+            return;
+        }
+        const elements = mainSceneXml.ast.componentElement.elements;
+        const alreadyImported = new Set(
+            mainSceneXml.ast.componentElement.scriptElements.map(s => s.getAttribute('uri')?.value)
+        );
+        let lastScriptIdx = -1;
+        for (let i = 0; i < elements.length; i++) {
+            if ((elements[i] as any).tokens?.startTagName?.text?.toLowerCase() === 'script') {
+                lastScriptIdx = i;
+            }
+        }
+        let insertIndex = lastScriptIdx + 1;
+        for (const suite of allSuites) {
+            const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs');
+            if (alreadyImported.has(uri)) {
+                continue;
+            }
+            const script = createSGScript({ type: 'text/brightscript', uri });
+            event.editor.arraySplice(elements, insertIndex++, 0, script);
+            alreadyImported.add(uri);
+        }
     }
 
     private injectSuiteData(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
