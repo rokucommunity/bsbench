@@ -43,7 +43,7 @@ namespace bsbench
     function runTest(test as BenchmarkTest, suite as BenchmarkSuite) as object
         print `‌‌ `
         print `${test.name} (Warming up)`
-        return promises.onThen(bsbench.getIterationsForDuration(test.func, 500, suite.variant), function(iterationsForDuration, ctx) as object
+        return promises.onThen(bsbench.calibrate(test.func, 500, suite.variant), function(iterationsForDuration, ctx) as object
             samples = 5
             print `${ctx.test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
             sampleIndexes = [0, 1, 2, 3, 4]
@@ -68,104 +68,88 @@ namespace bsbench
     end function
 
     '
-    ' Run the test function with increasing iterations until we find an iteration count that runs for approximately `targetDurationMs`
+    ' Finds the iteration count that fills approximately targetDurationMs per run.
+    ' Returns a promise that resolves with the iteration count.
     '
-    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as object
-
-
+    function calibrate(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as object
         targetDurationMicroseconds = targetDurationMs * 1000&
         marginOfErrorMicroseconds = marginOfErrorMs * 1000&
+        ctx = { testFunction: testFunction, variant: variant, targetDurationMicroseconds: targetDurationMicroseconds, marginOfErrorMicroseconds: marginOfErrorMicroseconds }
 
-        'do a timed run and return some stats
-        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMicroseconds as longinteger) as CalibrationRun
-            'force iterations to be an integer, and ensure there's at least 1 iteration
-            iterations = max(Cint(iterations), 1)
-            testResult = testFunction(iterations, variant)
-            elapsedMicroseconds = testResult.elapsedMicroseconds as longinteger
+        return promises.chain(promises.resolve(invalid), ctx).then(function(_, ctx) as object
+            ' Phase 1: find a floor for the iteration count that exceeds 50ms
+            return bsbench.calibrateFindFloor(ctx.testFunction, ctx.variant, ctx.targetDurationMicroseconds, 1)
+        end function).then(function(runResult, ctx) as object
+            ' Phase 2: run at 50% to refine the estimate
+            return promises.resolve(bsbench.calibrateTimedRun(ctx.testFunction, runResult.iterationsForTargetDuration * 0.50, ctx.variant, ctx.targetDurationMicroseconds))
+        end function).then(function(runResult, ctx) as object
+            ' Phase 3: run at 100%
+            return promises.resolve(bsbench.calibrateTimedRun(ctx.testFunction, runResult.iterationsForTargetDuration, ctx.variant, ctx.targetDurationMicroseconds))
+        end function).then(function(runResult, ctx) as object
+            return bsbench.calibrateCorrect(runResult, ctx, invalid, 0)
+        end function).then(function(runResult, ctx) as object
+            return promises.resolve(runResult.iterations)
+        end function).toPromise()
+    end function
 
-            if elapsedMicroseconds = 0
-                return {
-                    elapsedMicroseconds: 0&,
-                    iterations: iterations,
+    ' Phase 1: one timedRun per call, recurses until elapsedMicroseconds > 50ms
+    function calibrateFindFloor(testFunction as function, variant as object, targetDurationMicroseconds as longinteger, iterations as integer) as object
+        runResult = bsbench.calibrateTimedRun(testFunction, iterations, variant, targetDurationMicroseconds)
+        if runResult.elapsedMicroseconds > 50000&
+            return promises.resolve(runResult)
+        end if
+        return promises.onThen(promises.resolve(invalid), function(ignored, ctx) as object
+            return bsbench.calibrateFindFloor(ctx.testFunction, ctx.variant, ctx.targetDurationMicroseconds, ctx.iterations * 3)
+        end function, { testFunction: testFunction, variant: variant, targetDurationMicroseconds: targetDurationMicroseconds, iterations: iterations })
+    end function
+
+    ' Phase 4: one timedRun per call, recurses until within margin or tries exhausted
+    function calibrateCorrect(runResult as object, ctx as object, lastRunResult as object, tries as integer) as object
+        withinMargin = runResult.elapsedMicroseconds >= (ctx.targetDurationMicroseconds - ctx.marginOfErrorMicroseconds) and runResult.elapsedMicroseconds <= (ctx.targetDurationMicroseconds + ctx.marginOfErrorMicroseconds)
+        if withinMargin or tries >= 5
+            runs = [runResult]
+            if lastRunResult <> invalid
+                runs.push(lastRunResult)
+                runs.push({
+                    elapsedMicroseconds: bsbench.average([runResult.elapsedMicroseconds, lastRunResult.elapsedMicroseconds]),
+                    iterations: bsbench.average([runResult.iterationsForTargetDuration, lastRunResult.iterationsForTargetDuration]),
                     iterationsPerMicrosecond: 0.0
-                    iterationsForTargetDuration: 0&
-                }
+                    iterationsForTargetDuration: 0
+                })
             end if
+            return promises.resolve(bsbench.getClosestTestRun(runs, ctx.targetDurationMicroseconds))
+        end if
+        extraMicroseconds = ctx.targetDurationMicroseconds - runResult.elapsedMicroseconds
+        newTotalIterations = runResult.iterations + (extraMicroseconds * runResult.iterationsPerMicrosecond)
+        nextRunResult = bsbench.calibrateTimedRun(ctx.testFunction, newTotalIterations, ctx.variant, ctx.targetDurationMicroseconds)
+        return promises.onThen(promises.resolve(invalid), function(ignored, ctx) as object
+            return bsbench.calibrateCorrect(ctx.nextRunResult, ctx.ctx, ctx.runResult, ctx.tries + 1)
+        end function, { nextRunResult: nextRunResult, runResult: runResult, ctx: ctx, tries: tries })
+    end function
 
-            iterationsPerMicrosecond = iterations / elapsedMicroseconds as double
-            iterationsForTargetDuration = iterationsPerMicrosecond * targetDurationMicroseconds
+    ' Execute one timed run of the test function and return a CalibrationRun result
+    function calibrateTimedRun(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMicroseconds as longinteger) as CalibrationRun
+        iterations = max(Cint(iterations), 1)
+        testResult = testFunction(iterations, variant)
+        elapsedMicroseconds = testResult.elapsedMicroseconds as longinteger
+
+        if elapsedMicroseconds = 0
             return {
-                elapsedMicroseconds: elapsedMicroseconds,
+                elapsedMicroseconds: 0&,
                 iterations: iterations,
-                iterationsPerMicrosecond: iterationsPerMicrosecond
-                iterationsForTargetDuration: iterationsForTargetDuration
-            }
-        end function
-
-        runResult as CalibrationRun = invalid
-        iterations = 1
-
-        calibrationSpan = createObject("roTimeSpan")
-        'grow the iterations exponentially until we find a nonzero runtime greater than 50ms
-        while true
-            runResult = timedRun(testFunction, iterations, variant, targetDurationMicroseconds)
-
-            'we found a set of iterations that ran for a good minimum time
-            if runResult.elapsedMicroseconds > 50000&
-                exit while
-            else
-                'double the iterations and try again
-                iterations *= 3
-            end if
-        end while
-
-        'bs:disable-next-line
-        calibrationElapsedMicroseconds = calibrationSpan.TotalMicroseconds() as longinteger
-        ' print `found a nonzero runtime greater than 50ms, and took ${calibrationElapsedMicroseconds}us to find it`
-
-        'run for a portion the computed iterations to get a better understanding of the time it takes to run
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, variant, targetDurationMicroseconds)
-        ' print "50% of the computed iterations", runResult
-
-        'now run the exact computed iterations
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMicroseconds)
-        ' print "exact computed iterations", runResult
-
-        lastRunResult = invalid as CalibrationRun
-        tries = 0
-        'compensate for overshoot/undershoot
-        while (runResult.elapsedMicroseconds < (targetDurationMicroseconds - marginOfErrorMicroseconds) or runResult.elapsedMicroseconds > (targetDurationMicroseconds + marginOfErrorMicroseconds)) and tries < 5
-            tries++
-            'calculate how much we under/overshot
-            extraMicroseconds = targetDurationMicroseconds - runResult.elapsedMicroseconds
-            'the number of iterations we needed in this run to have reached our target
-            extraIterations = extraMicroseconds * runResult.iterationsPerMicrosecond
-            newTotalIterations = runResult.iterations + extraIterations
-
-            lastRunResult = runResult
-            runResult = timedRun(testFunction, newTotalIterations, variant, targetDurationMicroseconds)
-
-            ' print `overshoot/undershoot compensation #${tries} (add ${extraIterations} iterations)`, runResult
-        end while
-
-        runs = [runResult]
-        if lastRunResult <> invalid
-            runs.push(lastRunResult)
-            runs.push({
-                elapsedMicroseconds: average([runResult.elapsedMicroseconds, lastRunResult.elapsedMicroseconds]),
-                iterations: average([runResult.iterationsForTargetDuration, lastRunResult.iterationsForTargetDuration]),
                 iterationsPerMicrosecond: 0.0
-                iterationsForTargetDuration: 0
-            })
+                iterationsForTargetDuration: 0&
+            }
         end if
 
-        bestValue = getClosestTestRun(runs, targetDurationMicroseconds)
-
-        ' print "best value", bestValue
-
-        ' print "keeping the best iterations value from our various results"
-
-        return promises.resolve(bestValue.iterations)
+        iterationsPerMicrosecond = iterations / elapsedMicroseconds as double
+        iterationsForTargetDuration = iterationsPerMicrosecond * targetDurationMicroseconds
+        return {
+            elapsedMicroseconds: elapsedMicroseconds,
+            iterations: iterations,
+            iterationsPerMicrosecond: iterationsPerMicrosecond
+            iterationsForTargetDuration: iterationsForTargetDuration
+        }
     end function
 
     function average(values as dynamic[], key = invalid) as dynamic
@@ -377,7 +361,7 @@ end interface
 interface RunOptions
 end interface
 
-' Internal to getIterationsForDuration. Tracks the outcome of one calibration
+' Internal to calibrate. Tracks the outcome of one calibration
 ' run used to estimate the iteration count that fills a target duration.
 interface CalibrationRun
     elapsedMicroseconds as longinteger
