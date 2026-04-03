@@ -29,18 +29,27 @@ namespace bsbench
             iterationsForDuration = bsbench.getIterationsForDuration(testFunction, 500, suite.variant)
             samples = 5
 
-            results = [] as BenchmarkResult[]
-            print `${test.name} (Running ${numberToString(iterationsForDuration)} iterations)`
+            sampleResults = [] as SampleResult[]
+            print `${test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
             for i = 0 to samples - 1
-                result = testFunction(iterationsForDuration, suite.variant) as BenchmarkResult
-                result.operationsPerSecond = bsbench.getOperationsPerSecond(result.startTime, result.endTime, result.iterations)
-                results.push(result)
-                print `${test.name} (sample ${i + 1} of ${samples})`
-                bsbench.reportStatus(suite.name, test.name, i, result.iterations, result.startTime, result.endTime)
+                sample = testFunction(iterationsForDuration, suite.variant) as SampleResult
+                sample.testName = test.name
+                sample.suiteName = suite.name
+                sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.startTime, sample.endTime, sample.iterations)
+                sample.elapsedMs = bsbench.getMilliseconds(sample.endTime) - bsbench.getMilliseconds(sample.startTime)
+                sampleResults.push(sample)
+                print `${test.name} (sample ${i + 1} of ${samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(sample.elapsedMs.ToStr(), 4, " ")}ms)`
+                ' bsbench.reportStatus(suite.name, test.name, i, sample.iterations, sample.startTime, sample.endTime)
             end for
-            opsPerSec = average(results, "operationsPerSecond")
-            print `${test.name} (Done: ${numberToString(result.operationsPerSecond)} ops/sec)`
-            suiteResults.push(result)
+
+            avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
+            print `${test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
+            suiteResults.push({
+                testName: test.name,
+                suiteName: suite.name,
+                operationsPerSecond: avgOpsPerSec,
+                samples: sampleResults
+            })
         end for
 
         printSuiteResults(suiteResults)
@@ -53,7 +62,7 @@ namespace bsbench
 
 
         'do a timed run and return some stats
-        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMs as integer) as TimedRunResult
+        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMs as integer) as CalibrationRun
             'force iterations to be an integer, and ensure there's at least 1 iteration
             iterations = max(Cint(iterations), 1)
             testResult = testFunction(iterations, variant)
@@ -78,7 +87,7 @@ namespace bsbench
             }
         end function
 
-        runResult as TimedRunResult = invalid
+        runResult as CalibrationRun = invalid
         iterations = 1
 
         startTime = createObject("roDateTime")
@@ -107,7 +116,7 @@ namespace bsbench
         runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMs)
         ' print "exact computed iterations", runResult
 
-        lastRunResult = invalid as TimedRunResult
+        lastRunResult = invalid as CalibrationRun
         tries = 0
         'compensate for overshoot/undershoot
         while runResult.elapsedMs < (targetDurationMs - marginOfErrorMs) or runResult.elapsedMs > (targetDurationMs + marginOfErrorMs) and tries < 5
@@ -158,7 +167,7 @@ namespace bsbench
 
     '
     ' Find the closest number in an array to a target number
-    function getClosestTestRun(items as TimedRunResult[], target as integer)
+    function getClosestTestRun(items as CalibrationRun[], target as integer)
         result = items[0]
         for each item in items
             'skip invalid values
@@ -204,8 +213,8 @@ namespace bsbench
             end if
 
             'calculate longest name
-            if suiteResult.name.Len() > nameLengthMaxLen
-                nameLengthMaxLen = suiteResult.name.Len()
+            if suiteResult.testName.Len() > nameLengthMaxLen
+                nameLengthMaxLen = suiteResult.testName.Len()
             end if
         end for
 
@@ -217,7 +226,7 @@ namespace bsbench
             if suiteResult.operationsPerSecond = lowestOpsPerSec then
                 postfix = " (slowest)"
             end if
-            print padRight(suiteResult.name + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
+            print padRight(suiteResult.testName + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
         end for
         'print a few blank-ish lines to separate the results
         print `‌‌ \n‌‌ `
@@ -238,28 +247,55 @@ namespace bsbench
     end function
 
     '
-    ' Convert a number into a string with commas every 3 digits
+    ' Convert an integer into a string with commas every 3 digits
     '
-    function numberToString(num)
+    function intToString(num as longinteger) as string
         result = ""
-        i = 0
-        while num > 1
-            loopNum = (num mod 10).ToStr().Trim()
-            result = loopNum + result
-            num = num / 10
-            i++
-            if i mod 3 = 0 and num > 1 then
+        digitCount = 0
+        while num >= 1
+            if digitCount > 0 and digitCount mod 3 = 0
                 result = "," + result
             end if
+            result = (num mod 10).ToStr() + result
+            num = num / 10
+            digitCount++
         end while
-        result = result + "." + ((num * 10) mod 1).ToStr().Trim() + ((num * 100) mod 1).ToStr().Trim()
+        return result
+    end function
+
+    '
+    ' Convert a number into a string with commas every 3 digits
+    '
+    function numberToString(num) as string
+        ' Multiply by 100 to shift 2 decimal places into integer space.
+        ' Use # suffix to force double precision and avoid losing digits for large values.
+        shifted# = int(num * 100.0# + 0.5#)
+        decPart = CInt(shifted# mod 100.0#)
+        intPart# = int(shifted# / 100.0#)
+        originalIntPart# = intPart#
+
+        ' Insert commas into integer part
+        result = ""
+        digitCount = 0
+        while intPart# >= 1.0#
+            if digitCount > 0 and digitCount mod 3 = 0
+                result = "," + result
+            end if
+            result = CInt(intPart# mod 10.0#).ToStr() + result
+            intPart# = int(intPart# / 10.0#)
+            digitCount++
+        end while
+
+        if originalIntPart# < 1000.0# and decPart <> 0
+            result = result + "." + padLeft(decPart.ToStr(), 2, "0")
+        end if
         return result
     end function
 
     function getOperationsPerSecond(startDate, endDate, ops)
         startMs = getMilliseconds(startDate)
         endMs = getMilliseconds(endDate)
-        seconds = (endMs - startMs) / 1000
+        seconds = (endMs - startMs) / 1000.0
         if seconds = 0 then
             seconds = 0.0000001
         end if
@@ -267,12 +303,8 @@ namespace bsbench
         return opsPerSec
     end function
 
-    function getMilliseconds(date) as integer
-        result = 0
-        result += date.GetMinutes() * 60 * 1000
-        result += date.GetSeconds() * 1000
-        result += date.GetMilliseconds()
-        return result
+    function getMilliseconds(date) as longinteger
+        return (date.AsSeconds() * 1000) + date.GetMilliseconds()
     end function
 
     function getEpoch(date as roDateTime) as longinteger
@@ -304,30 +336,47 @@ namespace bsbench
 
 end namespace
 
+' The top-level result for a single benchmark test, containing the averaged
+' operationsPerSecond across all samples and the raw sample data.
+interface BenchmarkResult
+    testName as string
+    suiteName as string
+    operationsPerSecond as double
+    samples as SampleResult[]
+end interface
+
+' The raw result of one timed execution of a test function (a single sample).
+' operationsPerSecond, testName, and suiteName are populated by runSuite after the call.
+interface SampleResult
+    startTime as roDateTime
+    endTime as roDateTime
+    iterations as integer
+    elapsedMs as longinteger
+    operationsPerSecond as double
+    testName as string
+    suiteName as string
+end interface
+
+' A named group of benchmark tests sharing a common variant (input data).
 interface BenchmarkSuite
     name as string
     tests as BenchmarkTest[]
     variant as roAssociativeArray
 end interface
 
+' A single named test within a suite. func accepts (iterations, variant) and returns a SampleResult.
 interface BenchmarkTest
     name as string
     func as function
 end interface
 
+' Options passed to the top-level run functions. Reserved for future use.
 interface RunOptions
 end interface
 
-interface BenchmarkResult
-    startTime as roDateTime
-    endTime as roDateTime
-    iterations as integer
-    operationsPerSecond as double
-    name as string
-    suiteName as string
-end interface
-
-interface TimedRunResult
+' Internal to getIterationsForDuration. Tracks the outcome of one calibration
+' run used to estimate the iteration count that fills a target duration.
+interface CalibrationRun
     elapsedMs as integer
     iterations as integer
     iterationsPerMillisecond as double

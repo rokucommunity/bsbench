@@ -26,7 +26,7 @@ export class Runner {
                 let statusJson = /^\s*bsbenchStatus:\s*(.+?)$/.exec(line)?.[1];
                 if (statusJson) {
                     const status = JSON.parse(statusJson);
-                    logger.log('Found test result', status);
+                    // logger.log('Found test result', status);
                     this.results.push(status);
                 }
                 console.log(line);
