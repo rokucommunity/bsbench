@@ -1,4 +1,4 @@
-import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, createIdentifier, createToken, createVariableExpression, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
+import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DynamicType, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, InterfaceType, LiteralExpression, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, SymbolTypeFlag, TokenKind, TypeExpression, WalkMode, createIdentifier, createToken, createVariableExpression, isAALiteralExpression, isArrayLiteralExpression, isAssignmentStatement, isBrsFile, isConstStatement, isFunctionStatement, isLiteralString, isNamespaceStatement, isTemplateStringExpression } from "brighterscript";
 import { SourceNode } from 'source-map';
 
 class BsBenchPlugin implements CompilerPlugin {
@@ -388,6 +388,26 @@ class BsBenchPlugin implements CompilerPlugin {
                 );
             }
 
+            //suppress unused variable warnings for all locals and parameters in this function.
+            //collect every variable name assigned anywhere in the function body, plus all parameters
+            const assignedNames = new Set<string>(
+                test.functionStatement.func.body.findChildren<AssignmentStatement>(isAssignmentStatement, { walkMode: WalkMode.visitStatements })
+                    .map(s => s.tokens.name.text)
+            );
+            for (const param of test.functionStatement.func.parameters) {
+                assignedNames.add(param.tokens.name.text);
+            }
+            //remove bsbench-internal vars that don't need suppression
+            assignedNames.delete('__bsbench_i');
+            assignedNames.delete('__benchmarkStartTime');
+            assignedNames.delete('__benchmarkEndTime');
+            if (assignedNames.size > 0) {
+                const suppressStatement = Parser.parse(
+                    `__bsbench_suppressVarWarnings = [${[...assignedNames].join(', ')}]`
+                ).ast.statements[0] as AssignmentStatement;
+                editor.arrayPush(test.functionStatement.func.body.statements, suppressStatement);
+            }
+
             //append a statement that returns the test results
             const returnStatement = Parser.parse(`return {
                 startTime: __benchmarkStartTime
@@ -397,6 +417,18 @@ class BsBenchPlugin implements CompilerPlugin {
                 suiteName: "${suite.name}"
             }`).ast.statements[0] as ReturnStatement;
             editor.arrayPush(test.functionStatement.func.body.statements, returnStatement);
+        }
+
+        //remove setup/teardown from the output — they've been inlined into each test
+        //and emitting them standalone only produces unused variable warnings
+        const stmts = suite.namespaceStatement.body.statements;
+        if (setupFunction) {
+            const idx = stmts.indexOf(setupFunction);
+            if (idx >= 0) { editor.arraySplice(stmts, idx, 1); }
+        }
+        if (teardownFunction) {
+            const idx = stmts.indexOf(teardownFunction);
+            if (idx >= 0) { editor.arraySplice(stmts, idx, 1); }
         }
     }
 }
