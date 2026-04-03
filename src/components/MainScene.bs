@@ -1,0 +1,14 @@
+import "pkg:/source/bsbench.bs"
+
+sub init()
+    getGlobalAA().bsbenchThreadContext = "render"
+end sub
+
+'Run a specific test from a suite
+function runTest(suiteName as string, testName as string)
+    return promises.try(function(suiteName, testName)
+        print "Running from main scene!"
+        info = bsbench.getTestInfo(suiteName, testName)
+        return bsbench.runTest(info.test, info.suite)
+    end function, [suiteName, testName])
+end function

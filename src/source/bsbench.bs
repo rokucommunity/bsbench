@@ -1,43 +1,80 @@
+import "pkg:/source/roku_modules/promises/promises.brs"
+
 namespace bsbench
 
     'This array is auto-generated during the build process
     const allSuites = [] as BenchmarkSuite[]
 
+    function getAllSuites()
+        if m.allSuites = invalid
+            m.allSuites = allSuites
+        end if
+        return m.allSuites
+    end function
+
+    'Get a reference to the main scene
+    function getMainScene() as roSGNodeMainScene
+
+        'grab the scene variable from m first (if set by main flow)
+        if m.scene <> invalid then
+            return m.scene
+
+            'for some reason couldn't find the scene, maybe we're inside a node?
+        else if m.top <> invalid and m.top.getScene() <> invalid
+            return m.top.getScene() as roSGNodeMainScene
+        else
+        end if
+    end function
+    interface TestInfo
+        test as BenchmarkTest
+        suite as BenchmarkSuite
+    end interface
+
+    function getTestInfo(suiteName as string, testName as string) as TestInfo
+        for each suite in bsbench.getAllSuites()
+            if suite.name = suiteName
+                for each test in suite.tests
+                    if test.name = testName
+                        return { test: test, suite: suite }
+                    end if
+                end for
+            end if
+        end for
+        return invalid
+    end function
+
     function runAsync() as object
-        return bsbench.promiseSeries(allSuites, function(suite, ctx) as object
+        return bsbench.promiseSeries(getAllSuites(), function(suite, ctx) as object
             return bsbench.runSuite(suite, {} as RunOptions)
         end function)
     end function
 
-    '
-    ' Like promises.all but sequential — calls callback(item, context) for each item in order,
-    ' waiting for each promise to resolve before starting the next.
-    ' Resolves with an array of all results in order.
-    ' Rejects immediately on the first failure, abandoning remaining items.
-    '
-    function promiseSeries(items as object, callback as function, context = {} as object, index = 0 as integer, results = [] as object) as object
-        if index >= items.count()
-            return promises.resolve(results)
-        end if
-        ctx = { items: items, index: index, callback: callback, userContext: context, results: results }
-        return promises.onThen(callback(items[index], context), function(result, ctx) as object
-            ctx.results.push(result)
-            return bsbench.promiseSeries(ctx.items, ctx.callback, ctx.userContext, ctx.index + 1, ctx.results)
-        end function, ctx)
-    end function
-
-
-    function runSuite(suite as BenchmarkSuite, options as RunOptions) as object
+    function runSuite(suite as BenchmarkSuite, options as RunOptions)
         print `********************************************************************`
         print `           ${suite.name} `
         print `********************************************************************`
 
-        return promises.onThen(bsbench.promiseSeries(suite.tests, function(test, ctx) as object
-            return bsbench.runTest(test, ctx.suite)
-        end function, { suite: suite }), function(suiteResults, ctx) as object
+        return promises.chain(promises.resolve(invalid), { suite: suite }).then(function(_, ctx)
+
+            return bsbench.promiseSeries(ctx.suite.tests, function(test, ctx)
+                'run test on the main thread
+                if false then
+
+                    'run the test on the render thread
+                else if true
+                    mainScene = bsbench.getMainScene()
+                    return mainScene@.runTest(ctx.suite.name, test.name)
+
+                    'run the test on a Task thread
+                else if false then
+                    'TODO
+                end if
+            end function, ctx)
+
+        end function).then(function(suiteResults, ctx)
             bsbench.printSuiteResults(suiteResults)
             return promises.resolve(suiteResults)
-        end function, { suite: suite })
+        end function).ToPromise()
     end function
 
     function runTest(test as BenchmarkTest, suite as BenchmarkSuite) as object
@@ -65,6 +102,23 @@ namespace bsbench
                 })
             end function, ctx)
         end function, { test: test, suite: suite })
+    end function
+
+    '
+    ' Like promises.all but sequential — calls callback(item, context) for each item in order,
+    ' waiting for each promise to resolve before starting the next.
+    ' Resolves with an array of all results in order.
+    ' Rejects immediately on the first failure, abandoning remaining items.
+    '
+    function promiseSeries(items as object, callback as function, context = {} as object, index = 0 as integer, results = [] as object) as object
+        if index >= items.count()
+            return promises.resolve(results)
+        end if
+        ctx = { items: items, index: index, callback: callback, userContext: context, results: results }
+        return promises.onThen(callback(items[index], context), function(result, ctx) as object
+            ctx.results.push(result)
+            return bsbench.promiseSeries(ctx.items, ctx.callback, ctx.userContext, ctx.index + 1, ctx.results)
+        end function, ctx)
     end function
 
     '

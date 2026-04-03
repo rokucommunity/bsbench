@@ -1,5 +1,5 @@
 @suite()
-namespace GetGlobalAA
+namespace GetGlobalAATest
 
     @test("getGlobalAA()")
     sub _()
