@@ -51,6 +51,21 @@ Runs on the Roku device:
 ### Component Library (`complib/`)
 A separate Roku component library (`BrsComponent`, `XmlComponent`) used by the `ComponentCreation` benchmark. Has its own `complib/bsconfig.json`.
 
+## BrighterScript Plugin API Notes
+
+- **`findChildren`**: always pass `{ walkMode }` explicitly — the default also visits expressions.`*Recursive` options to cross into child function bodies.
+- **Diagnostics**: `program.diagnostics.register({ location, severity, code, message })` — use `astNode.location`, not `.range`.
+- **Removing nodes**: `editor.arraySplice(parentArray, array.indexOf(node), 1)`.
+
+## BrightScript Language Notes
+
+- **Suppressing unused variable warnings**: prefix the variable name with `_` (e.g., `catch _e`, `sub doNothing(_p0)`). BrightScript will not warn about unused variables whose names start with `_`.
+
+## Plugin Transforms (What the Plugin Does to Test Functions)
+
+- `setup()`/`teardown()` bodies are inlined into each test, then the functions are removed from the output.
+- `__bsbench_suppressVarWarnings = [...]` is injected after timing to suppress Roku's unused-variable warnings.
+
 ## Key Config Files
 
 | File | Purpose |

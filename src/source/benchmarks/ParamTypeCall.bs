@@ -2,13 +2,13 @@
 namespace ParamTypeCall
 
     @test("empty loop")
-    function _(opCount)
+    function _()
         'do literally nothing
     end function
 
 
     @test("typed function 1 param")
-    function _(opCount)
+    function _()
         doNothingTyped1params(0)
     end function
 
@@ -17,7 +17,7 @@ namespace ParamTypeCall
 
 
     @test("untyped function 1 param")
-    function _(opCount)
+    function _()
         doNothingUntyped1Params(0)
     end function
 
@@ -25,7 +25,7 @@ namespace ParamTypeCall
     end sub
 
     @test("typed function 5 params")
-    function _(opCount)
+    function _()
         doNothingTyped5params(0, 1, 2, 3, 4)
     end function
 
@@ -34,7 +34,7 @@ namespace ParamTypeCall
 
 
     @test("untyped function 5 params")
-    function _(opCount)
+    function _()
         doNothingUntyped5Params(0, 1, 2, 3, 4)
     end function
 
@@ -43,7 +43,7 @@ namespace ParamTypeCall
 
 
     @test("typed function 10 params")
-    function _(opCount)
+    function _()
         doNothingTyped10params(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     end function
 
@@ -52,7 +52,7 @@ namespace ParamTypeCall
 
 
     @test("untyped function 10 params")
-    function _(opCount)
+    function _()
         doNothingUntyped10Params(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     end function
 
