@@ -374,16 +374,16 @@ class BsBenchPlugin implements CompilerPlugin {
             }));
 
             //wrap the entire body of the function in a for loop
-            const forLoop = Parser.parse('for __bsbench_i = 0 to iterations\nend for').ast.statements[0] as ForStatement;
+            const forLoop = Parser.parse('for __bsbench_i = 0 to iterations - 1\nend for').ast.statements[0] as ForStatement;
             editor.setProperty(forLoop.body, 'statements', test.functionStatement.func.body.statements);
             editor.setProperty(test.functionStatement.func.body, 'statements', [forLoop]);
 
-            //insert new date before the loop
-            const startTimeAssignment = Parser.parse(`__benchmarkStartTime = CreateObject("roDateTime")`).ast.statements[0] as AssignmentStatement;
+            //insert timespan immediately before the loop; Mark() is called automatically on creation
+            const startTimeAssignment = Parser.parse(`__benchmarkTimeSpan = CreateObject("roTimeSpan")`).ast.statements[0] as AssignmentStatement;
             editor.arrayUnshift(test.functionStatement.func.body.statements, startTimeAssignment);
 
-            //insert new date after the loop
-            const endTimeAssignment = Parser.parse(`__benchmarkEndTime = CreateObject("roDateTime")`).ast.statements[0] as AssignmentStatement;
+            //capture elapsed microseconds after the loop
+            const endTimeAssignment = Parser.parse(`__benchmarkElapsedMicroseconds = __benchmarkTimeSpan.TotalMicroseconds()`).ast.statements[0] as AssignmentStatement;
             editor.arrayPush(test.functionStatement.func.body.statements, endTimeAssignment);
 
             //prepend the setup body to the top of the function body
@@ -418,8 +418,8 @@ class BsBenchPlugin implements CompilerPlugin {
             }
             //remove bsbench-internal vars that don't need suppression
             assignedNames.delete('__bsbench_i');
-            assignedNames.delete('__benchmarkStartTime');
-            assignedNames.delete('__benchmarkEndTime');
+            assignedNames.delete('__benchmarkTimeSpan');
+            assignedNames.delete('__benchmarkElapsedMicroseconds');
             if (assignedNames.size > 0) {
                 const suppressStatement = Parser.parse(
                     `__bsbench_suppressVarWarnings = [${[...assignedNames].join(', ')}]`
@@ -429,8 +429,7 @@ class BsBenchPlugin implements CompilerPlugin {
 
             //append a statement that returns the test results
             const returnStatement = Parser.parse(`return {
-                startTime: __benchmarkStartTime
-                endTime: __benchmarkEndTime
+                elapsedMicroseconds: __benchmarkElapsedMicroseconds
                 iterations: iterations
                 name: "${test.name}"
                 suiteName: "${suite.name}"
