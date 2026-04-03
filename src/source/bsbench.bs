@@ -35,11 +35,10 @@ namespace bsbench
                 sample = testFunction(iterationsForDuration, suite.variant) as SampleResult
                 sample.testName = test.name
                 sample.suiteName = suite.name
-                sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.startTime, sample.endTime, sample.iterations)
-                sample.elapsedMs = bsbench.getMilliseconds(sample.endTime) - bsbench.getMilliseconds(sample.startTime)
+                sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
                 sampleResults.push(sample)
-                print `${test.name} (sample ${i + 1} of ${samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(sample.elapsedMs.ToStr(), 4, " ")}ms)`
-                ' bsbench.reportStatus(suite.name, test.name, i, sample.iterations, sample.startTime, sample.endTime)
+                print `${test.name} (sample ${i + 1} of ${samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
+                ' bsbench.reportStatus(suite.name, test.name, i, sample.iterations, sample.elapsedMicroseconds)
             end for
 
             avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
@@ -61,28 +60,31 @@ namespace bsbench
     function getIterationsForDuration(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as integer
 
 
+        targetDurationMicroseconds = targetDurationMs * 1000&
+        marginOfErrorMicroseconds = marginOfErrorMs * 1000&
+
         'do a timed run and return some stats
-        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMs as integer) as CalibrationRun
+        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMicroseconds as longinteger) as CalibrationRun
             'force iterations to be an integer, and ensure there's at least 1 iteration
             iterations = max(Cint(iterations), 1)
             testResult = testFunction(iterations, variant)
-            elapsedMs = bsbench.getMilliseconds(testResult.endTime) - bsbench.getMilliseconds(testResult.startTime)
+            elapsedMicroseconds = testResult.elapsedMicroseconds as longinteger
 
-            if elapsedMs = 0
+            if elapsedMicroseconds = 0
                 return {
-                    elapsedMs: 0,
+                    elapsedMicroseconds: 0&,
                     iterations: iterations,
-                    iterationsPerMillisecond: 0
-                    iterationsForTargetDuration: 0
+                    iterationsPerMicrosecond: 0.0
+                    iterationsForTargetDuration: 0&
                 }
             end if
 
-            iterationsPerMillisecond = iterations / elapsedMs
-            iterationsForTargetDuration = iterationsPerMillisecond * targetDurationMs
+            iterationsPerMicrosecond = iterations / elapsedMicroseconds as double
+            iterationsForTargetDuration = iterationsPerMicrosecond * targetDurationMicroseconds
             return {
-                elapsedMs: elapsedMs,
+                elapsedMicroseconds: elapsedMicroseconds,
                 iterations: iterations,
-                iterationsPerMillisecond: iterationsPerMillisecond
+                iterationsPerMicrosecond: iterationsPerMicrosecond
                 iterationsForTargetDuration: iterationsForTargetDuration
             }
         end function
@@ -90,13 +92,13 @@ namespace bsbench
         runResult as CalibrationRun = invalid
         iterations = 1
 
-        startTime = createObject("roDateTime")
+        calibrationSpan = createObject("roTimeSpan")
         'grow the iterations exponentially until we find a nonzero runtime greater than 50ms
         while true
-            runResult = timedRun(testFunction, iterations, variant, targetDurationMs)
+            runResult = timedRun(testFunction, iterations, variant, targetDurationMicroseconds)
 
             'we found a set of iterations that ran for a good minimum time
-            if runResult.elapsedMs > 50
+            if runResult.elapsedMicroseconds > 50000&
                 exit while
             else
                 'double the iterations and try again
@@ -104,31 +106,31 @@ namespace bsbench
             end if
         end while
 
-        endTime = createObject("roDateTime")
-        elapsedMs = bsbench.getMilliseconds(endTime) - bsbench.getMilliseconds(startTime)
-        ' print `found a nonzero runtime greater than 50ms, and took ${elapsedMs}ms to find it`
+        'bs:disable-next-line
+        calibrationElapsedMicroseconds = calibrationSpan.TotalMicroseconds() as longinteger
+        ' print `found a nonzero runtime greater than 50ms, and took ${calibrationElapsedMicroseconds}us to find it`
 
         'run for a portion the computed iterations to get a better understanding of the time it takes to run
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, variant, targetDurationMs)
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, variant, targetDurationMicroseconds)
         ' print "50% of the computed iterations", runResult
 
         'now run the exact computed iterations
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMs)
+        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMicroseconds)
         ' print "exact computed iterations", runResult
 
         lastRunResult = invalid as CalibrationRun
         tries = 0
         'compensate for overshoot/undershoot
-        while runResult.elapsedMs < (targetDurationMs - marginOfErrorMs) or runResult.elapsedMs > (targetDurationMs + marginOfErrorMs) and tries < 5
+        while (runResult.elapsedMicroseconds < (targetDurationMicroseconds - marginOfErrorMicroseconds) or runResult.elapsedMicroseconds > (targetDurationMicroseconds + marginOfErrorMicroseconds)) and tries < 5
             tries++
             'calculate how much we under/overshot
-            extraMs = targetDurationMs - runResult.elapsedMs
+            extraMicroseconds = targetDurationMicroseconds - runResult.elapsedMicroseconds
             'the number of iterations we needed in this run to have reached our target
-            extraIterations = extraMs * runResult.iterationsPerMillisecond
+            extraIterations = extraMicroseconds * runResult.iterationsPerMicrosecond
             newTotalIterations = runResult.iterations + extraIterations
 
             lastRunResult = runResult
-            runResult = timedRun(testFunction, newTotalIterations, variant, targetDurationMs)
+            runResult = timedRun(testFunction, newTotalIterations, variant, targetDurationMicroseconds)
 
             ' print `overshoot/undershoot compensation #${tries} (add ${extraIterations} iterations)`, runResult
         end while
@@ -137,14 +139,14 @@ namespace bsbench
         if lastRunResult <> invalid
             runs.push(lastRunResult)
             runs.push({
-                elapsedMs: average([runResult.elapsedMs, lastRunResult.elapsedMs]),
+                elapsedMicroseconds: average([runResult.elapsedMicroseconds, lastRunResult.elapsedMicroseconds]),
                 iterations: average([runResult.iterationsForTargetDuration, lastRunResult.iterationsForTargetDuration]),
-                iterationsPerMillisecond: 0
+                iterationsPerMicrosecond: 0.0
                 iterationsForTargetDuration: 0
             })
         end if
 
-        bestValue = getClosestTestRun(runs, targetDurationMs)
+        bestValue = getClosestTestRun(runs, targetDurationMicroseconds)
 
         ' print "best value", bestValue
 
@@ -154,7 +156,7 @@ namespace bsbench
     end function
 
     function average(values as dynamic[], key = invalid) as dynamic
-        sum = 0
+        sum = 0&
         for each value in values
             if key <> invalid
                 sum += value[key]
@@ -167,14 +169,14 @@ namespace bsbench
 
     '
     ' Find the closest number in an array to a target number
-    function getClosestTestRun(items as CalibrationRun[], target as integer)
+    function getClosestTestRun(items as CalibrationRun[], targetMicroseconds as longinteger)
         result = items[0]
         for each item in items
             'skip invalid values
             if item = invalid
                 continue for
             end if
-            if abs(item.elapsedMs - target) < abs(result.elapsedMs - target)
+            if abs(item.elapsedMicroseconds - targetMicroseconds) < abs(result.elapsedMicroseconds - targetMicroseconds)
                 result = item
             end if
         end for
@@ -292,37 +294,27 @@ namespace bsbench
         return result
     end function
 
-    function getOperationsPerSecond(startDate, endDate, ops)
-        startMs = getMilliseconds(startDate)
-        endMs = getMilliseconds(endDate)
-        seconds = (endMs - startMs) / 1000.0
-        if seconds = 0 then
-            seconds = 0.0000001
+    function microsecondsToMs(elapsedMicroseconds as longinteger) as longinteger
+        return elapsedMicroseconds \ 1000&
+    end function
+
+    function getOperationsPerSecond(elapsedMicroseconds as longinteger, ops)
+        seconds# = elapsedMicroseconds / 1000000.0#
+        if seconds# = 0 then
+            seconds# = 0.0000001#
         end if
-        opsPerSec = ops / seconds
+        opsPerSec = ops / seconds#
         return opsPerSec
     end function
 
-    function getMilliseconds(date) as longinteger
-        return (date.AsSeconds() * 1000) + date.GetMilliseconds()
-    end function
-
-    function getEpoch(date as roDateTime) as longinteger
-        result = 0
-        result += date.AsSeconds()
-        result += date.GetMilliseconds()
-        return result
-    end function
-
-    function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, startTime as roDateTime, endTime as roDateTime)
+    function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, elapsedMicroseconds as longinteger)
         #if PRINT_STATUS
             print "bsbenchStatus: " FormatJson({
                 suiteName: suiteName,
                 testName: testName,
                 sampleNumber: sampleNumber,
                 iterations: iterations,
-                startTime: bsbench.getEpoch(startTime),
-                endTime: bsbench.getEpoch(endTime)
+                elapsedMicroseconds: elapsedMicroseconds
             })
         #end if
     end function
@@ -348,10 +340,8 @@ end interface
 ' The raw result of one timed execution of a test function (a single sample).
 ' operationsPerSecond, testName, and suiteName are populated by runSuite after the call.
 interface SampleResult
-    startTime as roDateTime
-    endTime as roDateTime
+    elapsedMicroseconds as longinteger
     iterations as integer
-    elapsedMs as longinteger
     operationsPerSecond as double
     testName as string
     suiteName as string
@@ -377,8 +367,8 @@ end interface
 ' Internal to getIterationsForDuration. Tracks the outcome of one calibration
 ' run used to estimate the iteration count that fills a target duration.
 interface CalibrationRun
-    elapsedMs as integer
-    iterations as integer
-    iterationsPerMillisecond as double
-    iterationsForTargetDuration as integer
+    elapsedMicroseconds as longinteger
+    iterations as longinteger
+    iterationsPerMicrosecond as double
+    iterationsForTargetDuration as longinteger
 end interface

@@ -6,7 +6,8 @@ namespace TimeSpanVsDateTime
 
     @test()
     sub roDateTime()
-        result = bsbench.getMilliseconds(CreateObject("roDateTime")) - bsbench.getMilliseconds(CreateObject("roDateTime"))
+        date = CreateObject("roDateTime")
+        result = (date.AsSeconds() * 1000) + date.GetMilliseconds()
     end sub
 
     @test()

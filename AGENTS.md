@@ -32,7 +32,7 @@ Each file declares one suite via BrighterScript annotations:
 The core build-time transformation engine, registered in `bsconfig.json`. It:
 - Wraps each `@test` body in a `for __bsbench_i = 0 to iterations` loop
 - Injects `setup()` and `teardown()` body statements into each test
-- Sandwiches `roDateTime` calls around the loop for timing
+- Sandwiches `roTimeSpan` calls around the loop for timing (`CreateObject("roTimeSpan")` before, `.TotalMicroseconds()` after)
 - Expands `variants` configs into multiple suite entries
 - Injects an `allSuites` const array into `bsbench.bs` — no runtime reflection needed
 
@@ -60,6 +60,9 @@ A separate Roku component library (`BrsComponent`, `XmlComponent`) used by the `
 ## BrightScript Language Notes
 
 - **Suppressing unused variable warnings**: prefix the variable name with `_` (e.g., `catch _e`, `sub doNothing(_p0)`). BrightScript will not warn about unused variables whose names start with `_`.
+- **Type literals**: use `&` suffix for `LongInteger` literals (e.g. `0&`, `1000&`), `#` suffix for `Double` literals (e.g. `1.0#`), `!` suffix for `Float`. No suffix means `Integer` (32-bit).
+- **Type conversion functions**: BrightScript provides `CInt()` (Float→Integer, rounds), `CDbl()` (Integer→Float, despite the name returns single precision), `CSng()` (Integer→Float), `Fix()` (Float→Integer, truncates), `Int()` (Float→Integer, floor) — there is no `CLngInt()`, `LongInt()`, or similar for casting to `LongInteger`. To coerce to `LongInteger`, assign into a typed variable or use a `&`-suffixed expression.
+- **Integer overflow**: `Integer` is 32-bit (max ~2.1 billion). Use `LongInteger` (64-bit) for iteration counts or microsecond values that could exceed this.
 
 ## Plugin Transforms (What the Plugin Does to Test Functions)
 
