@@ -8,7 +8,11 @@ sub main()
 
     promises.setMessagePort(m.port)
 
-    bsbench.runAsync()
+    promises.onCatch(bsbench.runAsync(), function(error, ctx) as object
+        print "bsbench FATAL ERROR:"
+        print error
+        return promises.resolve(invalid)
+    end function, {})
 
     while true
         promises.wait2(0, m.port)

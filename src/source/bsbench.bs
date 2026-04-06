@@ -53,18 +53,19 @@ namespace bsbench
     end function
 
     function runAsync() as object
-        return bsbench.promiseForEach(getAllSuites(), function(suite, ctx) as object
+        return promises.onCatch(bsbench.promiseForEach(getAllSuites(), function(suite, ctx) as object
             return bsbench.runSuite(suite)
-        end function)
+        end function), function(error, ctx) as object
+            bsbench.printError("runAsync", error)
+            return promises.resolve(invalid)
+        end function, {})
     end function
 
     function runSuite(suite as BenchmarkSuite) as object
-        print `********************************************************************`
-        print `           ${suite.name}`
-        print `********************************************************************`
-
         ' for each thread: run all variants of all tests, print intermediary, accumulate
-        return promises.onThen(bsbench.promiseForEach(suite.allowedThreads, function(thread, ctx) as object
+        p = promises.onThen(bsbench.promiseForEach(suite.allowedThreads, function(thread, ctx) as object
+            print ""
+            print `${ctx.suite.name} [${thread}]`
             return promises.onThen(bsbench.promiseForEach(ctx.suite.variants, function(variant, ctx) as object
                 return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx) as object
                     if ctx.thread = "render"
@@ -82,10 +83,12 @@ namespace bsbench
                 threadResults = []
                 for each vr in variantResults
                     for each r in vr
-                        threadResults.push(r)
+                        if r <> invalid then threadResults.push(r)
                     end for
                 end for
-                bsbench.printIntermediaryResults(ctx.suite.name, ctx.thread, threadResults)
+                if threadResults.count() > 0
+                    bsbench.printIntermediaryResults(ctx.suite.name, ctx.thread, threadResults)
+                end if
                 return promises.resolve(threadResults)
             end function, { suite: ctx.suite, thread: thread })
         end function, { suite: suite }), function(allThreadResults, ctx) as object
@@ -93,33 +96,60 @@ namespace bsbench
             bsbench.printFinalResults(ctx.suite, allThreadResults)
             return promises.resolve(allThreadResults)
         end function, { suite: suite })
+        return promises.onCatch(p, function(error, ctx) as object
+            bsbench.printError(`suite "${ctx.suite.name}"`, error)
+            return promises.resolve(invalid)
+        end function, { suite: suite })
     end function
 
     function runTest(test as BenchmarkTest, variant as roAssociativeArray, thread as string, suiteName as string) as object
-        print `  ${test.name} (Warming up)`
-        return promises.onThen(bsbench.calibrate(test.func, 500, variant), function(iterationsForDuration, ctx) as object
+        print `  ${test.name}`
+        print `    warming up...`
+        p = promises.onThen(bsbench.calibrate(test.func, 500, variant), function(iterationsForDuration, ctx) as object
             samples = 5
-            print `${ctx.test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
+            print `    running ${bsbench.intToString(iterationsForDuration)} iterations x ${samples} samples`
             sampleIndexes = [0, 1, 2, 3, 4]
+            'estimate ops/sec column width from calibration result + 1 extra digit of padding
+            estimatedOpsPerSec = bsbench.getOperationsPerSecond(500 * 1000&, iterationsForDuration)
+            opsColWidth = bsbench.numberToString(estimatedOpsPerSec).len() + 1
             return promises.onThen(bsbench.promiseForEach(sampleIndexes, function(i, ctx) as object
-                sample = ctx.test.func(ctx.iterationsForDuration, ctx.variant) as SampleResult
+                sample = ctx.test.func(ctx.iterationsForDuration, ctx.variant)
+                if sample = invalid
+                    print `    ERROR: test "${ctx.test.name}" returned invalid`
+                    return promises.resolve(invalid)
+                end if
+                sample = sample as SampleResult
                 sample.testName = ctx.test.name
                 sample.suiteName = ctx.suiteName
                 sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
-                print `  ${ctx.test.name} (sample ${i + 1}/${ctx.samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
+                label = bsbench.padRight(`${i + 1}/${ctx.samples}`, 4, " ")
+                opsRaw = bsbench.numberToString(sample.operationsPerSecond)
+                dots = bsbench.padRight(" ", ctx.opsColWidth - opsRaw.len(), ".")
+                print `    ${label}${dots} ${opsRaw} ops/sec`
                 return promises.resolve(sample)
-            end function, { test: ctx.test, variant: ctx.variant, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples }), function(sampleResults, ctx) as object
-                avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
-                print `  ${ctx.test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
+            end function, { test: ctx.test, variant: ctx.variant, thread: ctx.thread, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples, opsColWidth: opsColWidth }), function(sampleResults, ctx) as object
+                validSamples = []
+                for each s in sampleResults
+                    if s <> invalid then validSamples.push(s)
+                end for
+                if validSamples.count() = 0 then return promises.resolve(invalid)
+                avgOpsPerSec = bsbench.average(validSamples, "operationsPerSecond")
+                avgRaw = bsbench.numberToString(avgOpsPerSec)
+                dots = bsbench.padRight(" ", ctx.opsColWidth - avgRaw.len(), ".")
+                print `    done${dots} ${avgRaw} ops/sec  avg`
                 return promises.resolve({
                     testName: ctx.test.name,
                     suiteName: ctx.suiteName,
                     threadTarget: ctx.thread,
                     operationsPerSecond: avgOpsPerSec,
-                    samples: sampleResults
+                    samples: validSamples
                 })
-            end function, ctx)
+            end function, { test: ctx.test, suiteName: ctx.suiteName, thread: ctx.thread, opsColWidth: opsColWidth })
         end function, { test: test, variant: variant, thread: thread, suiteName: suiteName })
+        return promises.onCatch(p, function(error, ctx) as object
+            bsbench.printError(`test "${ctx.test.name}"`, error)
+            return promises.resolve(invalid)
+        end function, { test: test })
     end function
 
     '
@@ -252,37 +282,54 @@ namespace bsbench
         return result
     end function
 
+    ' Format a speed comparison label: "(fastest)" or "(X% slower)"
+    function speedLabel(opsPerSec as double, highestOpsPerSec as double) as string
+        if opsPerSec = highestOpsPerSec
+            return "(fastest)"
+        end if
+        slowerPct = int(((highestOpsPerSec - opsPerSec) / opsPerSec) * 100 + 0.5)
+        return `(${bsbench.intToString(slowerPct)}% slower)`
+    end function
+
     ' Print results for a single thread variant immediately after it completes
     sub printIntermediaryResults(suiteName as string, thread as string, suiteResults as BenchmarkResult[])
-        print ""
-        print `${suiteName} [${thread}]:`
-
-        'find highest ops/sec for (fastest) marker
+        'find highest and lowest ops/sec
         highestOpsPerSec = suiteResults[0].operationsPerSecond
         for each r in suiteResults
             if r.operationsPerSecond > highestOpsPerSec then highestOpsPerSec = r.operationsPerSecond
         end for
 
-        'measure column widths
+        'measure longest test name and longest ops string for alignment
         nameLen = 0
         opsLen = 0
         for each r in suiteResults
             if r.testName.len() > nameLen then nameLen = r.testName.len()
-            s = numberToString(r.operationsPerSecond)
+            s = bsbench.numberToString(r.operationsPerSecond)
             if s.len() > opsLen then opsLen = s.len()
         end for
 
+        'line is: "name: " + dashes + " " + right-aligned-ops + " ops/sec"
+        'fix total content width so dashes vary by name length
+        dashColWidth = 12  'mininum dash region
+        lineWidth = nameLen + 2 + dashColWidth + 1 + opsLen + 9  ' ": " + dashes + " " + ops + " ops/sec"
+
+        'pre-compute labels
+        labels = [] as string[]
         for each r in suiteResults
-            pct = ""
-            if r.operationsPerSecond = highestOpsPerSec
-                pct = "  (fastest)"
-            else
-                slowerPct = int(((highestOpsPerSec - r.operationsPerSecond) / highestOpsPerSec) * 100 + 0.5)
-                pct = `  (${slowerPct}% slower)`
-            end if
-            print "  " + padRight(r.testName + ":", nameLen + 2, " ") + " " + padLeft(numberToString(r.operationsPerSecond), opsLen, " ") + pct
+            labels.push(bsbench.speedLabel(r.operationsPerSecond, highestOpsPerSec))
         end for
-        print `** all values in ops/sec`
+
+        print ""
+        print `${suiteName} [${thread} thread] -- RESULTS:`
+        print bsbench.padRight("", lineWidth, "-")
+        for i = 0 to suiteResults.count() - 1
+            r = suiteResults[i]
+            nameCol = r.testName + ": "
+            opsRaw = bsbench.numberToString(r.operationsPerSecond)
+            dashLen = lineWidth - nameCol.len() - 1 - opsRaw.len() - 9
+            dashes = bsbench.padRight("", dashLen, "-")
+            print nameCol + dashes + " " + opsRaw + " ops/sec  " + labels[i]
+        end for
         print ""
     end sub
 
@@ -292,24 +339,22 @@ namespace bsbench
         'skip the final table if only one thread ran
         if allThreadResults.count() <= 1 then return
 
-        print ""
-        print `${suite.name} -- FINAL:`
+        'collect thread labels in order (use suite's allowedThreads to preserve order even if results are empty)
+        threads = suite.allowedThreads
 
-        'collect thread labels in order
-        threads = [] as string[]
+        'use the first non-empty thread's results to get test order
+        testNames = [] as string[]
         for each threadResults in allThreadResults
             if threadResults.count() > 0
-                threads.push(threadResults[0].threadTarget)
+                for each r in threadResults
+                    testNames.push(r.testName)
+                end for
+                exit for
             end if
         end for
+        if testNames.count() = 0 then return
 
-        'use first thread's results to get test order
-        testNames = [] as string[]
-        for each r in allThreadResults[0]
-            testNames.push(r.testName)
-        end for
-
-        'build a lookup: testName -> threadIndex -> opsPerSec
+        'build a lookup: testName -> array of ops values (one per thread)
         opsMap = {} as object
         for each testName in testNames
             opsMap[testName] = []
@@ -320,7 +365,7 @@ namespace bsbench
             end for
         end for
 
-        'compute per-test averages
+        'compute per-test averages, find highest and lowest
         testAvgs = {} as object
         highestAvg = 0.0
         for each testName in testNames
@@ -340,35 +385,52 @@ namespace bsbench
         end for
         colWidth = 14
 
-        'print header row
-        header = padRight("", nameLen + 2, " ")
+        'build header and separator
+        nameColWidth = nameLen + 2
+        header = bsbench.padRight("", nameColWidth, " ")
         for each thread in threads
-            header += padRight(thread, colWidth, " ")
+            header += bsbench.padRight(thread, colWidth, " ")
         end for
-        header += padRight("avg", colWidth, " ")
+        header += bsbench.padRight("avg", colWidth, " ")
+        totalWidth = nameColWidth + colWidth * (threads.count() + 1)
+
+        print ""
+        print `${suite.name} -- FINAL RESULTS:`
+        print bsbench.padRight("", totalWidth, "-")
         print "  " + header
+        print bsbench.padRight("", totalWidth, "-")
+
+        'pre-compute labels
+        labels = [] as string[]
+        for each testName in testNames
+            labels.push(bsbench.speedLabel(testAvgs[testName], highestAvg))
+        end for
 
         'print each test row
-        for each testName in testNames
+        for i = 0 to testNames.count() - 1
+            testName = testNames[i]
             avg = testAvgs[testName]
-            pct = ""
-            if avg = highestAvg
-                pct = "  (fastest)"
-            else
-                slowerPct = int(((highestAvg - avg) / highestAvg) * 100 + 0.5)
-                pct = `  (${slowerPct}% slower)`
-            end if
-
-            row = padRight(testName + ":", nameLen + 2, " ")
+            row = bsbench.padRight(testName + ":", nameColWidth, " ")
             for each ops in opsMap[testName]
-                row += padRight(numberToString(ops), colWidth, " ")
+                row += bsbench.padRight(bsbench.numberToString(ops), colWidth, " ")
             end for
-            row += padRight(numberToString(avg), colWidth, " ")
-            print "  " + row + pct
+            row += bsbench.padRight(bsbench.numberToString(avg), colWidth, " ")
+            print "  " + row + labels[i]
         end for
 
-        print `** all values in ops/sec`
+        print bsbench.padRight("", totalWidth, "-")
+        print "(all values in ops/sec)"
         print ""
+    end sub
+
+    sub printError(label as string, error as object)
+        print `bsbench ERROR in ${label}:`
+        print `  ${error.message}`
+        if type(error.backtrace) = "roArray"
+            for each frame in error.backtrace
+                print `  at ${frame.function} (${frame.filename}:${frame.line_number})`
+            end for
+        end if
     end sub
 
     function padRight(value as string, padLength = 2 as integer, paddingCharacter = "0" as dynamic) as string
