@@ -166,13 +166,12 @@ class BsBenchPlugin implements CompilerPlugin {
             throw new Error('[bsbench] No suites matched — nothing to run');
         }
         if (allSuitesConstArray) {
-            //create an AA for every variation of every suite
             const suitesAst = suitesToRun.map(suite => {
                 const variants = this.getVariants(suite);
                 const threads = suite.config.supportedThreads;
-                const multipleThreads = threads.length > 1;
-                let statements = [];
-                for (const variant of variants) {
+
+                // build the variants array entries: one AA per variant combination
+                const variantEntries = variants.map(variant => {
                     const variantValues = Object.fromEntries(
                         Object.entries(variant).map(([key, value]) => {
                             return [
@@ -188,44 +187,48 @@ class BsBenchPlugin implements CompilerPlugin {
                     );
 
                     const variantText = Object.keys(variant).length > 0
-                        ? ' (' + Object.keys(variant).map(variantKey => `${variantKey}: ${variantValues[variantKey]}`).join(', ') + ')'
+                        ? ' (' + Object.keys(variant).map(k => `${k}: ${variantValues[k]}`).join(', ') + ')'
                         : '';
 
-                    for (const thread of threads) {
-                        const threadText = multipleThreads ? ` [${thread}]` : '';
-                        const code = `
-                            aa = {
-                                name: "${suite.name}${variantText}${threadText}",
-                                variant: invalid,
-                                threadTarget: "${thread}",
-                                tests: [
-                                    ${this.findTests(suite).map((test) => `{
-                                        name: ${this.toBrsString(test.name)}
-                                        func: ${test.functionName}
-                                    }`).join(', ')}
-                                ]
-                            }
-                        `;
-                        const parser = Parser.parse(code);
-                        //push the variant expressions into a new AA for this specific variant
-                        (parser.ast.findChild<AALiteralExpression>(isAALiteralExpression).elements[1].value as any) = new AALiteralExpression({
-                            elements: Object.keys(variant).map(key => {
-                                return new AAMemberExpression({
-                                    key: createToken(TokenKind.StringLiteral, key),
-                                    value: variant[key]
-                                });
-                            })
-                        });
+                    // parse a placeholder AA, then replace its elements with the real expressions
+                    const variantCode = `v = { __name: "${variantText}" }`;
+                    const variantParser = Parser.parse(variantCode);
+                    const variantAA = variantParser.ast.findChild<AALiteralExpression>(isAALiteralExpression);
+                    (variantAA.elements[0].value as any) = new AALiteralExpression({ elements: [] }); // clear placeholder
+                    (variantAA as any).elements = [
+                        new AAMemberExpression({ key: createToken(TokenKind.StringLiteral, '__name'), value: Parser.parse(`s = "${variantText}"`).ast.statements[0]['value'] }),
+                        ...Object.keys(variant).map(key => new AAMemberExpression({
+                            key: createToken(TokenKind.StringLiteral, key),
+                            value: variant[key]
+                        }))
+                    ];
+                    return (variantParser.ast.statements[0] as AssignmentStatement).value;
+                });
 
-                        if (parser.diagnostics.length > 0) {
-                            throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
-                        }
-                        const ast = (parser.ast.statements[0] as AssignmentStatement).value;
-                        statements.push(ast);
+                const code = `
+                    aa = {
+                        name: "${suite.name}",
+                        allowedThreads: [${threads.map(t => `"${t}"`).join(', ')}],
+                        variants: [],
+                        tests: [
+                            ${this.findTests(suite).map((test) => `{
+                                name: ${this.toBrsString(test.name)}
+                                func: ${test.functionName}
+                            }`).join(', ')}
+                        ]
                     }
+                `;
+                const parser = Parser.parse(code);
+                if (parser.diagnostics.length > 0) {
+                    throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
                 }
-                return statements;
-            }).flat();
+                // replace the empty variants array with the real variant expressions
+                const suiteAA = parser.ast.findChild<AALiteralExpression>(isAALiteralExpression);
+                const variantsElement = suiteAA.elements.find(e => e.tokens?.key?.text === 'variants');
+                event.editor.arrayPush((variantsElement.value as ArrayLiteralExpression).elements, ...variantEntries);
+
+                return (parser.ast.statements[0] as AssignmentStatement).value;
+            });
 
             //push suite data to the allSuites array
             event.editor.arrayPush(allSuitesConstArray.elements, ...suitesAst);

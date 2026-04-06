@@ -54,62 +54,72 @@ namespace bsbench
 
     function runAsync() as object
         return bsbench.promiseForEach(getAllSuites(), function(suite, ctx) as object
-            return bsbench.runSuite(suite, {} as RunOptions)
+            return bsbench.runSuite(suite)
         end function)
     end function
 
-    function runSuite(suite as BenchmarkSuite, options as RunOptions)
+    function runSuite(suite as BenchmarkSuite) as object
         print `********************************************************************`
-        print `           ${suite.name} `
+        print `           ${suite.name}`
         print `********************************************************************`
 
-        return promises.chain(promises.resolve(invalid), { suite: suite }).then(function(_, ctx)
-            return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx)
-                if ctx.suite.threadTarget = "render"
-                    mainScene = bsbench.getMainScene()
-                    return mainScene@.runTest(ctx.suite.name, test.name)
-                else if ctx.suite.threadTarget = "task"
-                    testTask = bsbench.getTestTask()
-                    return testTask@.runTest(ctx.suite.name, test.name)
-                else
-                    return bsbench.runTest(ctx.suite.name, test.name)
-                end if
-            end function, ctx)
-
-        end function).then(function(suiteResults, ctx)
-            bsbench.printSuiteResults(suiteResults)
-            return promises.resolve(suiteResults)
-        end function).ToPromise()
+        ' for each thread: run all variants of all tests, print intermediary, accumulate
+        return promises.onThen(bsbench.promiseForEach(suite.allowedThreads, function(thread, ctx) as object
+            return promises.onThen(bsbench.promiseForEach(ctx.suite.variants, function(variant, ctx) as object
+                return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx) as object
+                    if ctx.thread = "render"
+                        mainScene = bsbench.getMainScene()
+                        return mainScene@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
+                    else if ctx.thread = "task"
+                        testTask = bsbench.getTestTask()
+                        return testTask@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
+                    else
+                        return bsbench.runTest(test, ctx.variant, ctx.thread, ctx.suite.name)
+                    end if
+                end function, { variant: ctx.variant, thread: ctx.thread, suite: ctx.suite })
+            end function, { suite: ctx.suite, thread: thread }), function(variantResults, ctx) as object
+                ' variantResults is array of arrays (one per variant, each containing BenchmarkResults)
+                threadResults = []
+                for each vr in variantResults
+                    for each r in vr
+                        threadResults.push(r)
+                    end for
+                end for
+                bsbench.printIntermediaryResults(ctx.suite.name, ctx.thread, threadResults)
+                return promises.resolve(threadResults)
+            end function, { suite: ctx.suite, thread: thread })
+        end function, { suite: suite }), function(allThreadResults, ctx) as object
+            ' allThreadResults is array of arrays (one per thread)
+            bsbench.printFinalResults(ctx.suite, allThreadResults)
+            return promises.resolve(allThreadResults)
+        end function, { suite: suite })
     end function
 
-    function runTest(suiteName as string, testName as string) as object
-        testInfo = bsbench.getTestInfo(suiteName, testName)
-        suite = testInfo.suite
-        test = testInfo.test
-        print `‌‌ `
-        print `${test.name} (Warming up)`
-        return promises.onThen(bsbench.calibrate(test.func, 500, suite.variant), function(iterationsForDuration, ctx) as object
+    function runTest(test as BenchmarkTest, variant as roAssociativeArray, thread as string, suiteName as string) as object
+        print `  ${test.name} (Warming up)`
+        return promises.onThen(bsbench.calibrate(test.func, 500, variant), function(iterationsForDuration, ctx) as object
             samples = 5
             print `${ctx.test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
             sampleIndexes = [0, 1, 2, 3, 4]
             return promises.onThen(bsbench.promiseForEach(sampleIndexes, function(i, ctx) as object
-                sample = ctx.test.func(ctx.iterationsForDuration, ctx.suite.variant) as SampleResult
+                sample = ctx.test.func(ctx.iterationsForDuration, ctx.variant) as SampleResult
                 sample.testName = ctx.test.name
-                sample.suiteName = ctx.suite.name
+                sample.suiteName = ctx.suiteName
                 sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
-                print `${ctx.test.name} (sample ${i + 1} of ${ctx.samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
+                print `  ${ctx.test.name} (sample ${i + 1}/${ctx.samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
                 return promises.resolve(sample)
-            end function, { test: ctx.test, suite: ctx.suite, iterationsForDuration: iterationsForDuration, samples: samples }), function(sampleResults, ctx) as object
+            end function, { test: ctx.test, variant: ctx.variant, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples }), function(sampleResults, ctx) as object
                 avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
-                print `${ctx.test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
+                print `  ${ctx.test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
                 return promises.resolve({
                     testName: ctx.test.name,
-                    suiteName: ctx.suite.name,
+                    suiteName: ctx.suiteName,
+                    threadTarget: ctx.thread,
                     operationsPerSecond: avgOpsPerSec,
                     samples: sampleResults
                 })
             end function, ctx)
-        end function, { test: test, suite: suite })
+        end function, { test: test, variant: variant, thread: thread, suiteName: suiteName })
     end function
 
     '
@@ -242,56 +252,124 @@ namespace bsbench
         return result
     end function
 
-    function printSuiteResults(suiteResults as BenchmarkResult[], sort = false)
-        'sort the results by operations per second (descending)
-        if sort then
-            suiteResults.sortBy("operationsPerSecond", "r")
-        end if
+    ' Print results for a single thread variant immediately after it completes
+    sub printIntermediaryResults(suiteName as string, thread as string, suiteResults as BenchmarkResult[])
+        print ""
+        print `${suiteName} [${thread}]:`
 
-        'print a few blank-ish lines to separate the results
-        print `‌‌ \n‌‌ `
-        print `${suiteResults[0].suiteName} -- RESULTS:`
-        print padRight("", 50, "_")
+        'find highest ops/sec for (fastest) marker
         highestOpsPerSec = suiteResults[0].operationsPerSecond
-        lowestOpsPerSec = suiteResults[0].operationsPerSecond
-        opsPerSecMaxLen = 0
-        nameLengthMaxLen = 0
-        for each suiteResult in suiteResults
-            'calculate slowest
-            if suiteResult.operationsPerSecond < lowestOpsPerSec
-                lowestOpsPerSec = suiteResult.operationsPerSecond
-            end if
+        for each r in suiteResults
+            if r.operationsPerSecond > highestOpsPerSec then highestOpsPerSec = r.operationsPerSecond
+        end for
 
-            'calculate highest ops/sec
-            if suiteResult.operationsPerSecond > highestOpsPerSec
-                highestOpsPerSec = suiteResult.operationsPerSecond
-            end if
+        'measure column widths
+        nameLen = 0
+        opsLen = 0
+        for each r in suiteResults
+            if r.testName.len() > nameLen then nameLen = r.testName.len()
+            s = numberToString(r.operationsPerSecond)
+            if s.len() > opsLen then opsLen = s.len()
+        end for
 
-            'calculate logest ops/sec string
-            opsPerSecTextLength = numberToString(suiteResult.operationsPerSecond).Len()
-            if opsPerSecTextLength > opsPerSecMaxLen
-                opsPerSecMaxLen = opsPerSecTextLength
+        for each r in suiteResults
+            pct = ""
+            if r.operationsPerSecond = highestOpsPerSec
+                pct = "  (fastest)"
+            else
+                slowerPct = int(((highestOpsPerSec - r.operationsPerSecond) / highestOpsPerSec) * 100 + 0.5)
+                pct = `  (${slowerPct}% slower)`
             end if
+            print "  " + padRight(r.testName + ":", nameLen + 2, " ") + " " + padLeft(numberToString(r.operationsPerSecond), opsLen, " ") + pct
+        end for
+        print `** all values in ops/sec`
+        print ""
+    end sub
 
-            'calculate longest name
-            if suiteResult.testName.Len() > nameLengthMaxLen
-                nameLengthMaxLen = suiteResult.testName.Len()
+    ' Print the final cross-thread table after all thread variants of a suite complete
+    sub printFinalResults(suite as BenchmarkSuite, allThreadResults as object)
+        'allThreadResults is an array of arrays — one per thread variant, each containing BenchmarkResults
+        'skip the final table if only one thread ran
+        if allThreadResults.count() <= 1 then return
+
+        print ""
+        print `${suite.name} -- FINAL:`
+
+        'collect thread labels in order
+        threads = [] as string[]
+        for each threadResults in allThreadResults
+            if threadResults.count() > 0
+                threads.push(threadResults[0].threadTarget)
             end if
         end for
 
-        for each suiteResult in suiteResults
-            postfix = ""
-            if suiteResult.operationsPerSecond = highestOpsPerSec then
-                postfix = " (fastest)"
-            end if
-            if suiteResult.operationsPerSecond = lowestOpsPerSec then
-                postfix = " (slowest)"
-            end if
-            print padRight(suiteResult.testName + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
+        'use first thread's results to get test order
+        testNames = [] as string[]
+        for each r in allThreadResults[0]
+            testNames.push(r.testName)
         end for
-        'print a few blank-ish lines to separate the results
-        print `‌‌ \n‌‌ `
-    end function
+
+        'build a lookup: testName -> threadIndex -> opsPerSec
+        opsMap = {} as object
+        for each testName in testNames
+            opsMap[testName] = []
+        end for
+        for i = 0 to allThreadResults.count() - 1
+            for each r in allThreadResults[i]
+                opsMap[r.testName].push(r.operationsPerSecond)
+            end for
+        end for
+
+        'compute per-test averages
+        testAvgs = {} as object
+        highestAvg = 0.0
+        for each testName in testNames
+            sum = 0.0
+            for each ops in opsMap[testName]
+                sum += ops
+            end for
+            avg = sum / opsMap[testName].count()
+            testAvgs[testName] = avg
+            if avg > highestAvg then highestAvg = avg
+        end for
+
+        'measure column widths
+        nameLen = 0
+        for each testName in testNames
+            if testName.len() > nameLen then nameLen = testName.len()
+        end for
+        colWidth = 14
+
+        'print header row
+        header = padRight("", nameLen + 2, " ")
+        for each thread in threads
+            header += padRight(thread, colWidth, " ")
+        end for
+        header += padRight("avg", colWidth, " ")
+        print "  " + header
+
+        'print each test row
+        for each testName in testNames
+            avg = testAvgs[testName]
+            pct = ""
+            if avg = highestAvg
+                pct = "  (fastest)"
+            else
+                slowerPct = int(((highestAvg - avg) / highestAvg) * 100 + 0.5)
+                pct = `  (${slowerPct}% slower)`
+            end if
+
+            row = padRight(testName + ":", nameLen + 2, " ")
+            for each ops in opsMap[testName]
+                row += padRight(numberToString(ops), colWidth, " ")
+            end for
+            row += padRight(numberToString(avg), colWidth, " ")
+            print "  " + row + pct
+        end for
+
+        print `** all values in ops/sec`
+        print ""
+    end sub
 
     function padRight(value as string, padLength = 2 as integer, paddingCharacter = "0" as dynamic) as string
         while value.len() < padLength
@@ -392,6 +470,7 @@ end namespace
 interface BenchmarkResult
     testName as string
     suiteName as string
+    threadTarget as string
     operationsPerSecond as double
     samples as SampleResult[]
 end interface
@@ -410,8 +489,8 @@ end interface
 interface BenchmarkSuite
     name as string
     tests as BenchmarkTest[]
-    variant as roAssociativeArray
-    threadTarget as string
+    allowedThreads as string[]
+    variants as roAssociativeArray[]
 end interface
 
 ' A single named test within a suite. func accepts (iterations, variant) and returns a SampleResult.

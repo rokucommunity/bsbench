@@ -9,7 +9,6 @@ end interface
 sub init()
     m.port = createObject("roMessagePort")
     m.top.observeFieldScoped("testData", m.port)
-
     m.top.functionName = "runTaskThread"
     m.top.control = "RUN"
 end sub
@@ -19,12 +18,12 @@ sub runTaskThread()
 
     while true
         message = promises.wait2(0, m.port) as roSGNodeEvent
-        print message
         if type(message) = "roSGNodeEvent"
             if message.getField() = "testData"
-                promises.onCatch(runTaskInternal(message.getData()), function(error)
-                    print "Error in task: " + error
-                end function)
+                promises.onCatch(runTaskInternal(message.getData()), function(error, ctx)
+                    print "TestTask error: "
+                    print error
+                end function, {})
             end if
         end if
     end while
@@ -33,29 +32,26 @@ end sub
 interface TestData
     suiteName as string
     testName as string
+    thread as string
+    variant as roAssociativeArray
     promise as roSGNodepromises_Promise
 end interface
 
 function runTaskInternal(testData as TestData)
-    return promises.chain(promises.resolve(invalid), testData).then(function(_, ctx)
-        'run the actual test
-        print "Running from TestTask!"
-        return bsbench.runTest(ctx.suiteName, ctx.testName)
-    end function).then(function(result, ctx)
-        'resolve the original promise with the result of the test
+    info = bsbench.getTestInfo(testData.suiteName, testData.testName)
+    return promises.onThen(bsbench.runTest(info.test, testData.variant, testData.thread, testData.suiteName), function(result, ctx)
         promises.resolve(result, ctx.promise)
-    end function).catch(function(error, ctx)
-        'reject the original promise with the error
-        promises.reject(error, ctx.promise)
-    end function).toPromise()
+    end function, { promise: testData.promise })
 end function
 
 'Run a specific test from a suite (this is the public API call that triggers the task observer)
-function runTest(suiteName as string, testName as string)
+function runTest(suiteName as string, testName as string, thread as string, variant as roAssociativeArray)
     promise = promises.create()
     m.top.testData = {
         suiteName: suiteName,
         testName: testName,
+        thread: thread,
+        variant: variant,
         promise: promise
     }
     return promise
