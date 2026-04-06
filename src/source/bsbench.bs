@@ -65,7 +65,7 @@ namespace bsbench
         ' for each thread: run all variants of all tests, print intermediary, accumulate
         p = promises.onThen(bsbench.promiseForEach(suite.allowedThreads, function(thread, ctx) as object
             print ""
-            print `${ctx.suite.name} [${thread}]`
+            print `${ctx.suite.name} [${thread} thread]`
             return promises.onThen(bsbench.promiseForEach(ctx.suite.variants, function(variant, ctx) as object
                 return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx) as object
                     if ctx.thread = "render"
@@ -134,9 +134,6 @@ namespace bsbench
                 end for
                 if validSamples.count() = 0 then return promises.resolve(invalid)
                 avgOpsPerSec = bsbench.average(validSamples, "operationsPerSecond")
-                avgRaw = bsbench.numberToString(avgOpsPerSec)
-                dots = bsbench.padRight(" ", ctx.opsColWidth - avgRaw.len(), ".")
-                print `    done${dots} ${avgRaw} ops/sec  avg`
                 return promises.resolve({
                     testName: ctx.test.name,
                     suiteName: ctx.suiteName,
@@ -299,7 +296,7 @@ namespace bsbench
             if r.operationsPerSecond > highestOpsPerSec then highestOpsPerSec = r.operationsPerSecond
         end for
 
-        'measure longest test name and longest ops string for alignment
+        'measure longest test name, longest ops string, and longest label for alignment
         nameLen = 0
         opsLen = 0
         for each r in suiteResults
@@ -308,28 +305,38 @@ namespace bsbench
             if s.len() > opsLen then opsLen = s.len()
         end for
 
-        'line is: "name: " + dashes + " " + right-aligned-ops + " ops/sec"
-        'fix total content width so dashes vary by name length
-        dashColWidth = 12  'mininum dash region
-        lineWidth = nameLen + 2 + dashColWidth + 1 + opsLen + 9  ' ": " + dashes + " " + ops + " ops/sec"
-
         'pre-compute labels
         labels = [] as string[]
+        labelLen = 0
         for each r in suiteResults
-            labels.push(bsbench.speedLabel(r.operationsPerSecond, highestOpsPerSec))
+            lbl = bsbench.speedLabel(r.operationsPerSecond, highestOpsPerSec)
+            labels.push(lbl)
+            if lbl.len() > labelLen then labelLen = lbl.len()
         end for
 
+        'line is: "  name: " + dashes + " " + right-aligned-ops + " ops/sec  " + label
+        'fix total content width so dashes vary by name length
+        dashColWidth = 12  'minimum dash region
+        lineWidth = 2 + nameLen + 2 + dashColWidth + 1 + opsLen + 9 + 2 + labelLen
+
+        'header: "=== suiteName [thread] " + trailing "="s
+        headerPrefix = `=== ${suiteName} [${thread} thread] `
+        if headerPrefix.len() + 2 > lineWidth then lineWidth = headerPrefix.len() + 2
+        header = bsbench.padRight(headerPrefix, lineWidth, "=")
+        footer = bsbench.padRight("", lineWidth, "=")
+
         print ""
-        print `${suiteName} [${thread} thread] -- RESULTS:`
-        print bsbench.padRight("", lineWidth, "-")
+        print header
         for i = 0 to suiteResults.count() - 1
             r = suiteResults[i]
-            nameCol = r.testName + ": "
+            nameCol = "  " + r.testName + ": "
             opsRaw = bsbench.numberToString(r.operationsPerSecond)
-            dashLen = lineWidth - nameCol.len() - 1 - opsRaw.len() - 9
+            dashLen = lineWidth - nameCol.len() - 1 - opsLen - 9 - 2 - labelLen
             dashes = bsbench.padRight("", dashLen, "-")
-            print nameCol + dashes + " " + opsRaw + " ops/sec  " + labels[i]
+            opsPadding = bsbench.padRight("", opsLen - opsRaw.len(), " ")
+            print nameCol + dashes + " " + opsPadding + opsRaw + " ops/sec  " + labels[i]
         end for
+        print footer
         print ""
     end sub
 
@@ -389,7 +396,7 @@ namespace bsbench
         nameColWidth = nameLen + 2
         header = bsbench.padRight("", nameColWidth, " ")
         for each thread in threads
-            header += bsbench.padRight(thread, colWidth, " ")
+            header += bsbench.padRight(thread + " thread", colWidth, " ")
         end for
         header += bsbench.padRight("avg", colWidth, " ")
         totalWidth = nameColWidth + colWidth * (threads.count() + 1)
