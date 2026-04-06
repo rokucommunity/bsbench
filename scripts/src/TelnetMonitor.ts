@@ -66,15 +66,16 @@ export class TelnetMonitor {
     }
 
     private processUnhandledText() {
-        //convert the unhandled text into an array of lines
-        let lines = this.unhandledText.split(/\r?\n/);
-
-        //if the final line is not complete, then keep that one around until later
-        if (this.unhandledText.match(/\r?\n$/)) {
-            this.unhandledText = lines.pop();
-        } else {
-            this.unhandledText = '';
+        //only emit complete lines (those terminated by \r\n or \n)
+        const terminator = /\r?\n/;
+        if (!terminator.test(this.unhandledText)) {
+            //no complete lines yet, keep buffering
+            return;
         }
+
+        //split into lines, keeping the incomplete last chunk in the buffer
+        let lines = this.unhandledText.split(/\r?\n/);
+        this.unhandledText = lines.pop(); //last element is always the incomplete remainder (may be '')
 
         this.emitter.emit('lines', { lines: lines });
     }

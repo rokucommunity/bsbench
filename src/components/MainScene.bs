@@ -1,0 +1,12 @@
+import "pkg:/source/bsbench.bs"
+
+sub init()
+end sub
+
+'Run a specific test from a suite
+function runTest(suiteName as string, testName as string, thread as string, variant as roAssociativeArray)
+    return promises.try(function(suiteName, testName, thread, variant)
+        info = bsbench.getTestInfo(suiteName, testName)
+        return bsbench.runTest(info.test, variant, thread, suiteName)
+    end function, [suiteName, testName, thread, variant])
+end function

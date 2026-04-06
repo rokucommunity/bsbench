@@ -7,7 +7,7 @@ let options = yargs
     .help('help', 'View help information about this tool.')
     .option('host', { type: 'string', description: 'The hostname for the roku to test against', demandOption: true })
     .option('password', { type: 'string', description: 'The password for the roku to test against', demandOption: true })
-    .option('only', { type: 'array', string: true, description: 'Run only suites whose names match one of the given patterns (regex)' })
+    .option('only', { type: 'array', alias: ['grep'], string: true, description: 'Run only suites whose names match one of the given patterns (regex)' })
     .argv;
 
 const runner = new Runner(options);

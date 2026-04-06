@@ -1,3 +1,6 @@
 <component name="MainScene" extends="Scene">
-    <script type="text/brightscript" uri="MainScene.brs" />
+    <script type="text/brightscript" uri="MainScene.bs" />
+    <interface>
+        <function name="runTest" />
+    </interface>
 </component>

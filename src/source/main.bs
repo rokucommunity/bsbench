@@ -6,9 +6,17 @@ sub main()
     screen.show()
     m.global = screen.getGlobalNode()
 
-    bsbench.runSync({} as RunOptions)
-    'small sleep so we can finish printing the results
-    sleep(2000)
+    promises.setMessagePort(m.port)
+
+    promises.onCatch(bsbench.runAsync(), function(error, ctx) as object
+        print "bsbench FATAL ERROR:"
+        print error
+        return promises.resolve(invalid)
+    end function, {})
+
+    while true
+        promises.wait2(0, m.port)
+    end while
 end sub
 
 sub runAllTests(iterations = 1)

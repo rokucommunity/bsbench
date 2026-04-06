@@ -29,7 +29,7 @@ export class Runner {
                     // logger.log('Found test result', status);
                     this.results.push(status);
                 }
-                console.log(line);
+                process.stdout.write(line.replace(/\r$/, '') + '\n');
             }
         });
     }

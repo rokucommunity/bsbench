@@ -1,4 +1,4 @@
-import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DiagnosticSeverity, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, TokenKind, TypeExpression, WalkMode, createIdentifier, createToken, createVariableExpression, createVisitor, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement, isTemplateStringExpression, isVariableExpression } from "brighterscript";
+import { AALiteralExpression, AAMemberExpression, AfterFileAddEvent, AfterProgramCreateEvent, AfterProgramValidateEvent, AnnotationExpression, ArrayLiteralExpression, AssignmentStatement, BeforeBuildProgramEvent, BeforeFileValidateEvent, BrsFile, BrsTranspileState, BscFile, CompilerPlugin, ConstStatement, DiagnosticSeverity, Editor, Expression, ForStatement, FunctionParameterExpression, FunctionStatement, NamespaceStatement, ParseMode, Parser, Program, ReturnStatement, TokenKind, TypeExpression, WalkMode, XmlFile, createIdentifier, createSGScript, createToken, createVariableExpression, createVisitor, isAALiteralExpression, isArrayLiteralExpression, isBrsFile, isConstStatement, isFunctionStatement, isNamespaceStatement, isTemplateStringExpression, isVariableExpression, isXmlFile } from "brighterscript";
 import { SourceNode } from 'source-map';
 
 class BsBenchPlugin implements CompilerPlugin {
@@ -110,6 +110,36 @@ class BsBenchPlugin implements CompilerPlugin {
         }
 
         this.injectSuiteData(event, allSuites);
+        this.injectSuiteImports(event, allSuites);
+    }
+
+    private injectSuiteImports(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
+        for (const xmlPath of ['components/MainScene.xml', 'components/TestTask.xml']) {
+            const xmlFile = event.program.getFile<XmlFile>(xmlPath);
+            if (!isXmlFile(xmlFile)) {
+                continue;
+            }
+            const elements = xmlFile.ast.componentElement.elements;
+            const alreadyImported = new Set(
+                xmlFile.ast.componentElement.scriptElements.map(s => s.getAttribute('uri')?.value)
+            );
+            let lastScriptIdx = -1;
+            for (let i = 0; i < elements.length; i++) {
+                if ((elements[i] as any).tokens?.startTagName?.text?.toLowerCase() === 'script') {
+                    lastScriptIdx = i;
+                }
+            }
+            let insertIndex = lastScriptIdx + 1;
+            for (const suite of allSuites) {
+                const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs');
+                if (alreadyImported.has(uri)) {
+                    continue;
+                }
+                const script = createSGScript({ type: 'text/brightscript', uri });
+                event.editor.arraySplice(elements, insertIndex++, 0, script);
+                alreadyImported.add(uri);
+            }
+        }
     }
 
     private injectSuiteData(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
@@ -136,12 +166,12 @@ class BsBenchPlugin implements CompilerPlugin {
             throw new Error('[bsbench] No suites matched — nothing to run');
         }
         if (allSuitesConstArray) {
-            //create an AA for every variation of every suite
             const suitesAst = suitesToRun.map(suite => {
                 const variants = this.getVariants(suite);
-                let statements = [];
-                for (const variant of variants) {
+                const threads = suite.config.supportedThreads;
 
+                // build the variants array entries: one AA per variant combination
+                const variantEntries = variants.map(variant => {
                     const variantValues = Object.fromEntries(
                         Object.entries(variant).map(([key, value]) => {
                             return [
@@ -157,39 +187,48 @@ class BsBenchPlugin implements CompilerPlugin {
                     );
 
                     const variantText = Object.keys(variant).length > 0
-                        ? ' (' + Object.keys(variant).map(variantKey => `${variantKey}: ${variantValues[variantKey]}`).join(', ') + ')'
+                        ? ' (' + Object.keys(variant).map(k => `${k}: ${variantValues[k]}`).join(', ') + ')'
                         : '';
-                    const code = `
-                        aa = {
-                            name: "${suite.name}${variantText}",
-                            variant: invalid,
-                            tests: [
-                                ${this.findTests(suite).map((test) => `{
-                                    name: ${this.toBrsString(test.name)}
-                                    func: ${test.functionName}
-                                }`).join(', ')}
-                            ]
-                        }
-                    `;
-                    const parser = Parser.parse(code);
-                    //push the variant expressions into a new AA for this specific variant
-                    (parser.ast.findChild<AALiteralExpression>(isAALiteralExpression).elements[1].value as any) = new AALiteralExpression({
-                        elements: Object.keys(variant).map(key => {
-                            return new AAMemberExpression({
-                                key: createToken(TokenKind.StringLiteral, key),
-                                value: variant[key]
-                            });
-                        })
-                    });
 
-                    if (parser.diagnostics.length > 0) {
-                        throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
+                    // parse a placeholder AA, then replace its elements with the real expressions
+                    const variantCode = `v = { __name: "${variantText}" }`;
+                    const variantParser = Parser.parse(variantCode);
+                    const variantAA = variantParser.ast.findChild<AALiteralExpression>(isAALiteralExpression);
+                    (variantAA.elements[0].value as any) = new AALiteralExpression({ elements: [] }); // clear placeholder
+                    (variantAA as any).elements = [
+                        new AAMemberExpression({ key: createToken(TokenKind.StringLiteral, '__name'), value: Parser.parse(`s = "${variantText}"`).ast.statements[0]['value'] }),
+                        ...Object.keys(variant).map(key => new AAMemberExpression({
+                            key: createToken(TokenKind.StringLiteral, key),
+                            value: variant[key]
+                        }))
+                    ];
+                    return (variantParser.ast.statements[0] as AssignmentStatement).value;
+                });
+
+                const code = `
+                    aa = {
+                        name: "${suite.name}",
+                        allowedThreads: [${threads.map(t => `"${t}"`).join(', ')}],
+                        variants: [],
+                        tests: [
+                            ${this.findTests(suite).map((test) => `{
+                                name: ${this.toBrsString(test.name)}
+                                func: ${test.functionName}
+                            }`).join(', ')}
+                        ]
                     }
-                    const ast = (parser.ast.statements[0] as AssignmentStatement).value;
-                    statements.push(ast);
+                `;
+                const parser = Parser.parse(code);
+                if (parser.diagnostics.length > 0) {
+                    throw new Error('Failed to parse suite data: \n' + parser.diagnostics.map(x => x.message).join('\n') + '\nRaw code: \n' + code);
                 }
-                return statements;
-            }).flat();
+                // replace the empty variants array with the real variant expressions
+                const suiteAA = parser.ast.findChild<AALiteralExpression>(isAALiteralExpression);
+                const variantsElement = suiteAA.elements.find(e => e.tokens?.key?.text === 'variants');
+                event.editor.arrayPush((variantsElement.value as ArrayLiteralExpression).elements, ...variantEntries);
+
+                return (parser.ast.statements[0] as AssignmentStatement).value;
+            });
 
             //push suite data to the allSuites array
             event.editor.arrayPush(allSuitesConstArray.elements, ...suitesAst);
@@ -294,6 +333,17 @@ class BsBenchPlugin implements CompilerPlugin {
                 }
 
                 suite.config.variants ??= {};
+
+                //parse supportedThreads from annotation, default to all three
+                const supportedThreadsArg = (suiteAnnotation.call.args[0] as AALiteralExpression)?.elements?.find(x => x?.tokens?.key?.text === 'supportedThreads')?.value;
+                if (isArrayLiteralExpression(supportedThreadsArg)) {
+                    suite.config.supportedThreads = supportedThreadsArg.elements.map(e => {
+                        return new SourceNode(null, null, suite.file.srcPath, e.transpile(new BrsTranspileState(suite.file)) as any).toString().replace(/^["']|["']$/g, '');
+                    });
+                } else {
+                    suite.config.supportedThreads = ['main', 'render', 'task'];
+                }
+
                 return suite;
             } catch (e) {
                 console.log(e);
@@ -461,7 +511,11 @@ interface Suite {
         /**
          * Every entry is the name of a local variable, with an array of values (each value is one variant of the benchmark suite)
          */
-        variants: Record<string, Expression[]>
+        variants: Record<string, Expression[]>;
+        /**
+         * The threads this suite should run on. Defaults to ["main", "render", "task"]
+         */
+        supportedThreads: string[];
     };
     file: BrsFile;
 }

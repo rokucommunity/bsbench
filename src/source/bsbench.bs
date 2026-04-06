@@ -1,158 +1,254 @@
+import "pkg:/source/roku_modules/promises/promises.brs"
+
 namespace bsbench
 
     'This array is auto-generated during the build process
     const allSuites = [] as BenchmarkSuite[]
 
-    function runSync(options as RunOptions)
-        suites = allSuites
-        for each suite in suites
-            runSuite(suite, options)
+    function getAllSuites()
+        if m.allSuites = invalid
+            m.allSuites = allSuites
+        end if
+        return m.allSuites
+    end function
+
+    'Get a reference to the main scene
+    function getMainScene() as roSGNodeMainScene
+
+        'grab the scene variable from m first (if set by main flow)
+        if m.scene <> invalid then
+            return m.scene
+
+            'for some reason couldn't find the scene, maybe we're inside a node?
+        else if m.top <> invalid and m.top.getScene() <> invalid
+            return m.top.getScene() as roSGNodeMainScene
+        else
+        end if
+    end function
+
+    'Get (or create) the test task
+    function getTestTask() as roSGNodeTestTask
+        if m.testTask = invalid then
+            m.testTask = CreateObject("roSGNode", "TestTask")
+        end if
+        return m.testTask
+    end function
+
+    interface TestInfo
+        test as BenchmarkTest
+        suite as BenchmarkSuite
+    end interface
+
+    function getTestInfo(suiteName as string, testName as string) as TestInfo
+        for each suite in bsbench.getAllSuites()
+            if suite.name = suiteName
+                for each test in suite.tests
+                    if test.name = testName
+                        return { test: test, suite: suite }
+                    end if
+                end for
+            end if
         end for
+        return invalid
     end function
 
-    function runAsync()
+    function runAsync() as object
+        return promises.onCatch(bsbench.promiseForEach(getAllSuites(), function(suite, ctx) as object
+            return bsbench.runSuite(suite)
+        end function), function(error, ctx) as object
+            bsbench.printError("runAsync", error)
+            return promises.resolve(invalid)
+        end function, {})
     end function
 
-    function runSuite(suite as BenchmarkSuite, options as RunOptions)
-        'print a ascii table style fenced header for the suite
-        print `********************************************************************`
-        print `           ${suite.name} `
-        print `********************************************************************`
+    function runSuite(suite as BenchmarkSuite) as object
+        ' for each thread: run all variants of all tests, print intermediary, accumulate
+        p = promises.onThen(bsbench.promiseForEach(suite.allowedThreads, function(thread, ctx) as object
+            print ""
+            print `${ctx.suite.name} [${thread} thread]`
+            return promises.onThen(bsbench.promiseForEach(ctx.suite.variants, function(variant, ctx) as object
+                return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx) as object
+                    if ctx.thread = "render"
+                        mainScene = bsbench.getMainScene()
+                        return mainScene@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
+                    else if ctx.thread = "task"
+                        testTask = bsbench.getTestTask()
+                        return testTask@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
+                    else
+                        return bsbench.runTest(test, ctx.variant, ctx.thread, ctx.suite.name)
+                    end if
+                end function, { variant: ctx.variant, thread: ctx.thread, suite: ctx.suite })
+            end function, { suite: ctx.suite, thread: thread }), function(variantResults, ctx) as object
+                ' variantResults is array of arrays (one per variant, each containing BenchmarkResults)
+                threadResults = []
+                for each vr in variantResults
+                    for each r in vr
+                        if r <> invalid then threadResults.push(r)
+                    end for
+                end for
+                if threadResults.count() > 0
+                    bsbench.printIntermediaryResults(ctx.suite.name, ctx.thread, threadResults)
+                end if
+                return promises.resolve(threadResults)
+            end function, { suite: ctx.suite, thread: thread })
+        end function, { suite: suite }), function(allThreadResults, ctx) as object
+            ' allThreadResults is array of arrays (one per thread)
+            bsbench.printFinalResults(ctx.suite, allThreadResults)
+            return promises.resolve(allThreadResults)
+        end function, { suite: suite })
+        return promises.onCatch(p, function(error, ctx) as object
+            bsbench.printError(`suite "${ctx.suite.name}"`, error)
+            return promises.resolve(invalid)
+        end function, { suite: suite })
+    end function
 
-        suiteResults = [] as BenchmarkResult[]
-        for each test in suite.tests
-            print `‌‌ `
-            testFunction = test.func
-
-            print `${test.name} (Warming up)`
-            'find the number of iterations we can fit into 500ms
-            iterationsForDuration = bsbench.getIterationsForDuration(testFunction, 500, suite.variant)
+    function runTest(test as BenchmarkTest, variant as roAssociativeArray, thread as string, suiteName as string) as object
+        print `  ${test.name}`
+        print `    warming up...`
+        p = promises.onThen(bsbench.calibrate(test.func, 500, variant), function(iterationsForDuration, ctx) as object
             samples = 5
-
-            sampleResults = [] as SampleResult[]
-            print `${test.name} (Running ${intToString(iterationsForDuration)} iterations x ${samples} samples)`
-            for i = 0 to samples - 1
-                sample = testFunction(iterationsForDuration, suite.variant) as SampleResult
-                sample.testName = test.name
-                sample.suiteName = suite.name
+            print `    running ${bsbench.intToString(iterationsForDuration)} iterations x ${samples} samples`
+            sampleIndexes = [0, 1, 2, 3, 4]
+            'estimate ops/sec column width from calibration result + 1 extra digit of padding
+            estimatedOpsPerSec = bsbench.getOperationsPerSecond(500 * 1000&, iterationsForDuration)
+            opsColWidth = bsbench.numberToString(estimatedOpsPerSec).len() + 1
+            return promises.onThen(bsbench.promiseForEach(sampleIndexes, function(i, ctx) as object
+                sample = ctx.test.func(ctx.iterationsForDuration, ctx.variant)
+                if sample = invalid
+                    print `    ERROR: test "${ctx.test.name}" returned invalid`
+                    return promises.resolve(invalid)
+                end if
+                sample = sample as SampleResult
+                sample.testName = ctx.test.name
+                sample.suiteName = ctx.suiteName
                 sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
-                sampleResults.push(sample)
-                print `${test.name} (sample ${i + 1} of ${samples}: ${numberToString(sample.operationsPerSecond)} ops/sec, ${padLeft(bsbench.microsecondsToMs(sample.elapsedMicroseconds).ToStr(), 4, " ")}ms)`
-                ' bsbench.reportStatus(suite.name, test.name, i, sample.iterations, sample.elapsedMicroseconds)
-            end for
-
-            avgOpsPerSec = bsbench.average(sampleResults, "operationsPerSecond")
-            print `${test.name} (Done: avg ${numberToString(avgOpsPerSec)} ops/sec)`
-            suiteResults.push({
-                testName: test.name,
-                suiteName: suite.name,
-                operationsPerSecond: avgOpsPerSec,
-                samples: sampleResults
-            })
-        end for
-
-        printSuiteResults(suiteResults)
+                label = bsbench.padRight(`${i + 1}/${ctx.samples}`, 4, " ")
+                opsRaw = bsbench.numberToString(sample.operationsPerSecond)
+                dots = bsbench.padRight(" ", ctx.opsColWidth - opsRaw.len(), ".")
+                print `    ${label}${dots} ${opsRaw} ops/sec`
+                return promises.resolve(sample)
+            end function, { test: ctx.test, variant: ctx.variant, thread: ctx.thread, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples, opsColWidth: opsColWidth }), function(sampleResults, ctx) as object
+                validSamples = []
+                for each s in sampleResults
+                    if s <> invalid then validSamples.push(s)
+                end for
+                if validSamples.count() = 0 then return promises.resolve(invalid)
+                avgOpsPerSec = bsbench.average(validSamples, "operationsPerSecond")
+                return promises.resolve({
+                    testName: ctx.test.name,
+                    suiteName: ctx.suiteName,
+                    threadTarget: ctx.thread,
+                    operationsPerSecond: avgOpsPerSec,
+                    samples: validSamples
+                })
+            end function, { test: ctx.test, suiteName: ctx.suiteName, thread: ctx.thread, opsColWidth: opsColWidth })
+        end function, { test: test, variant: variant, thread: thread, suiteName: suiteName })
+        return promises.onCatch(p, function(error, ctx) as object
+            bsbench.printError(`test "${ctx.test.name}"`, error)
+            return promises.resolve(invalid)
+        end function, { test: test })
     end function
 
     '
-    ' Run the test function with increasing iterations until we find an iteration count that runs for approximately `targetDurationMs`
+    ' Like promises.all but sequential — calls callback(item, context) for each item in order,
+    ' waiting for each promise to resolve before starting the next.
+    ' Resolves with an array of all results in order.
+    ' Rejects immediately on the first failure, abandoning remaining items.
     '
-    function getIterationsForDuration(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as integer
+    function promiseForEach(items as object, callback as function, context = {} as object, index = 0 as integer, results = [] as object) as object
+        if index >= items.count()
+            return promises.resolve(results)
+        end if
+        ctx = { items: items, index: index, callback: callback, userContext: context, results: results }
+        return promises.onThen(callback(items[index], context), function(result, ctx) as object
+            ctx.results.push(result)
+            return bsbench.promiseForEach(ctx.items, ctx.callback, ctx.userContext, ctx.index + 1, ctx.results)
+        end function, ctx)
+    end function
 
-
+    '
+    ' Finds the iteration count that fills approximately targetDurationMs per run.
+    ' Returns a promise that resolves with the iteration count.
+    '
+    function calibrate(testFunction as function, targetDurationMs as integer, variant as roAssociativeArray, marginOfErrorMs = 3) as object
         targetDurationMicroseconds = targetDurationMs * 1000&
         marginOfErrorMicroseconds = marginOfErrorMs * 1000&
+        ctx = { testFunction: testFunction, variant: variant, targetDurationMicroseconds: targetDurationMicroseconds, marginOfErrorMicroseconds: marginOfErrorMicroseconds }
 
-        'do a timed run and return some stats
-        timedRun = function(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMicroseconds as longinteger) as CalibrationRun
-            'force iterations to be an integer, and ensure there's at least 1 iteration
-            iterations = max(Cint(iterations), 1)
-            testResult = testFunction(iterations, variant)
-            elapsedMicroseconds = testResult.elapsedMicroseconds as longinteger
+        return promises.chain(promises.resolve(invalid), ctx).then(function(_, ctx) as object
+            ' Phase 1: find a floor for the iteration count that exceeds 50ms
+            return bsbench.calibrateFindFloor(ctx.testFunction, ctx.variant, ctx.targetDurationMicroseconds, 1)
+        end function).then(function(runResult, ctx) as object
+            ' Phase 2: run at 50% to refine the estimate
+            return promises.resolve(bsbench.calibrateTimedRun(ctx.testFunction, runResult.iterationsForTargetDuration * 0.50, ctx.variant, ctx.targetDurationMicroseconds))
+        end function).then(function(runResult, ctx) as object
+            ' Phase 3: run at 100%
+            return promises.resolve(bsbench.calibrateTimedRun(ctx.testFunction, runResult.iterationsForTargetDuration, ctx.variant, ctx.targetDurationMicroseconds))
+        end function).then(function(runResult, ctx) as object
+            return bsbench.calibrateCorrect(runResult, ctx, invalid, 0)
+        end function).then(function(runResult, ctx) as object
+            return promises.resolve(runResult.iterations)
+        end function).toPromise()
+    end function
 
-            if elapsedMicroseconds = 0
-                return {
-                    elapsedMicroseconds: 0&,
-                    iterations: iterations,
+    ' Phase 1: one timedRun per call, recurses until elapsedMicroseconds > 50ms
+    function calibrateFindFloor(testFunction as function, variant as object, targetDurationMicroseconds as longinteger, iterations as integer) as object
+        runResult = bsbench.calibrateTimedRun(testFunction, iterations, variant, targetDurationMicroseconds)
+        if runResult.elapsedMicroseconds > 50000&
+            return promises.resolve(runResult)
+        end if
+        return promises.onThen(promises.resolve(invalid), function(ignored, ctx) as object
+            return bsbench.calibrateFindFloor(ctx.testFunction, ctx.variant, ctx.targetDurationMicroseconds, ctx.iterations * 3)
+        end function, { testFunction: testFunction, variant: variant, targetDurationMicroseconds: targetDurationMicroseconds, iterations: iterations })
+    end function
+
+    ' Phase 4: one timedRun per call, recurses until within margin or tries exhausted
+    function calibrateCorrect(runResult as object, ctx as object, lastRunResult as object, tries as integer) as object
+        withinMargin = runResult.elapsedMicroseconds >= (ctx.targetDurationMicroseconds - ctx.marginOfErrorMicroseconds) and runResult.elapsedMicroseconds <= (ctx.targetDurationMicroseconds + ctx.marginOfErrorMicroseconds)
+        if withinMargin or tries >= 5
+            runs = [runResult]
+            if lastRunResult <> invalid
+                runs.push(lastRunResult)
+                runs.push({
+                    elapsedMicroseconds: bsbench.average([runResult.elapsedMicroseconds, lastRunResult.elapsedMicroseconds]),
+                    iterations: bsbench.average([runResult.iterationsForTargetDuration, lastRunResult.iterationsForTargetDuration]),
                     iterationsPerMicrosecond: 0.0
-                    iterationsForTargetDuration: 0&
-                }
+                    iterationsForTargetDuration: 0
+                })
             end if
+            return promises.resolve(bsbench.getClosestTestRun(runs, ctx.targetDurationMicroseconds))
+        end if
+        extraMicroseconds = ctx.targetDurationMicroseconds - runResult.elapsedMicroseconds
+        newTotalIterations = runResult.iterations + (extraMicroseconds * runResult.iterationsPerMicrosecond)
+        nextRunResult = bsbench.calibrateTimedRun(ctx.testFunction, newTotalIterations, ctx.variant, ctx.targetDurationMicroseconds)
+        return promises.onThen(promises.resolve(invalid), function(ignored, ctx) as object
+            return bsbench.calibrateCorrect(ctx.nextRunResult, ctx.ctx, ctx.runResult, ctx.tries + 1)
+        end function, { nextRunResult: nextRunResult, runResult: runResult, ctx: ctx, tries: tries })
+    end function
 
-            iterationsPerMicrosecond = iterations / elapsedMicroseconds as double
-            iterationsForTargetDuration = iterationsPerMicrosecond * targetDurationMicroseconds
+    ' Execute one timed run of the test function and return a CalibrationRun result
+    function calibrateTimedRun(testFunction as function, iterations as dynamic, variant as roAssociativeArray, targetDurationMicroseconds as longinteger) as CalibrationRun
+        iterations = max(Cint(iterations), 1)
+        testResult = testFunction(iterations, variant)
+        elapsedMicroseconds = testResult.elapsedMicroseconds as longinteger
+
+        if elapsedMicroseconds = 0
             return {
-                elapsedMicroseconds: elapsedMicroseconds,
+                elapsedMicroseconds: 0&,
                 iterations: iterations,
-                iterationsPerMicrosecond: iterationsPerMicrosecond
-                iterationsForTargetDuration: iterationsForTargetDuration
-            }
-        end function
-
-        runResult as CalibrationRun = invalid
-        iterations = 1
-
-        calibrationSpan = createObject("roTimeSpan")
-        'grow the iterations exponentially until we find a nonzero runtime greater than 50ms
-        while true
-            runResult = timedRun(testFunction, iterations, variant, targetDurationMicroseconds)
-
-            'we found a set of iterations that ran for a good minimum time
-            if runResult.elapsedMicroseconds > 50000&
-                exit while
-            else
-                'double the iterations and try again
-                iterations *= 3
-            end if
-        end while
-
-        'bs:disable-next-line
-        calibrationElapsedMicroseconds = calibrationSpan.TotalMicroseconds() as longinteger
-        ' print `found a nonzero runtime greater than 50ms, and took ${calibrationElapsedMicroseconds}us to find it`
-
-        'run for a portion the computed iterations to get a better understanding of the time it takes to run
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration * 0.50, variant, targetDurationMicroseconds)
-        ' print "50% of the computed iterations", runResult
-
-        'now run the exact computed iterations
-        runResult = timedRun(testFunction, runResult.iterationsForTargetDuration, variant, targetDurationMicroseconds)
-        ' print "exact computed iterations", runResult
-
-        lastRunResult = invalid as CalibrationRun
-        tries = 0
-        'compensate for overshoot/undershoot
-        while (runResult.elapsedMicroseconds < (targetDurationMicroseconds - marginOfErrorMicroseconds) or runResult.elapsedMicroseconds > (targetDurationMicroseconds + marginOfErrorMicroseconds)) and tries < 5
-            tries++
-            'calculate how much we under/overshot
-            extraMicroseconds = targetDurationMicroseconds - runResult.elapsedMicroseconds
-            'the number of iterations we needed in this run to have reached our target
-            extraIterations = extraMicroseconds * runResult.iterationsPerMicrosecond
-            newTotalIterations = runResult.iterations + extraIterations
-
-            lastRunResult = runResult
-            runResult = timedRun(testFunction, newTotalIterations, variant, targetDurationMicroseconds)
-
-            ' print `overshoot/undershoot compensation #${tries} (add ${extraIterations} iterations)`, runResult
-        end while
-
-        runs = [runResult]
-        if lastRunResult <> invalid
-            runs.push(lastRunResult)
-            runs.push({
-                elapsedMicroseconds: average([runResult.elapsedMicroseconds, lastRunResult.elapsedMicroseconds]),
-                iterations: average([runResult.iterationsForTargetDuration, lastRunResult.iterationsForTargetDuration]),
                 iterationsPerMicrosecond: 0.0
-                iterationsForTargetDuration: 0
-            })
+                iterationsForTargetDuration: 0&
+            }
         end if
 
-        bestValue = getClosestTestRun(runs, targetDurationMicroseconds)
-
-        ' print "best value", bestValue
-
-        ' print "keeping the best iterations value from our various results"
-
-        return bestValue.iterations
+        iterationsPerMicrosecond = iterations / elapsedMicroseconds as double
+        iterationsForTargetDuration = iterationsPerMicrosecond * targetDurationMicroseconds
+        return {
+            elapsedMicroseconds: elapsedMicroseconds,
+            iterations: iterations,
+            iterationsPerMicrosecond: iterationsPerMicrosecond
+            iterationsForTargetDuration: iterationsForTargetDuration
+        }
     end function
 
     function average(values as dynamic[], key = invalid) as dynamic
@@ -183,56 +279,168 @@ namespace bsbench
         return result
     end function
 
-    function printSuiteResults(suiteResults as BenchmarkResult[], sort = false)
-        'sort the results by operations per second (descending)
-        if sort then
-            suiteResults.sortBy("operationsPerSecond", "r")
+    ' Format a speed comparison label: "(fastest)" or "(X% slower)"
+    function speedLabel(opsPerSec as double, highestOpsPerSec as double) as string
+        if opsPerSec = highestOpsPerSec
+            return "(fastest)"
         end if
-
-        'print a few blank-ish lines to separate the results
-        print `‌‌ \n‌‌ `
-        print `${suiteResults[0].suiteName} -- RESULTS:`
-        print padRight("", 50, "_")
-        highestOpsPerSec = suiteResults[0].operationsPerSecond
-        lowestOpsPerSec = suiteResults[0].operationsPerSecond
-        opsPerSecMaxLen = 0
-        nameLengthMaxLen = 0
-        for each suiteResult in suiteResults
-            'calculate slowest
-            if suiteResult.operationsPerSecond < lowestOpsPerSec
-                lowestOpsPerSec = suiteResult.operationsPerSecond
-            end if
-
-            'calculate highest ops/sec
-            if suiteResult.operationsPerSecond > highestOpsPerSec
-                highestOpsPerSec = suiteResult.operationsPerSecond
-            end if
-
-            'calculate logest ops/sec string
-            opsPerSecTextLength = numberToString(suiteResult.operationsPerSecond).Len()
-            if opsPerSecTextLength > opsPerSecMaxLen
-                opsPerSecMaxLen = opsPerSecTextLength
-            end if
-
-            'calculate longest name
-            if suiteResult.testName.Len() > nameLengthMaxLen
-                nameLengthMaxLen = suiteResult.testName.Len()
-            end if
-        end for
-
-        for each suiteResult in suiteResults
-            postfix = ""
-            if suiteResult.operationsPerSecond = highestOpsPerSec then
-                postfix = " (fastest)"
-            end if
-            if suiteResult.operationsPerSecond = lowestOpsPerSec then
-                postfix = " (slowest)"
-            end if
-            print padRight(suiteResult.testName + ": ", nameLengthMaxLen + 5, "-"); " "; padLeft(numberToString(suiteResult.operationsPerSecond), opsPerSecMaxLen, " "); " ops/sec"; postfix
-        end for
-        'print a few blank-ish lines to separate the results
-        print `‌‌ \n‌‌ `
+        slowerPct = int(((highestOpsPerSec - opsPerSec) / opsPerSec) * 100 + 0.5)
+        return `(${bsbench.intToString(slowerPct)}% slower)`
     end function
+
+    ' Print results for a single thread variant immediately after it completes
+    sub printIntermediaryResults(suiteName as string, thread as string, suiteResults as BenchmarkResult[])
+        'find highest and lowest ops/sec
+        highestOpsPerSec = suiteResults[0].operationsPerSecond
+        for each r in suiteResults
+            if r.operationsPerSecond > highestOpsPerSec then highestOpsPerSec = r.operationsPerSecond
+        end for
+
+        'measure longest test name, longest ops string, and longest label for alignment
+        nameLen = 0
+        opsLen = 0
+        for each r in suiteResults
+            if r.testName.len() > nameLen then nameLen = r.testName.len()
+            s = bsbench.numberToString(r.operationsPerSecond)
+            if s.len() > opsLen then opsLen = s.len()
+        end for
+
+        'pre-compute labels
+        labels = [] as string[]
+        labelLen = 0
+        for each r in suiteResults
+            lbl = bsbench.speedLabel(r.operationsPerSecond, highestOpsPerSec)
+            labels.push(lbl)
+            if lbl.len() > labelLen then labelLen = lbl.len()
+        end for
+
+        'line is: "  name: " + dashes + " " + right-aligned-ops + " ops/sec  " + label
+        'fix total content width so dashes vary by name length
+        dashColWidth = 12  'minimum dash region
+        lineWidth = 2 + nameLen + 2 + dashColWidth + 1 + opsLen + 9 + 2 + labelLen
+
+        'header: "=== suiteName [thread] " + trailing "="s
+        headerPrefix = `=== ${suiteName} [${thread} thread] `
+        if headerPrefix.len() + 2 > lineWidth then lineWidth = headerPrefix.len() + 2
+        header = bsbench.padRight(headerPrefix, lineWidth, "=")
+        footer = bsbench.padRight("", lineWidth, "=")
+
+        print ""
+        print header
+        for i = 0 to suiteResults.count() - 1
+            r = suiteResults[i]
+            nameCol = "  " + r.testName + ": "
+            opsRaw = bsbench.numberToString(r.operationsPerSecond)
+            dashLen = lineWidth - nameCol.len() - 1 - opsLen - 9 - 2 - labelLen
+            dashes = bsbench.padRight("", dashLen, "-")
+            opsPadding = bsbench.padRight("", opsLen - opsRaw.len(), " ")
+            print nameCol + dashes + " " + opsPadding + opsRaw + " ops/sec  " + labels[i]
+        end for
+        print footer
+        print ""
+    end sub
+
+    ' Print the final cross-thread table after all thread variants of a suite complete
+    sub printFinalResults(suite as BenchmarkSuite, allThreadResults as object)
+        'allThreadResults is an array of arrays — one per thread variant, each containing BenchmarkResults
+        'skip the final table if only one thread ran
+        if allThreadResults.count() <= 1 then return
+
+        'collect thread labels in order (use suite's allowedThreads to preserve order even if results are empty)
+        threads = suite.allowedThreads
+
+        'use the first non-empty thread's results to get test order
+        testNames = [] as string[]
+        for each threadResults in allThreadResults
+            if threadResults.count() > 0
+                for each r in threadResults
+                    testNames.push(r.testName)
+                end for
+                exit for
+            end if
+        end for
+        if testNames.count() = 0 then return
+
+        'build a lookup: testName -> array of ops values (one per thread)
+        opsMap = {} as object
+        for each testName in testNames
+            opsMap[testName] = []
+        end for
+        for i = 0 to allThreadResults.count() - 1
+            for each r in allThreadResults[i]
+                opsMap[r.testName].push(r.operationsPerSecond)
+            end for
+        end for
+
+        'compute per-test averages, find highest and lowest
+        testAvgs = {} as object
+        highestAvg = 0.0
+        for each testName in testNames
+            sum = 0.0
+            for each ops in opsMap[testName]
+                sum += ops
+            end for
+            avg = sum / opsMap[testName].count()
+            testAvgs[testName] = avg
+            if avg > highestAvg then highestAvg = avg
+        end for
+
+        'measure column widths
+        nameLen = 0
+        for each testName in testNames
+            if testName.len() > nameLen then nameLen = testName.len()
+        end for
+        colWidth = 14
+
+        'build header and separator
+        nameColWidth = nameLen + 2
+        header = bsbench.padRight("", nameColWidth, " ")
+        for each thread in threads
+            header += bsbench.padRight(thread, colWidth, " ")
+        end for
+        header += bsbench.padRight("avg", colWidth, " ")
+        totalWidth = nameColWidth + colWidth * (threads.count() + 1)
+
+        stars = bsbench.padRight("", totalWidth, "*")
+        print ""
+        print stars
+        print `  ${suite.name} -- FINAL RESULTS`
+        print stars
+        print "  " + header
+        print bsbench.padRight("", totalWidth, "-")
+
+        'pre-compute labels
+        labels = [] as string[]
+        for each testName in testNames
+            labels.push(bsbench.speedLabel(testAvgs[testName], highestAvg))
+        end for
+
+        'print each test row
+        for i = 0 to testNames.count() - 1
+            testName = testNames[i]
+            avg = testAvgs[testName]
+            row = bsbench.padRight(testName + ":", nameColWidth, " ")
+            for each ops in opsMap[testName]
+                row += bsbench.padRight(bsbench.numberToString(ops), colWidth, " ")
+            end for
+            row += bsbench.padRight(bsbench.numberToString(avg), colWidth, " ")
+            print "  " + row + labels[i]
+        end for
+
+        print bsbench.padRight("", totalWidth, "-")
+        print "(all values in ops/sec)"
+        print ""
+    end sub
+
+    sub printError(label as string, error as object)
+        print `bsbench ERROR in ${label}:`
+        print `  ${error.message}`
+        if type(error.backtrace) = "roArray"
+            for each frame in error.backtrace
+                print `  at ${frame.function} (${frame.filename}:${frame.line_number})`
+            end for
+        end if
+    end sub
 
     function padRight(value as string, padLength = 2 as integer, paddingCharacter = "0" as dynamic) as string
         while value.len() < padLength
@@ -333,6 +541,7 @@ end namespace
 interface BenchmarkResult
     testName as string
     suiteName as string
+    threadTarget as string
     operationsPerSecond as double
     samples as SampleResult[]
 end interface
@@ -351,7 +560,8 @@ end interface
 interface BenchmarkSuite
     name as string
     tests as BenchmarkTest[]
-    variant as roAssociativeArray
+    allowedThreads as string[]
+    variants as roAssociativeArray[]
 end interface
 
 ' A single named test within a suite. func accepts (iterations, variant) and returns a SampleResult.
@@ -364,7 +574,7 @@ end interface
 interface RunOptions
 end interface
 
-' Internal to getIterationsForDuration. Tracks the outcome of one calibration
+' Internal to calibrate. Tracks the outcome of one calibration
 ' run used to estimate the iteration count that fills a target duration.
 interface CalibrationRun
     elapsedMicroseconds as longinteger
