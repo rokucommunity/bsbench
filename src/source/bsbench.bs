@@ -396,14 +396,16 @@ namespace bsbench
         nameColWidth = nameLen + 2
         header = bsbench.padRight("", nameColWidth, " ")
         for each thread in threads
-            header += bsbench.padRight(thread + " thread", colWidth, " ")
+            header += bsbench.padRight(thread, colWidth, " ")
         end for
         header += bsbench.padRight("avg", colWidth, " ")
         totalWidth = nameColWidth + colWidth * (threads.count() + 1)
 
+        stars = bsbench.padRight("", totalWidth, "*")
         print ""
-        print `${suite.name} -- FINAL RESULTS:`
-        print bsbench.padRight("", totalWidth, "-")
+        print stars
+        print `  ${suite.name} -- FINAL RESULTS`
+        print stars
         print "  " + header
         print bsbench.padRight("", totalWidth, "-")
 
