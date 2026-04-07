@@ -152,6 +152,7 @@ class BsBenchPlugin implements CompilerPlugin {
         })?.findChild(isArrayLiteralExpression) as ArrayLiteralExpression;
 
         const filterPatterns: string[] = (event.program.options as any)?.bsbenchOptions?.only ?? [];
+        const threadFilter: string[] = (event.program.options as any)?.bsbenchOptions?.threads ?? [];
         let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites
             : filterPatterns.length > 0 ? allSuites.filter(x => filterPatterns.some(p => new RegExp(p, 'i').test(x.name)))
@@ -168,7 +169,9 @@ class BsBenchPlugin implements CompilerPlugin {
         if (allSuitesConstArray) {
             const suitesAst = suitesToRun.map(suite => {
                 const variants = this.getVariants(suite);
-                const threads = suite.config.supportedThreads;
+                const threads = threadFilter.length > 0
+                    ? suite.config.supportedThreads.filter(t => threadFilter.includes(t))
+                    : suite.config.supportedThreads;
 
                 // build the variants array entries: one AA per variant combination
                 const variantEntries = variants.map(variant => {

@@ -316,7 +316,7 @@ namespace bsbench
 
         'line is: "  name: " + dashes + " " + right-aligned-ops + " ops/sec  " + label
         'fix total content width so dashes vary by name length
-        dashColWidth = 12  'minimum dash region
+        dashColWidth = 12 'minimum dash region
         lineWidth = 2 + nameLen + 2 + dashColWidth + 1 + opsLen + 9 + 2 + labelLen
 
         'header: "=== suiteName [thread] " + trailing "="s
@@ -343,8 +343,6 @@ namespace bsbench
     ' Print the final cross-thread table after all thread variants of a suite complete
     sub printFinalResults(suite as BenchmarkSuite, allThreadResults as object)
         'allThreadResults is an array of arrays — one per thread variant, each containing BenchmarkResults
-        'skip the final table if only one thread ran
-        if allThreadResults.count() <= 1 then return
 
         'collect thread labels in order (use suite's allowedThreads to preserve order even if results are empty)
         threads = suite.allowedThreads

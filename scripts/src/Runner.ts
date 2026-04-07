@@ -15,6 +15,7 @@ export class Runner {
             host: string;
             password: string;
             only?: string[];
+            threads?: string[];
             cwd?: string;
         }
     ) {
@@ -57,7 +58,7 @@ export class Runner {
         const builder = new ProgramBuilder();
         await builder.run({
             project: s`${__dirname}/../../bsconfig.json`,
-            ...(this.options.only?.length ? { bsbenchOptions: { only: this.options.only } } as any : {})
+            ...(this.options.only?.length || this.options.threads?.length ? { bsbenchOptions: { only: this.options.only, threads: this.options.threads } } as any : {})
         });
         logger.log('App finished building');
     }
