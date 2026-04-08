@@ -16,6 +16,7 @@ export class Runner {
             password: string;
             only?: string[];
             threads?: string[];
+            microseconds?: boolean;
             cwd?: string;
         }
     ) {
@@ -58,7 +59,7 @@ export class Runner {
         const builder = new ProgramBuilder();
         await builder.run({
             project: s`${__dirname}/../../bsconfig.json`,
-            ...(this.options.only?.length || this.options.threads?.length ? { bsbenchOptions: { only: this.options.only, threads: this.options.threads } } as any : {})
+            ...(this.options.only?.length || this.options.threads?.length || this.options.microseconds ? { bsbenchOptions: { only: this.options.only, threads: this.options.threads, microseconds: this.options.microseconds } } as any : {})
         });
         logger.log('App finished building');
     }
@@ -101,7 +102,7 @@ interface TestResult {
      */
     testName: string;
     /**
-     * The operations per second this test was able to achieve
+     * The average microseconds per operation
      */
-    operationsPerSecond: number;
+    microsecondsPerOp: number;
 }

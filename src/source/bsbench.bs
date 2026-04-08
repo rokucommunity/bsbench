@@ -5,6 +5,9 @@ namespace bsbench
     'This array is auto-generated during the build process
     const allSuites = [] as BenchmarkSuite[]
 
+    'This value is set during the build process based on the --microseconds CLI flag
+    const usesMicroseconds = false
+
     function getAllSuites()
         if m.allSuites = invalid
             m.allSuites = allSuites
@@ -109,9 +112,9 @@ namespace bsbench
             samples = 5
             print `    running ${bsbench.intToString(iterationsForDuration)} iterations x ${samples} samples`
             sampleIndexes = [0, 1, 2, 3, 4]
-            'estimate ops/sec column width from calibration result + 1 extra digit of padding
-            estimatedOpsPerSec = bsbench.getOperationsPerSecond(500 * 1000&, iterationsForDuration)
-            opsColWidth = bsbench.numberToString(estimatedOpsPerSec).len() + 1
+            'estimate column width from calibration result + 1 extra digit of padding
+            estimatedUsPerOp# = 500000.0# / iterationsForDuration
+            metricColWidth = bsbench.formatMetric(estimatedUsPerOp#).len() + 1
             return promises.onThen(bsbench.promiseForEach(sampleIndexes, function(i, ctx) as object
                 sample = ctx.test.func(ctx.iterationsForDuration, ctx.variant)
                 if sample = invalid
@@ -121,27 +124,28 @@ namespace bsbench
                 sample = sample as SampleResult
                 sample.testName = ctx.test.name
                 sample.suiteName = ctx.suiteName
-                sample.operationsPerSecond = bsbench.getOperationsPerSecond(sample.elapsedMicroseconds, sample.iterations)
+                sample.microsecondsPerOp = sample.elapsedMicroseconds * 1.0# / sample.iterations
                 label = bsbench.padRight(`${i + 1}/${ctx.samples}`, 4, " ")
-                opsRaw = bsbench.numberToString(sample.operationsPerSecond)
-                dots = bsbench.padRight(" ", ctx.opsColWidth - opsRaw.len(), ".")
-                print `    ${label}${dots} ${opsRaw} ops/sec`
+                metricRaw = bsbench.formatMetric(sample.microsecondsPerOp)
+                metricUnit = bsbench.metricUnit()
+                dots = bsbench.padRight(" ", ctx.metricColWidth - metricRaw.len(), ".")
+                print `    ${label}${dots} ${metricRaw} ${metricUnit}`
                 return promises.resolve(sample)
-            end function, { test: ctx.test, variant: ctx.variant, thread: ctx.thread, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples, opsColWidth: opsColWidth }), function(sampleResults, ctx) as object
+            end function, { test: ctx.test, variant: ctx.variant, thread: ctx.thread, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples, metricColWidth: metricColWidth }), function(sampleResults, ctx) as object
                 validSamples = []
                 for each s in sampleResults
                     if s <> invalid then validSamples.push(s)
                 end for
                 if validSamples.count() = 0 then return promises.resolve(invalid)
-                avgOpsPerSec = bsbench.average(validSamples, "operationsPerSecond")
+                avgUsPerOp = bsbench.average(validSamples, "microsecondsPerOp")
                 return promises.resolve({
                     testName: ctx.test.name,
                     suiteName: ctx.suiteName,
                     threadTarget: ctx.thread,
-                    operationsPerSecond: avgOpsPerSec,
+                    microsecondsPerOp: avgUsPerOp,
                     samples: validSamples
                 })
-            end function, { test: ctx.test, suiteName: ctx.suiteName, thread: ctx.thread, opsColWidth: opsColWidth })
+            end function, { test: ctx.test, suiteName: ctx.suiteName, thread: ctx.thread, metricColWidth: metricColWidth })
         end function, { test: test, variant: variant, thread: thread, suiteName: suiteName })
         return promises.onCatch(p, function(error, ctx) as object
             bsbench.printError(`test "${ctx.test.name}"`, error)
@@ -241,7 +245,7 @@ namespace bsbench
             }
         end if
 
-        iterationsPerMicrosecond = iterations / elapsedMicroseconds as double
+        iterationsPerMicrosecond = iterations * 1.0# / elapsedMicroseconds
         iterationsForTargetDuration = iterationsPerMicrosecond * targetDurationMicroseconds
         return {
             elapsedMicroseconds: elapsedMicroseconds,
@@ -252,7 +256,7 @@ namespace bsbench
     end function
 
     function average(values as dynamic[], key = invalid) as dynamic
-        sum = 0&
+        sum = 0.0#
         for each value in values
             if key <> invalid
                 sum += value[key]
@@ -280,44 +284,49 @@ namespace bsbench
     end function
 
     ' Format a speed comparison label: "(fastest)" or "(X% slower)"
-    function speedLabel(opsPerSec as double, highestOpsPerSec as double) as string
-        if opsPerSec = highestOpsPerSec
+    ' usPerOp: lower is faster. fastestUsPerOp: the lowest (best) value in the set.
+    function speedLabel(usPerOp as double, fastestUsPerOp as double) as string
+        if usPerOp = fastestUsPerOp
             return "(fastest)"
         end if
-        slowerPct = int(((highestOpsPerSec - opsPerSec) / opsPerSec) * 100 + 0.5)
+        slowerPct = int(((usPerOp - fastestUsPerOp) / fastestUsPerOp) * 100 + 0.5)
+        if slowerPct = 0 then return "(fastest)"
         return `(${bsbench.intToString(slowerPct)}% slower)`
     end function
 
     ' Print results for a single thread variant immediately after it completes
     sub printIntermediaryResults(suiteName as string, thread as string, suiteResults as BenchmarkResult[])
-        'find highest and lowest ops/sec
-        highestOpsPerSec = suiteResults[0].operationsPerSecond
+        'find fastest (lowest µs/op)
+        fastestUsPerOp = suiteResults[0].microsecondsPerOp
         for each r in suiteResults
-            if r.operationsPerSecond > highestOpsPerSec then highestOpsPerSec = r.operationsPerSecond
+            if r.microsecondsPerOp < fastestUsPerOp then fastestUsPerOp = r.microsecondsPerOp
         end for
 
-        'measure longest test name, longest ops string, and longest label for alignment
+        'measure longest test name and longest metric string for alignment
         nameLen = 0
-        opsLen = 0
+        metricLen = 0
         for each r in suiteResults
             if r.testName.len() > nameLen then nameLen = r.testName.len()
-            s = bsbench.numberToString(r.operationsPerSecond)
-            if s.len() > opsLen then opsLen = s.len()
+            s = bsbench.formatMetric(r.microsecondsPerOp)
+            if s.len() > metricLen then metricLen = s.len()
         end for
 
         'pre-compute labels
         labels = [] as string[]
         labelLen = 0
         for each r in suiteResults
-            lbl = bsbench.speedLabel(r.operationsPerSecond, highestOpsPerSec)
+            lbl = bsbench.speedLabel(r.microsecondsPerOp, fastestUsPerOp)
             labels.push(lbl)
             if lbl.len() > labelLen then labelLen = lbl.len()
         end for
 
-        'line is: "  name: " + dashes + " " + right-aligned-ops + " ops/sec  " + label
+        metricUnit = bsbench.metricUnit()
+        unitSuffix = " " + metricUnit + "  "
+
+        'line is: "  name: " + dashes + " " + right-aligned-metric + " unit  " + label
         'fix total content width so dashes vary by name length
         dashColWidth = 12 'minimum dash region
-        lineWidth = 2 + nameLen + 2 + dashColWidth + 1 + opsLen + 9 + 2 + labelLen
+        lineWidth = 2 + nameLen + 2 + dashColWidth + 1 + metricLen + unitSuffix.len() + labelLen
 
         'header: "=== suiteName [thread] " + trailing "="s
         headerPrefix = `=== ${suiteName} [${thread} thread] `
@@ -330,11 +339,11 @@ namespace bsbench
         for i = 0 to suiteResults.count() - 1
             r = suiteResults[i]
             nameCol = "  " + r.testName + ": "
-            opsRaw = bsbench.numberToString(r.operationsPerSecond)
-            dashLen = lineWidth - nameCol.len() - 1 - opsLen - 9 - 2 - labelLen
+            metricRaw = bsbench.formatMetric(r.microsecondsPerOp)
+            dashLen = lineWidth - nameCol.len() - 1 - metricLen - unitSuffix.len() - labelLen
             dashes = bsbench.padRight("", dashLen, "-")
-            opsPadding = bsbench.padRight("", opsLen - opsRaw.len(), " ")
-            print nameCol + dashes + " " + opsPadding + opsRaw + " ops/sec  " + labels[i]
+            metricPadding = bsbench.padRight("", metricLen - metricRaw.len(), " ")
+            print nameCol + dashes + " " + metricPadding + metricRaw + unitSuffix + labels[i]
         end for
         print footer
         print ""
@@ -359,36 +368,49 @@ namespace bsbench
         end for
         if testNames.count() = 0 then return
 
-        'build a lookup: testName -> array of ops values (one per thread)
-        opsMap = {} as object
+        'build a lookup: testName -> array of µs/op values (one per thread)
+        usMap = {} as object
         for each testName in testNames
-            opsMap[testName] = []
+            usMap[testName] = []
         end for
         for i = 0 to allThreadResults.count() - 1
             for each r in allThreadResults[i]
-                opsMap[r.testName].push(r.operationsPerSecond)
+                usMap[r.testName].push(r.microsecondsPerOp)
             end for
         end for
 
-        'compute per-test averages, find highest and lowest
+        'compute per-test averages across threads, find fastest (lowest µs/op)
         testAvgs = {} as object
-        highestAvg = 0.0
+        fastestAvg = -1.0
         for each testName in testNames
             sum = 0.0
-            for each ops in opsMap[testName]
-                sum += ops
+            for each us in usMap[testName]
+                sum += us
             end for
-            avg = sum / opsMap[testName].count()
+            avg = sum / usMap[testName].count()
             testAvgs[testName] = avg
-            if avg > highestAvg then highestAvg = avg
+            if fastestAvg < 0 or avg < fastestAvg then fastestAvg = avg
         end for
 
-        'measure column widths
+        'measure column widths — name col and value col both sized to actual content
         nameLen = 0
         for each testName in testNames
             if testName.len() > nameLen then nameLen = testName.len()
         end for
-        colWidth = 14
+        colWidth = 3 ' minimum padding after value
+        for each testName in testNames
+            for each us in usMap[testName]
+                w = bsbench.formatMetric(us).len() + 2
+                if w > colWidth then colWidth = w
+            end for
+            w = bsbench.formatMetric(testAvgs[testName]).len() + 2
+            if w > colWidth then colWidth = w
+        end for
+        ' also ensure column headers fit
+        for each thread in threads
+            if thread.len() + 2 > colWidth then colWidth = thread.len() + 2
+        end for
+        if "avg".len() + 2 > colWidth then colWidth = "avg".len() + 2
 
         'build header and separator
         nameColWidth = nameLen + 2
@@ -410,7 +432,7 @@ namespace bsbench
         'pre-compute labels
         labels = [] as string[]
         for each testName in testNames
-            labels.push(bsbench.speedLabel(testAvgs[testName], highestAvg))
+            labels.push(bsbench.speedLabel(testAvgs[testName], fastestAvg))
         end for
 
         'print each test row
@@ -418,15 +440,15 @@ namespace bsbench
             testName = testNames[i]
             avg = testAvgs[testName]
             row = bsbench.padRight(testName + ":", nameColWidth, " ")
-            for each ops in opsMap[testName]
-                row += bsbench.padRight(bsbench.numberToString(ops), colWidth, " ")
+            for each us in usMap[testName]
+                row += bsbench.padRight(bsbench.formatMetric(us), colWidth, " ")
             end for
-            row += bsbench.padRight(bsbench.numberToString(avg), colWidth, " ")
+            row += bsbench.padRight(bsbench.formatMetric(avg), colWidth, " ")
             print "  " + row + labels[i]
         end for
 
         print bsbench.padRight("", totalWidth, "-")
-        print "(all values in ops/sec)"
+        print `(all values in ${bsbench.metricUnit()})`
         print ""
     end sub
 
@@ -472,14 +494,44 @@ namespace bsbench
     end function
 
     '
-    ' Convert a number into a string with commas every 3 digits
+    ' Convert a number into a string with commas every 3 digits.
+    ' Decimal places scale with magnitude to preserve ~6 significant figures:
+    '   >= 100000 -> 0 decimals  (e.g. "1,234,567")
+    '   >= 10000  -> 1 decimal   (e.g. "12,345.6")
+    '   >= 1000   -> 2 decimals  (e.g. "1,234.56")
+    '   >= 100    -> 3 decimals  (e.g. "123.456")
+    '   >= 10     -> 4 decimals  (e.g. "12.3456")
+    '   >= 1      -> 5 decimals  (e.g. "1.23456")
+    '   >= 0.1    -> 6 decimals  (e.g. "0.123456")
+    '   < 0.1     -> 7 decimals  (e.g. "0.0123456")
     '
     function numberToString(num) as string
-        ' Multiply by 100 to shift 2 decimal places into integer space.
-        ' Use # suffix to force double precision and avoid losing digits for large values.
-        shifted# = int(num * 100.0# + 0.5#)
-        decPart = CInt(shifted# mod 100.0#)
-        intPart# = int(shifted# / 100.0#)
+        if num >= 100000.0#
+            decimalPlaces = 0
+        else if num >= 10000.0#
+            decimalPlaces = 1
+        else if num >= 1000.0#
+            decimalPlaces = 2
+        else if num >= 100.0#
+            decimalPlaces = 3
+        else if num >= 10.0#
+            decimalPlaces = 4
+        else if num >= 1.0#
+            decimalPlaces = 5
+        else if num >= 0.1#
+            decimalPlaces = 6
+        else
+            decimalPlaces = 7
+        end if
+
+        scale# = 1.0#
+        for i = 0 to decimalPlaces - 1
+            scale# *= 10.0#
+        end for
+
+        shifted# = int(num * scale# + 0.5#)
+        decPart# = shifted# mod scale#
+        intPart# = int(shifted# / scale#)
         originalIntPart# = intPart#
 
         ' Insert commas into integer part
@@ -494,8 +546,9 @@ namespace bsbench
             digitCount++
         end while
 
-        if originalIntPart# < 1000.0# and decPart <> 0
-            result = result + "." + padLeft(decPart.ToStr(), 2, "0")
+        if result = "" then result = "0"
+        if decimalPlaces > 0 and decPart# > 0
+            result = result + "." + padLeft(CInt(decPart#).ToStr(), decimalPlaces, "0")
         end if
         return result
     end function
@@ -504,13 +557,21 @@ namespace bsbench
         return elapsedMicroseconds \ 1000&
     end function
 
-    function getOperationsPerSecond(elapsedMicroseconds as longinteger, ops)
-        seconds# = elapsedMicroseconds / 1000000.0#
-        if seconds# = 0 then
-            seconds# = 0.0000001#
+    ' Returns the unit label for the current display mode
+    function metricUnit() as string
+        if usesMicroseconds
+            return "µs/op"
         end if
-        opsPerSec = ops / seconds#
-        return opsPerSec
+        return "ops/sec"
+    end function
+
+    ' Format a µs/op value for display based on the current display mode.
+    function formatMetric(usPerOp as double) as string
+        if usesMicroseconds
+            return bsbench.numberToString(usPerOp)
+        end if
+        if usPerOp = 0 then return "0"
+        return bsbench.numberToString(1000000.0# / usPerOp)
     end function
 
     function reportStatus(suiteName as string, testName as string, sampleNumber as integer, iterations as integer, elapsedMicroseconds as longinteger)
@@ -535,21 +596,21 @@ namespace bsbench
 end namespace
 
 ' The top-level result for a single benchmark test, containing the averaged
-' operationsPerSecond across all samples and the raw sample data.
+' microsecondsPerOp across all samples and the raw sample data.
 interface BenchmarkResult
     testName as string
     suiteName as string
     threadTarget as string
-    operationsPerSecond as double
+    microsecondsPerOp as double
     samples as SampleResult[]
 end interface
 
 ' The raw result of one timed execution of a test function (a single sample).
-' operationsPerSecond, testName, and suiteName are populated by runSuite after the call.
+' microsecondsPerOp, testName, and suiteName are populated by runTest after the call.
 interface SampleResult
     elapsedMicroseconds as longinteger
     iterations as integer
-    operationsPerSecond as double
+    microsecondsPerOp as double
     testName as string
     suiteName as string
 end interface

@@ -12,6 +12,7 @@ let argv = yargs
     .option('password', { type: 'string', description: 'The password for the roku to test against', demandOption: true })
     .option('only', { type: 'array', alias: ['grep'], string: true, description: 'Run only suites whose names match one of the given patterns (regex)' })
     .option('threads', { type: 'array', string: true, description: 'Run only the specified thread(s): main, render, task' })
+    .option('microseconds', { type: 'boolean', alias: 'microsecond', description: 'Display results in microseconds per operation (µs) instead of ops/sec' })
     .argv;
 
 async function main() {
