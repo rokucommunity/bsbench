@@ -153,6 +153,16 @@ class BsBenchPlugin implements CompilerPlugin {
 
         const filterPatterns: string[] = (event.program.options as any)?.bsbenchOptions?.only ?? [];
         const threadFilter: string[] = (event.program.options as any)?.bsbenchOptions?.threads ?? [];
+        const microseconds: boolean = (event.program.options as any)?.bsbenchOptions?.microseconds ?? false;
+
+        // inject the usesMicroseconds const value
+        const usesMicrosecondsConst = bsbenchFile.ast.findChild<ConstStatement>((x) => {
+            return isConstStatement(x) && x.name.toLowerCase() === 'usesmicroseconds';
+        });
+        if (usesMicrosecondsConst) {
+            const boolExpr = (Parser.parse(`x = ${microseconds ? 'true' : 'false'}`).ast.statements[0] as AssignmentStatement).value;
+            event.editor.setProperty(usesMicrosecondsConst, 'value', boolExpr);
+        }
         let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites
             : filterPatterns.length > 0 ? allSuites.filter(x => filterPatterns.some(p => new RegExp(p, 'i').test(x.name)))
