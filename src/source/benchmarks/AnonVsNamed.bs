@@ -1,9 +1,19 @@
 @suite()
 namespace AnonVsNamed
+
+    sub setup()
+        theFuncVar = theFunc
+    end sub
+
     @test("call anon func")
     sub _()
         result = (function()
         end function)()
+    end sub
+
+    @test("call var pointing to named func")
+    sub _()
+        result = theFuncVar()
     end sub
 
     @test("call named func")
