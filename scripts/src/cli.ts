@@ -18,7 +18,7 @@ let argv = yargs
 async function main() {
     let only = argv.only as string[] | undefined;
 
-    if (!only?.length) {
+    if (Array.isArray(only) && only.length === 0) {
         const suiteNames = discoverSuiteNames();
         const response = await prompts({
             type: 'autocompleteMultiselect',
