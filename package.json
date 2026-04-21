@@ -16,7 +16,7 @@
   "dependencies": {
     "@rokucommunity/logger": "^0.3.9",
     "eventemitter3": "^5.0.1",
-    "promises": "https://github.com/rokucommunity/promises/releases/download/v0.0.0-packages/rokucommunity-promises-0.6.7-65-support-observing-promises-in-tasks.20260420200205.tgz",
+    "promises": "https://github.com/rokucommunity/promises/releases/download/v0.0.0-packages/rokucommunity-promises-0.6.7-65-support-observing-promises-in-tasks.20260421155928.tgz",
     "prompts": "^2.4.2",
     "sourcemap": "^0.1.0",
     "yargs": "^16.2.0"
