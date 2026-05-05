@@ -1,0 +1,35 @@
+@suite()
+namespace MTopHoisting
+    sub setup()
+        if m.top = invalid
+            m.top = createObject("roSGNode", "Group") as dynamic
+        end if
+        m.top.update({
+            thing1: "alpha"
+            thing2: "beta"
+            thing3: "gamma"
+            thing4: "delta"
+            thing5: "epsilon"
+        }, true)
+        result = invalid
+    end sub
+
+    @test("m.top each time")
+    sub _()
+        result = m.top.thing1
+        result = m.top.thing2
+        result = m.top.thing3
+        result = m.top.thing4
+        result = m.top.thing5
+    end sub
+
+    @test("hoist m.top once per iter")
+    sub _()
+        t = m.top
+        result = t.thing1
+        result = t.thing2
+        result = t.thing3
+        result = t.thing4
+        result = t.thing5
+    end sub
+end namespace
