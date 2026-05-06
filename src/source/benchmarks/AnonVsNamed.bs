@@ -1,4 +1,4 @@
-@suite()
+@suite({ componentExtends: "Group", depth: 4 })
 namespace AnonVsNamed
 
     sub setup()
