@@ -64,12 +64,15 @@ namespace bsbench
         end function, {})
     end function
 
+    ' Create a SGNode for the suite if it doesn't already exist, and return it.
+    ' This node will be cached until you call freeSuiteNode, which removes it from the scene and frees memory.
+    ' So it's safe to call this multiple times. But ideally you call this once before the entire suite to ensure
+    ' consistent memory usage and in the scene. If your suite doesn't specify a componentExtends+depth, this will just return the main scene.
     function getSuiteNode(suite as BenchmarkSuite)
         mainScene = bsbench.getMainScene()
-        return mainScene
         if promises.internal.isNonEmptyString(suite.componentName) then
             if m.suiteNodeCache = invalid then m.suiteNodeCache = {}
-            if m.suiteNodeCache[suite.componentName] <> invalid then
+            if m.suiteNodeCache[suite.componentName] = invalid then
                 suiteNode = CreateObject("roSGNode", suite.componentName)
                 print "created suite component: " + suite.componentName suiteNode
                 'append to the main scene
@@ -87,7 +90,6 @@ namespace bsbench
         if promises.internal.isNonEmptyString(suite.componentName) and m.suiteNodeCache <> invalid and m.suiteNodeCache[suite.componentName] <> invalid
             suiteNode = m.suiteNodeCache[suite.componentName]
             if suiteNode <> invalid
-                print "freeing suite component: " + suite.componentName suiteNode
                 mainScene = bsbench.getMainScene()
                 mainScene.removeChild(suiteNode)
                 m.suiteNodeCache[suite.componentName] = invalid
