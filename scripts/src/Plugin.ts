@@ -104,11 +104,15 @@ class BsBenchPlugin implements CompilerPlugin {
                     const componentName = `__bsbench_${slug}_d${i}`;
                     const xmlPath = `components/bsbench_generated/${componentName}.xml`;
                     if (i === 1) {
-                        // d1 gets the runTest interface + companion script; suite scripts injected later
-                        const xml = `<component name="${componentName}" extends="${parentName}">\n    <script type="text/brightscript" uri="${componentName}.brs" />\n    <interface>\n        <function name="runTest" />\n    </interface>\n</component>\n`;
-                        const bs = `import "pkg:/source/bsbench.bs"\n\nfunction runTest(suiteName as string, testName as string, thread as string, variant as roAssociativeArray)\n    return promises.try(function(suiteName, testName, thread, variant)\n        info = bsbench.getTestInfo(suiteName, testName)\n        return bsbench.runTest(info.test, variant, thread, suiteName)\n    end function, [suiteName, testName, thread, variant])\nend function\n`;
+                        // d1 gets the runTest interface + companion script; suite scripts injected later by injectSuiteImports.
+                        const xml = `
+                            <component name="${componentName}" extends="${parentName}">
+                                <script type="text/brightscript" uri="pkg:/source/bsbench.bs" />
+                                <interface>
+                                    <function name="runRenderThreadTest" />
+                                </interface>
+                            </component>`.trim()
                         event.program.setFile(xmlPath, xml);
-                        event.program.setFile(`components/bsbench_generated/${componentName}.bs`, bs);
                         this.generatedRootXmlPaths.push(xmlPath);
                     } else {
                         const xml = `<component name="${componentName}" extends="${parentName}">\n</component>\n`;
@@ -167,7 +171,7 @@ class BsBenchPlugin implements CompilerPlugin {
             }
             let insertIndex = lastScriptIdx + 1;
             for (const suite of allSuites) {
-                const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs');
+                const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs').replace(/\\/g, '/');
                 if (alreadyImported.has(uri)) {
                     continue;
                 }
@@ -202,7 +206,7 @@ class BsBenchPlugin implements CompilerPlugin {
         let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites
             : filterPatterns.length > 0 ? allSuites.filter(x => filterPatterns.some(p => new RegExp(p, 'i').test(x.name)))
-            : allSuites;
+                : allSuites;
 
         if (atOnlySuites.length > 0) {
             console.log(`[bsbench] Running ${suitesToRun.length} of ${allSuites.length} suites (@only):\n${suitesToRun.map(x => `  - ${x.name}`).join('\n')}`);

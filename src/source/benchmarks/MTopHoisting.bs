@@ -1,9 +1,11 @@
-@suite({ componentExtends: "Group", depth: 5 })
+@suite({ componentExtends: "Group", depth: 5,  })
 namespace MTopHoisting
     sub setup()
+        ' print "setup for mtop hoisting"
         if m.top = invalid
             m.top = createObject("roSGNode", "Group") as dynamic
         end if
+        print "MTopHoisting: m.top subtype = " + m.top.subtype()
         m.top.update({
             thing1: "alpha"
             thing2: "beta"
@@ -16,6 +18,7 @@ namespace MTopHoisting
 
     @test("m.top each time")
     sub _()
+        ' print "mtop hoisting iteration"
         result = m.top.thing1
         result = m.top.thing2
         result = m.top.thing3
