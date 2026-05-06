@@ -4,8 +4,10 @@ import { SourceNode } from 'source-map';
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
 
-    // Maps "<suiteName>" -> generated leaf component name, populated in beforePrepareProgram
+    // Maps suiteName -> generated leaf component name, populated in afterProgramValidate
     private generatedComponentNames = new Map<string, string>();
+    // XML dest paths of all generated d1 (root) components, for injectSuiteImports
+    private generatedRootXmlPaths: string[] = [];
 
     afterProgramCreate(event: AfterProgramCreateEvent) {
     }
@@ -77,6 +79,7 @@ class BsBenchPlugin implements CompilerPlugin {
 
     afterProgramValidate(event: AfterProgramValidateEvent) {
         this.generatedComponentNames.clear();
+        this.generatedRootXmlPaths = [];
         for (const file of Object.values(event.program.files)) {
             for (const suite of this.findSuites(file)) {
                 const setupFunction = this.findFunction(suite, 'setup');
@@ -99,8 +102,18 @@ class BsBenchPlugin implements CompilerPlugin {
                 let parentName = componentExtends;
                 for (let i = 1; i <= depth; i++) {
                     const componentName = `__bsbench_${slug}_d${i}`;
-                    const xml = `<component name="${componentName}" extends="${parentName}">\n</component>\n`;
-                    event.program.setFile(`components/bsbench_generated/${componentName}.xml`, xml);
+                    const xmlPath = `components/bsbench_generated/${componentName}.xml`;
+                    if (i === 1) {
+                        // d1 gets the runTest interface + companion script; suite scripts injected later
+                        const xml = `<component name="${componentName}" extends="${parentName}">\n    <script type="text/brightscript" uri="${componentName}.brs" />\n    <interface>\n        <function name="runTest" />\n    </interface>\n</component>\n`;
+                        const bs = `import "pkg:/source/bsbench.bs"\n\nfunction runTest(suiteName as string, testName as string, thread as string, variant as roAssociativeArray)\n    return promises.try(function(suiteName, testName, thread, variant)\n        info = bsbench.getTestInfo(suiteName, testName)\n        return bsbench.runTest(info.test, variant, thread, suiteName)\n    end function, [suiteName, testName, thread, variant])\nend function\n`;
+                        event.program.setFile(xmlPath, xml);
+                        event.program.setFile(`components/bsbench_generated/${componentName}.bs`, bs);
+                        this.generatedRootXmlPaths.push(xmlPath);
+                    } else {
+                        const xml = `<component name="${componentName}" extends="${parentName}">\n</component>\n`;
+                        event.program.setFile(xmlPath, xml);
+                    }
                     parentName = componentName;
                 }
                 this.generatedComponentNames.set(suite.name, parentName);
@@ -137,7 +150,7 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     private injectSuiteImports(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
-        for (const xmlPath of ['components/MainScene.xml', 'components/TestTask.xml']) {
+        for (const xmlPath of ['components/MainScene.xml', 'components/TestTask.xml', ...this.generatedRootXmlPaths]) {
             const xmlFile = event.program.getFile<XmlFile>(xmlPath);
             if (!isXmlFile(xmlFile)) {
                 continue;
