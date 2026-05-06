@@ -4,8 +4,10 @@ import { SourceNode } from 'source-map';
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
 
-    // Maps "<suiteName>" -> generated leaf component name, populated in beforePrepareProgram
+    // Maps suiteName -> generated leaf component name, populated in afterProgramValidate
     private generatedComponentNames = new Map<string, string>();
+    // XML dest paths of all generated d1 (root) components, for injectSuiteImports
+    private generatedRootXmlPaths: string[] = [];
 
     afterProgramCreate(event: AfterProgramCreateEvent) {
     }
@@ -77,6 +79,7 @@ class BsBenchPlugin implements CompilerPlugin {
 
     afterProgramValidate(event: AfterProgramValidateEvent) {
         this.generatedComponentNames.clear();
+        this.generatedRootXmlPaths = [];
         for (const file of Object.values(event.program.files)) {
             for (const suite of this.findSuites(file)) {
                 const setupFunction = this.findFunction(suite, 'setup');
@@ -99,8 +102,22 @@ class BsBenchPlugin implements CompilerPlugin {
                 let parentName = componentExtends;
                 for (let i = 1; i <= depth; i++) {
                     const componentName = `__bsbench_${slug}_d${i}`;
-                    const xml = `<component name="${componentName}" extends="${parentName}">\n</component>\n`;
-                    event.program.setFile(`components/bsbench_generated/${componentName}.xml`, xml);
+                    const xmlPath = `components/bsbench_generated/${componentName}.xml`;
+                    if (i === 1) {
+                        // d1 gets the runTest interface + companion script; suite scripts injected later by injectSuiteImports.
+                        const xml = `
+                            <component name="${componentName}" extends="${parentName}">
+                                <script type="text/brightscript" uri="pkg:/source/bsbench.bs" />
+                                <interface>
+                                    <function name="runRenderThreadTest" />
+                                </interface>
+                            </component>`.trim()
+                        event.program.setFile(xmlPath, xml);
+                        this.generatedRootXmlPaths.push(xmlPath);
+                    } else {
+                        const xml = `<component name="${componentName}" extends="${parentName}">\n</component>\n`;
+                        event.program.setFile(xmlPath, xml);
+                    }
                     parentName = componentName;
                 }
                 this.generatedComponentNames.set(suite.name, parentName);
@@ -137,7 +154,7 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     private injectSuiteImports(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
-        for (const xmlPath of ['components/MainScene.xml', 'components/TestTask.xml']) {
+        for (const xmlPath of ['components/MainScene.xml', 'components/TestTask.xml', ...this.generatedRootXmlPaths]) {
             const xmlFile = event.program.getFile<XmlFile>(xmlPath);
             if (!isXmlFile(xmlFile)) {
                 continue;
@@ -154,7 +171,7 @@ class BsBenchPlugin implements CompilerPlugin {
             }
             let insertIndex = lastScriptIdx + 1;
             for (const suite of allSuites) {
-                const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs');
+                const uri = 'pkg:/' + suite.file.destPath.replace(/\.bs$/, '.brs').replace(/\\/g, '/');
                 if (alreadyImported.has(uri)) {
                     continue;
                 }
@@ -189,7 +206,7 @@ class BsBenchPlugin implements CompilerPlugin {
         let atOnlySuites = allSuites.filter(x => x.namespaceStatement.annotations?.find(x => x.name.toLowerCase() === 'only'));
         let suitesToRun = atOnlySuites.length > 0 ? atOnlySuites
             : filterPatterns.length > 0 ? allSuites.filter(x => filterPatterns.some(p => new RegExp(p, 'i').test(x.name)))
-            : allSuites;
+                : allSuites;
 
         if (atOnlySuites.length > 0) {
             console.log(`[bsbench] Running ${suitesToRun.length} of ${allSuites.length} suites (@only):\n${suitesToRun.map(x => `  - ${x.name}`).join('\n')}`);

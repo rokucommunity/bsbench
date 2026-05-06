@@ -64,45 +64,100 @@ namespace bsbench
         end function, {})
     end function
 
+    ' Create a SGNode for the suite if it doesn't already exist, and return it.
+    ' This node will be cached until you call freeSuiteNode, which removes it from the scene and frees memory.
+    ' So it's safe to call this multiple times. But ideally you call this once before the entire suite to ensure
+    ' consistent memory usage and in the scene. If your suite doesn't specify a componentExtends+depth, this will just return the main scene.
+    function getSuiteNode(suite as BenchmarkSuite)
+        mainScene = bsbench.getMainScene()
+        if promises.internal.isNonEmptyString(suite.componentName) then
+            if m.suiteNodeCache = invalid then m.suiteNodeCache = {}
+            if m.suiteNodeCache[suite.componentName] = invalid then
+                suiteNode = CreateObject("roSGNode", suite.componentName)
+                print "created suite component: " + suite.componentName suiteNode
+                'append to the main scene
+                mainScene.appendChild(suiteNode)
+                m.suiteNodeCache[suite.componentName] = suiteNode
+            end if
+
+            return m.suiteNodeCache[suite.componentName]
+        else
+            return mainScene
+        end if
+    end function
+
+    function freeSuiteNode(suite as BenchmarkSuite)
+        if promises.internal.isNonEmptyString(suite.componentName) and m.suiteNodeCache <> invalid and m.suiteNodeCache[suite.componentName] <> invalid
+            suiteNode = m.suiteNodeCache[suite.componentName]
+            if suiteNode <> invalid
+                mainScene = bsbench.getMainScene()
+                mainScene.removeChild(suiteNode)
+                m.suiteNodeCache[suite.componentName] = invalid
+            end if
+        end if
+    end function
+
     function runSuite(suite as BenchmarkSuite) as object
-        ' for each thread: run all variants of all tests, print intermediary, accumulate
-        p = promises.onThen(bsbench.promiseForEach(suite.allowedThreads, function(thread, ctx) as object
-            print ""
-            print `${ctx.suite.name} [${thread} thread]`
-            return promises.onThen(bsbench.promiseForEach(ctx.suite.variants, function(variant, ctx) as object
-                return bsbench.promiseForEach(ctx.suite.tests, function(test, ctx) as object
-                    if ctx.thread = "render"
-                        mainScene = bsbench.getMainScene()
-                        return mainScene@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
-                    else if ctx.thread = "task"
-                        testTask = bsbench.getTestTask()
-                        return testTask@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
-                    else
-                        return bsbench.runTest(test, ctx.variant, ctx.thread, ctx.suite.name)
-                    end if
-                end function, { variant: ctx.variant, thread: ctx.thread, suite: ctx.suite })
-            end function, { suite: ctx.suite, thread: thread }), function(variantResults, ctx) as object
-                ' variantResults is array of arrays (one per variant, each containing BenchmarkResults)
-                threadResults = []
-                for each vr in variantResults
-                    for each r in vr
-                        if r <> invalid then threadResults.push(r)
-                    end for
-                end for
-                if threadResults.count() > 0
-                    bsbench.printIntermediaryResults(ctx.suite.name, ctx.thread, threadResults)
-                end if
-                return promises.resolve(threadResults)
-            end function, { suite: ctx.suite, thread: thread })
-        end function, { suite: suite }), function(allThreadResults, ctx) as object
+        return promises.chain(promises.ensurePromise(0), {
+            suite: suite,
+            'ensure the suiteNode is created beofre any tests run, this way memory is identical across all tests
+            suiteNode: bsbench.getSuiteNode(suite)
+        }).then(function(_, ctx)
+            'run each suite thread, return the array of all thread results
+            return bsbench.promiseForEach(ctx.suite.allowedThreads, function(thread, ctx) as object
+                return bsbench.runSuiteThread(ctx.suite, thread)
+            end function, ctx)
+        end function).then(function(allThreadResults, ctx) as object
             ' allThreadResults is array of arrays (one per thread)
             bsbench.printFinalResults(ctx.suite, allThreadResults)
             return promises.resolve(allThreadResults)
-        end function, { suite: suite })
-        return promises.onCatch(p, function(error, ctx) as object
+        end function).catch(function(error, ctx) as object
             bsbench.printError(`suite "${ctx.suite.name}"`, error)
             return promises.resolve(invalid)
-        end function, { suite: suite })
+        end function).finally(function(ctx)
+            'regardless of success or failure, free the suite node to clean up memory before the next suite runs
+            freeSuiteNode(ctx.suite)
+        end function).toPromise()
+    end function
+
+    function runSuiteThread(suite, thread)
+        print ""
+        print `${suite.name} [${thread} thread]`
+
+        return promises.chain(promises.resolve(0), {
+            suite: suite,
+            thread: thread
+        }).then(function(_, ctx)
+            return bsbench.promiseForEach(ctx.suite.variants, function(variant, ctx) as object
+                return bsbench.runSuiteThreadVariant(ctx.suite, ctx.thread, variant)
+            end function, { variant: ctx.variant, thread: ctx.thread, suite: ctx.suite })
+        end function).then(function(variantResults, ctx) as object
+            ' variantResults is array of arrays (one per variant, each containing BenchmarkResults)
+            threadResults = []
+            for each vr in variantResults
+                for each r in vr
+                    if r <> invalid then threadResults.push(r)
+                end for
+            end for
+            if threadResults.count() > 0
+                bsbench.printIntermediaryResults(ctx.suite.name, ctx.thread, threadResults)
+            end if
+            return promises.resolve(threadResults)
+        end function).toPromise()
+    end function
+
+    function runSuiteThreadVariant(suite, thread, variant)
+        return bsbench.promiseForEach(suite.tests, function(test, ctx) as object
+            if ctx.thread = "render"
+                suiteNode = bsbench.getSuiteNode(ctx.suite)
+                return suiteNode@.runRenderThreadTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
+            else if ctx.thread = "task"
+                testTask = bsbench.getTestTask()
+                return testTask@.runTest(ctx.suite.name, test.name, ctx.thread, ctx.variant)
+            else
+                return bsbench.runTest(test, ctx.variant, ctx.thread, ctx.suite.name)
+            end if
+        end function, { suite: suite, thread: thread, variant: variant })
     end function
 
     function runTest(test as BenchmarkTest, variant as roAssociativeArray, thread as string, suiteName as string) as object
@@ -192,6 +247,8 @@ namespace bsbench
             return bsbench.calibrateCorrect(runResult, ctx, invalid, 0)
         end function).then(function(runResult, ctx) as object
             return promises.resolve(runResult.iterations)
+        end function).catch(function(error, ctx)
+            print error, ctx
         end function).toPromise()
     end function
 
@@ -643,3 +700,13 @@ interface CalibrationRun
     iterationsPerMicrosecond as double
     iterationsForTargetDuration as longinteger
 end interface
+
+' Callfunc entry point for running a benchmark test on the render thread.
+' Declared in the <interface> of MainScene and generated component chains
+' (from @suite componentExtends+depth). Top-level so callfunc can find it by name directly.
+function runRenderThreadTest(suiteName as string, testName as string, thread as string, variant as roAssociativeArray)
+    return promises.try(function(suiteName, testName, thread, variant)
+        info = bsbench.getTestInfo(suiteName, testName)
+        return bsbench.runTest(info.test, variant, thread, suiteName)
+    end function, [suiteName, testName, thread, variant])
+end function
