@@ -4,8 +4,12 @@ import { SourceNode } from 'source-map';
 class BsBenchPlugin implements CompilerPlugin {
     name = 'bsbench';
 
+    // Maps "<suiteName>" -> generated leaf component name, populated in beforePrepareProgram
+    private generatedComponentNames = new Map<string, string>();
+
     afterProgramCreate(event: AfterProgramCreateEvent) {
     }
+
 
     afterFileAdd(event: AfterFileAddEvent<BscFile>) {
         if (isBrsFile(event.file)) {
@@ -72,28 +76,37 @@ class BsBenchPlugin implements CompilerPlugin {
     }
 
     afterProgramValidate(event: AfterProgramValidateEvent) {
+        this.generatedComponentNames.clear();
         for (const file of Object.values(event.program.files)) {
             for (const suite of this.findSuites(file)) {
                 const setupFunction = this.findFunction(suite, 'setup');
-                //if there's no setup method, skip this suite
-                if (!setupFunction) {
-                    return;
+                if (setupFunction) {
+                    for (const test of this.findTests(suite)) {
+                        if (test.functionStatement === setupFunction) {
+                            continue;
+                        }
+                        test.functionStatement.func.body.getSymbolTable().addSibling(
+                            setupFunction.func.body.getSymbolTable()
+                        );
+                    }
                 }
 
-                for (const test of this.findTests(suite)) {
-                    //skip adding setup symbols to itself
-                    if (test.functionStatement === setupFunction) {
-                        continue;
-                    }
-                    //add every variable from the setup method to this method
-                    test.functionStatement.func.body.getSymbolTable().addSibling(
-                        setupFunction.func.body.getSymbolTable()
-                    );
+                const { componentExtends, depth } = suite.config ?? {};
+                if (!componentExtends || !depth || depth < 1) {
+                    continue;
                 }
+                const slug = suite.name.replace(/[^a-zA-Z0-9]/g, '_');
+                let parentName = componentExtends;
+                for (let i = 1; i <= depth; i++) {
+                    const componentName = `__bsbench_${slug}_d${i}`;
+                    const xml = `<component name="${componentName}" extends="${parentName}">\n</component>\n`;
+                    event.program.setFile(`components/bsbench_generated/${componentName}.xml`, xml);
+                    parentName = componentName;
+                }
+                this.generatedComponentNames.set(suite.name, parentName);
             }
         }
     }
-
 
     beforeBuildProgram(event: BeforeBuildProgramEvent) {
         const allSuites: Suite[] = [];
@@ -109,8 +122,18 @@ class BsBenchPlugin implements CompilerPlugin {
             }
         }
 
+        this.applyGeneratedComponentNames(allSuites);
         this.injectSuiteData(event, allSuites);
         this.injectSuiteImports(event, allSuites);
+    }
+
+    private applyGeneratedComponentNames(allSuites: Suite[]) {
+        for (const suite of allSuites) {
+            const leafName = this.generatedComponentNames.get(suite.name);
+            if (leafName) {
+                suite.config.generatedComponentName = leafName;
+            }
+        }
     }
 
     private injectSuiteImports(event: BeforeBuildProgramEvent, allSuites: Suite[]) {
@@ -218,9 +241,13 @@ class BsBenchPlugin implements CompilerPlugin {
                     return (variantParser.ast.statements[0] as AssignmentStatement).value;
                 });
 
+                const componentNameField = suite.config.generatedComponentName
+                    ? `componentName: "${suite.config.generatedComponentName}",`
+                    : '';
                 const code = `
                     aa = {
                         name: "${suite.name}",
+                        ${componentNameField}
                         allowedThreads: [${threads.map(t => `"${t}"`).join(', ')}],
                         variants: [],
                         tests: [
@@ -355,6 +382,17 @@ class BsBenchPlugin implements CompilerPlugin {
                     });
                 } else {
                     suite.config.supportedThreads = ['main', 'render', 'task'];
+                }
+
+                //parse componentExtends and depth from annotation
+                const annotationAA = suiteAnnotation.call.args[0] as AALiteralExpression;
+                const componentExtendsArg = annotationAA?.elements?.find(x => x?.tokens?.key?.text === 'componentExtends')?.value;
+                if (componentExtendsArg) {
+                    suite.config.componentExtends = new SourceNode(null, null, suite.file.srcPath, componentExtendsArg.transpile(new BrsTranspileState(suite.file)) as any).toString().replace(/^["']|["']$/g, '');
+                }
+                const depthArg = annotationAA?.elements?.find(x => x?.tokens?.key?.text === 'depth')?.value;
+                if (depthArg) {
+                    suite.config.depth = parseInt(new SourceNode(null, null, suite.file.srcPath, depthArg.transpile(new BrsTranspileState(suite.file)) as any).toString(), 10);
                 }
 
                 return suite;
@@ -529,6 +567,21 @@ interface Suite {
          * The threads this suite should run on. Defaults to ["main", "render", "task"]
          */
         supportedThreads: string[];
+        /**
+         * The SGNode type this suite's component should extend (e.g. "Group"). When set alongside `depth`,
+         * a chain of generated components is created and the suite runs inside the leaf.
+         */
+        componentExtends?: string;
+        /**
+         * How many levels deep the generated component inheritance chain should be.
+         * Requires `componentExtends`. A depth of 4 produces Alpha->Beta->Charlie->Delta,
+         * where the suite runs inside Delta (created via CreateObject("roSGNode", "Delta")).
+         */
+        depth?: number;
+        /**
+         * The name of the leaf component generated for this suite (set during beforeBuildProgram).
+         */
+        generatedComponentName?: string;
     };
     file: BrsFile;
 }

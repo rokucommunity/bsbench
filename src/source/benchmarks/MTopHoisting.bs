@@ -1,4 +1,4 @@
-@suite()
+@suite({ componentExtends: "Group", depth: 5 })
 namespace MTopHoisting
     sub setup()
         if m.top = invalid

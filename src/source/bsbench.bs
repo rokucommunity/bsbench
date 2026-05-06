@@ -621,6 +621,8 @@ interface BenchmarkSuite
     tests as BenchmarkTest[]
     allowedThreads as string[]
     variants as roAssociativeArray[]
+    ' Set when the suite uses componentExtends+depth — the leaf generated component name
+    componentName as string
 end interface
 
 ' A single named test within a suite. func accepts (iterations, variant) and returns a SampleResult.
