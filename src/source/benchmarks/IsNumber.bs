@@ -1,0 +1,47 @@
+@suite({
+    variants: {
+        value: [1, "a"]
+    }
+})
+namespace IsNumber
+    sub setup()
+        value = variant.value
+    end sub
+
+    @test("multi type check")
+    sub _()
+        result = type(value) = "Integer" or type(value) = "roInt" or type(value) = "roInteger" or type(value) = "LongInteger" or type(value) = "roLongInteger" or type(value) = "Float" or type(value) = "roFloat" or type(value) = "Double" or type(value) = "roDouble"
+    end sub
+
+    @test("multi type check lifted")
+    sub _()
+        valueType = type(value)
+        result = valueType = "Integer" or valueType = "roInt" or valueType = "roInteger" or valueType = "LongInteger" or valueType = "roLongInteger" or valueType = "Float" or valueType = "roFloat" or valueType = "Double" or valueType = "roDouble"
+    end sub
+
+    @test("instr against type list")
+    sub _()
+        result = instr(1, "roInt roInteger roLongInteger roFloat roDouble", type(value)) > 0 'bs:disable-line
+    end sub
+
+    @test("getInterface")
+    sub _()
+        result = GetInterface(value, "ifInt") <> invalid or GetInterface(value, "ifLongInt") <> invalid or GetInterface(value, "ifDouble") <> invalid or GetInterface(value, "ifFloat") <> invalid
+    end sub
+
+    @test("Type().instr")
+    sub _()
+        result = Type(value).instr("Int") > -1 or Type(value).instr("Float") > -1 or Type(value).instr("Double") > -1
+    end sub
+
+    @test("try catch")
+    sub _()
+        try
+            test = value + 0
+            result = true
+        catch e
+            result = false
+        end try
+    end sub
+
+end namespace
