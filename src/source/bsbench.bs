@@ -191,7 +191,9 @@ namespace bsbench
                     if s <> invalid then validSamples.push(s)
                 end for
                 if validSamples.count() = 0 then return promises.resolve(invalid)
-                avgUsPerOp = bsbench.averageMicrosecondsPerOperation(validSamples, "microsecondsPerOp")
+                'average per-sample µs/op directly so the stored per-thread value is unit-canonical
+                'and reads identically in both ops/sec and µs/op final tables.
+                avgUsPerOp = bsbench.average(validSamples, "microsecondsPerOp")
                 return promises.resolve({
                     testName: ctx.test.name,
                     suiteName: ctx.suiteName,
@@ -338,15 +340,20 @@ namespace bsbench
     end function
 
     ' Project a µs/op value into the user-facing display unit (µs/op or ops/sec).
-    function toDisplayMetric(microsecondsPerOperation as double) as double
-        if usesMicroseconds then return microsecondsPerOperation
+    ' Pass useMicrosecondsOverride to force a specific unit regardless of the build-time const.
+    function toDisplayMetric(microsecondsPerOperation as double, useMicrosecondsOverride = invalid) as double
+        useUs = usesMicroseconds
+        if useMicrosecondsOverride <> invalid then useUs = useMicrosecondsOverride
+        if useUs then return microsecondsPerOperation
         return bsbench.getOperationsPerSecond(microsecondsPerOperation)
     end function
 
     ' Inverse of toDisplayMetric — takes a value in the display unit and returns
     ' the equivalent in µs/op (the canonical internal storage unit).
-    function fromDisplayMetric(displayValue as double) as double
-        if usesMicroseconds then return displayValue
+    function fromDisplayMetric(displayValue as double, useMicrosecondsOverride = invalid) as double
+        useUs = usesMicroseconds
+        if useMicrosecondsOverride <> invalid then useUs = useMicrosecondsOverride
+        if useUs then return displayValue
         if displayValue = 0 then return 0.0#
         return 1000000.0# / displayValue
     end function
@@ -355,16 +362,16 @@ namespace bsbench
     ' can be stored alongside other µs/op values and displayed via formatMetric.
     ' Use this for every level of averaging so per-thread and cross-thread avgs
     ' are consistent with what the user sees in the row.
-    function averageMicrosecondsPerOperation(values as object, key = invalid) as double
+    function averageMicrosecondsPerOperation(values as object, key = invalid, useMicrosecondsOverride = invalid) as double
         displayValues = []
         for each item in values
             if key <> invalid
-                displayValues.push(bsbench.toDisplayMetric(item[key]))
+                displayValues.push(bsbench.toDisplayMetric(item[key], useMicrosecondsOverride))
             else
-                displayValues.push(bsbench.toDisplayMetric(item))
+                displayValues.push(bsbench.toDisplayMetric(item, useMicrosecondsOverride))
             end if
         end for
-        return bsbench.fromDisplayMetric(bsbench.average(displayValues))
+        return bsbench.fromDisplayMetric(bsbench.average(displayValues), useMicrosecondsOverride)
     end function
 
     '
@@ -449,8 +456,14 @@ namespace bsbench
         print ""
     end sub
 
-    ' Print the final cross-thread table after all thread variants of a suite complete
+    ' Print the final cross-thread table after all thread variants of a suite complete.
+    ' Renders once in ops/sec and once in µs/op so users can read either view.
     sub printFinalResults(suite as BenchmarkSuite, allThreadResults as object)
+        bsbench.printFinalResultsTable(suite, allThreadResults, false)
+        bsbench.printFinalResultsTable(suite, allThreadResults, true)
+    end sub
+
+    sub printFinalResultsTable(suite as BenchmarkSuite, allThreadResults as object, useMicrosecondsOverride as boolean)
         'allThreadResults is an array of arrays — one per thread variant, each containing BenchmarkResults
 
         'collect thread labels in order (use suite's allowedThreads to preserve order even if results are empty)
@@ -479,17 +492,20 @@ namespace bsbench
             end for
         end for
 
-        'compute per-test averages across threads. each thread's value is already
-        'a settled per-thread mean, so we average thread means evenly regardless
-        'of how many samples produced them. averaging is done in display-unit
-        'space (see averageMicrosecondsPerOperation) so the avg cell matches the
-        'arithmetic mean of the per-thread values shown in the row.
+        'compute each test's average µs/op across threads, then a single
+        'avg speed label per test (avg-vs-avg, not per-thread)
+        threadCount = threads.count()
         testAvgs = {} as object
         fastestAvg = -1.0
         for each testName in testNames
-            avg = bsbench.averageMicrosecondsPerOperation(usMap[testName])
+            avg = bsbench.average(usMap[testName])
             testAvgs[testName] = avg
             if fastestAvg < 0 or avg < fastestAvg then fastestAvg = avg
+        end for
+
+        avgLabels = {} as object
+        for each testName in testNames
+            avgLabels[testName] = bsbench.speedLabel(testAvgs[testName], fastestAvg)
         end for
 
         'measure column widths — name col and value col both sized to actual content
@@ -500,17 +516,21 @@ namespace bsbench
         colWidth = 3 ' minimum padding after value
         for each testName in testNames
             for each us in usMap[testName]
-                w = bsbench.formatMetric(us).len() + 2
+                w = bsbench.formatMetric(us, useMicrosecondsOverride).len() + 2
                 if w > colWidth then colWidth = w
             end for
-            w = bsbench.formatMetric(testAvgs[testName]).len() + 2
-            if w > colWidth then colWidth = w
         end for
         ' also ensure column headers fit
         for each thread in threads
             if thread.len() + 2 > colWidth then colWidth = thread.len() + 2
         end for
-        if "avg".len() + 2 > colWidth then colWidth = "avg".len() + 2
+
+        'avg label column width sized to widest label
+        avgColWidth = "avg % slower".len() + 2
+        for each testName in testNames
+            w = avgLabels[testName].len() + 2
+            if w > avgColWidth then avgColWidth = w
+        end for
 
         'build header and separator
         nameColWidth = nameLen + 2
@@ -518,8 +538,8 @@ namespace bsbench
         for each thread in threads
             header += bsbench.padRight(thread, colWidth, " ")
         end for
-        header += bsbench.padRight("avg", colWidth, " ")
-        totalWidth = nameColWidth + colWidth * (threads.count() + 1)
+        header += bsbench.padRight("avg % slower", avgColWidth, " ")
+        totalWidth = nameColWidth + colWidth * threadCount + avgColWidth
 
         stars = bsbench.padRight("", totalWidth, "*")
         print ""
@@ -529,26 +549,20 @@ namespace bsbench
         print "  " + header
         print bsbench.padRight("", totalWidth, "-")
 
-        'pre-compute labels (speedLabel compares µs/op, smaller is faster)
-        labels = [] as string[]
-        for each testName in testNames
-            labels.push(bsbench.speedLabel(testAvgs[testName], fastestAvg))
-        end for
-
-        'print each test row
+        'print each test as a single row: value per thread column, then avg speed label
         for i = 0 to testNames.count() - 1
             testName = testNames[i]
-            avg = testAvgs[testName]
             row = bsbench.padRight(testName + ":", nameColWidth, " ")
-            for each us in usMap[testName]
-                row += bsbench.padRight(bsbench.formatMetric(us), colWidth, " ")
+            for threadIdx = 0 to threadCount - 1
+                us = usMap[testName][threadIdx]
+                row += bsbench.padRight(bsbench.formatMetric(us, useMicrosecondsOverride), colWidth, " ")
             end for
-            row += bsbench.padRight(bsbench.formatMetric(avg), colWidth, " ")
-            print "  " + row + labels[i]
+            row += bsbench.padRight(avgLabels[testName], avgColWidth, " ")
+            print "  " + row
         end for
 
         print bsbench.padRight("", totalWidth, "-")
-        print `(all values in ${bsbench.metricUnit()})`
+        print `(all values in ${bsbench.metricUnit(useMicrosecondsOverride)})`
         print ""
     end sub
 
@@ -657,19 +671,21 @@ namespace bsbench
         return elapsedMicroseconds \ 1000&
     end function
 
-    ' Returns the unit label for the current display mode
-    function metricUnit() as string
-        if usesMicroseconds
-            return "µs/op"
-        end if
+    ' Returns the unit label for the current display mode.
+    ' Pass useMicrosecondsOverride to force a specific unit regardless of the build-time const.
+    function metricUnit(useMicrosecondsOverride = invalid) as string
+        useUs = usesMicroseconds
+        if useMicrosecondsOverride <> invalid then useUs = useMicrosecondsOverride
+        if useUs then return "µs/op"
         return "ops/sec"
     end function
 
     ' Format a µs/op value for display based on the current display mode.
-    function formatMetric(usPerOp as double) as string
-        if usesMicroseconds
-            return bsbench.numberToString(usPerOp)
-        end if
+    ' Pass useMicrosecondsOverride to force a specific unit regardless of the build-time const.
+    function formatMetric(usPerOp as double, useMicrosecondsOverride = invalid) as string
+        useUs = usesMicroseconds
+        if useMicrosecondsOverride <> invalid then useUs = useMicrosecondsOverride
+        if useUs then return bsbench.numberToString(usPerOp)
         return bsbench.numberToString(bsbench.getOperationsPerSecond(usPerOp))
     end function
 
