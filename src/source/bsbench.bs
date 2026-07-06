@@ -160,7 +160,13 @@ namespace bsbench
     end function
 
     function runTest(test as BenchmarkTest, variant as roAssociativeArray, thread as string, suiteName as string) as object
-        print `  ${test.name}`
+        'append the variant's __name (e.g. " (value: 1&)") so results from different
+        'variants of the same test don't collapse into a single indistinguishable label
+        displayName = test.name
+        if variant <> invalid and promises.internal.isNonEmptyString(variant.__name)
+            displayName += variant.__name
+        end if
+        print `  ${displayName}`
         print `    warming up...`
         p = promises.onThen(bsbench.calibrate(test.func, 500, variant), function(iterationsForDuration, ctx) as object
             samples = 5
@@ -172,11 +178,11 @@ namespace bsbench
             return promises.onThen(bsbench.promiseForEach(sampleIndexes, function(i, ctx) as object
                 sample = ctx.test.func(ctx.iterationsForDuration, ctx.variant)
                 if sample = invalid
-                    print `    ERROR: test "${ctx.test.name}" returned invalid`
+                    print `    ERROR: test "${ctx.displayName}" returned invalid`
                     return promises.resolve(invalid)
                 end if
                 sample = sample as SampleResult
-                sample.testName = ctx.test.name
+                sample.testName = ctx.displayName
                 sample.suiteName = ctx.suiteName
                 sample.microsecondsPerOp = bsbench.getMicrosecondsPerOperation(sample.elapsedMicroseconds, sample.iterations)
                 label = bsbench.padRight(`${i + 1}/${ctx.samples}`, 4, " ")
@@ -185,7 +191,7 @@ namespace bsbench
                 dots = bsbench.padRight(" ", ctx.metricColWidth - metricRaw.len(), ".")
                 print `    ${label}${dots} ${metricRaw} ${metricUnit}`
                 return promises.resolve(sample)
-            end function, { test: ctx.test, variant: ctx.variant, thread: ctx.thread, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples, metricColWidth: metricColWidth }), function(sampleResults, ctx) as object
+            end function, { test: ctx.test, displayName: ctx.displayName, variant: ctx.variant, thread: ctx.thread, suiteName: ctx.suiteName, iterationsForDuration: iterationsForDuration, samples: samples, metricColWidth: metricColWidth }), function(sampleResults, ctx) as object
                 validSamples = []
                 for each s in sampleResults
                     if s <> invalid then validSamples.push(s)
@@ -195,18 +201,18 @@ namespace bsbench
                 'and reads identically in both ops/sec and µs/op final tables.
                 avgUsPerOp = bsbench.average(validSamples, "microsecondsPerOp")
                 return promises.resolve({
-                    testName: ctx.test.name,
+                    testName: ctx.displayName,
                     suiteName: ctx.suiteName,
                     threadTarget: ctx.thread,
                     microsecondsPerOp: avgUsPerOp,
                     samples: validSamples
                 })
-            end function, { test: ctx.test, suiteName: ctx.suiteName, thread: ctx.thread, metricColWidth: metricColWidth })
-        end function, { test: test, variant: variant, thread: thread, suiteName: suiteName })
+            end function, { displayName: ctx.displayName, suiteName: ctx.suiteName, thread: ctx.thread, metricColWidth: metricColWidth })
+        end function, { test: test, displayName: displayName, variant: variant, thread: thread, suiteName: suiteName })
         return promises.onCatch(p, function(error, ctx) as object
-            bsbench.printError(`test "${ctx.test.name}"`, error)
+            bsbench.printError(`test "${ctx.displayName}"`, error)
             return promises.resolve(invalid)
-        end function, { test: test })
+        end function, { displayName: displayName })
     end function
 
     '
