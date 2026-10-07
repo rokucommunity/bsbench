@@ -1,0 +1,74 @@
+' Target is `m.result`: each individual set must re-evaluate `m.result`, append evaluates it once.
+@suite()
+namespace SpreadTrailingMembersOnM
+    sub setup()
+        defaults = { x: 1, y: 2 }
+    end sub
+
+    @test("1 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+    end sub
+
+    @test("1 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1 })
+    end sub
+
+    @test("2 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+    end sub
+
+    @test("2 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2 })
+    end sub
+
+    @test("4 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+        m.result.c = 3
+        m.result.d = 4
+    end sub
+
+    @test("4 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2, c: 3, d: 4 })
+    end sub
+
+    @test("8 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+        m.result.c = 3
+        m.result.d = 4
+        m.result.e = 5
+        m.result.f = 6
+        m.result.g = 7
+        m.result.h = 8
+    end sub
+
+    @test("8 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
+    end sub
+end namespace

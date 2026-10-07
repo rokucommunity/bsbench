@@ -1,0 +1,79 @@
+' Does the value type change the answer? 4 elements each: ints, strings, local variables, nested arrays.
+@suite()
+namespace SpreadTrailingElementsValueKinds
+    sub setup()
+        defaults = [10, 20]
+        v1 = 1
+        v2 = "two"
+        v3 = 3.0
+        v4 = true
+    end sub
+
+    @test("int values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+    end sub
+
+    @test("int values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4])
+    end sub
+
+    @test("string values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push("value1")
+        result.push("value2")
+        result.push("value3")
+        result.push("value4")
+    end sub
+
+    @test("string values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append(["value1", "value2", "value3", "value4"])
+    end sub
+
+    @test("variable values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(v1)
+        result.push(v2)
+        result.push(v3)
+        result.push(v4)
+    end sub
+
+    @test("variable values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([v1, v2, v3, v4])
+    end sub
+
+    @test("nested array values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push([1])
+        result.push([2])
+        result.push([3])
+        result.push([4])
+    end sub
+
+    @test("nested array values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([[1], [2], [3], [4]])
+    end sub
+end namespace

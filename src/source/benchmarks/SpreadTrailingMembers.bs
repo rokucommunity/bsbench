@@ -1,0 +1,113 @@
+' Informs how BrighterScript lowers AA members that follow a spread:
+'     result = { ...defaults, a: 1, b: 2 }
+' Option A: one property set per member      result.a = 1 : result.b = 2
+' Option B: one append of a literal          result.append({ a: 1, b: 2 })
+' The crossover point (if any) sets SPREAD_APPEND_THRESHOLD in the compiler.
+@suite()
+namespace SpreadTrailingMembers
+    sub setup()
+        defaults = { x: 1, y: 2 }
+    end sub
+
+    @test("1 member: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+    end sub
+
+    @test("1 member: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1 })
+    end sub
+
+    @test("2 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+    end sub
+
+    @test("2 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2 })
+    end sub
+
+    @test("3 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+    end sub
+
+    @test("3 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3 })
+    end sub
+
+    @test("4 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+    end sub
+
+    @test("4 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4 })
+    end sub
+
+    @test("6 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+    end sub
+
+    @test("6 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 })
+    end sub
+
+    @test("8 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+    end sub
+
+    @test("8 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
+    end sub
+end namespace

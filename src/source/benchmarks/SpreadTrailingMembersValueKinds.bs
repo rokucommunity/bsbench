@@ -1,0 +1,79 @@
+' Does the value type change the answer? 4 members each: ints, strings, local variables, nested AAs.
+@suite()
+namespace SpreadTrailingMembersValueKinds
+    sub setup()
+        defaults = { x: 1, y: 2 }
+        v1 = 1
+        v2 = "two"
+        v3 = 3.0
+        v4 = true
+    end sub
+
+    @test("int values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+    end sub
+
+    @test("int values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4 })
+    end sub
+
+    @test("string values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = "value1"
+        result.b = "value2"
+        result.c = "value3"
+        result.d = "value4"
+    end sub
+
+    @test("string values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: "value1", b: "value2", c: "value3", d: "value4" })
+    end sub
+
+    @test("variable values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = v1
+        result.b = v2
+        result.c = v3
+        result.d = v4
+    end sub
+
+    @test("variable values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: v1, b: v2, c: v3, d: v4 })
+    end sub
+
+    @test("nested AA values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = { id: 1 }
+        result.b = { id: 2 }
+        result.c = { id: 3 }
+        result.d = { id: 4 }
+    end sub
+
+    @test("nested AA values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: { id: 1 }, b: { id: 2 }, c: { id: 3 }, d: { id: 4 } })
+    end sub
+end namespace

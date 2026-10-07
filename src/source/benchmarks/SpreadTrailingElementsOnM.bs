@@ -1,0 +1,74 @@
+' Target is `m.result`: each individual push must re-evaluate `m.result`, append evaluates it once.
+@suite()
+namespace SpreadTrailingElementsOnM
+    sub setup()
+        defaults = [10, 20]
+    end sub
+
+    @test("1 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+    end sub
+
+    @test("1 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1])
+    end sub
+
+    @test("2 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+    end sub
+
+    @test("2 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2])
+    end sub
+
+    @test("4 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+        m.result.push(3)
+        m.result.push(4)
+    end sub
+
+    @test("4 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2, 3, 4])
+    end sub
+
+    @test("8 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+        m.result.push(3)
+        m.result.push(4)
+        m.result.push(5)
+        m.result.push(6)
+        m.result.push(7)
+        m.result.push(8)
+    end sub
+
+    @test("8 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2, 3, 4, 5, 6, 7, 8])
+    end sub
+end namespace
