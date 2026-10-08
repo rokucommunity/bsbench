@@ -1,25 +1,34 @@
-' Target is `m.result`: each individual push must re-evaluate `m.result`, append evaluates it once.
+' Target is `m.result`: each push re-evaluates `m.result`, append evaluates it once.
+' Also checks whether building in a local temp and assigning once at the end is cheaper.
 @suite()
 namespace SpreadTrailingElementsOnM
     sub setup()
         defaults = [10, 20]
     end sub
 
-    @test("1 elements: push")
+    @test("1 elements: direct push on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
         m.result.push(1)
     end sub
 
-    @test("1 elements: append literal")
+    @test("1 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("1 elements: append literal on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
         m.result.append([1])
     end sub
 
-    @test("2 elements: push")
+    @test("2 elements: direct push on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
@@ -27,14 +36,23 @@ namespace SpreadTrailingElementsOnM
         m.result.push(2)
     end sub
 
-    @test("2 elements: append literal")
+    @test("2 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("2 elements: append literal on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
         m.result.append([1, 2])
     end sub
 
-    @test("4 elements: push")
+    @test("4 elements: direct push on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
@@ -44,14 +62,25 @@ namespace SpreadTrailingElementsOnM
         m.result.push(4)
     end sub
 
-    @test("4 elements: append literal")
+    @test("4 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        __bsc_tmp.push(3)
+        __bsc_tmp.push(4)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("4 elements: append literal on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
         m.result.append([1, 2, 3, 4])
     end sub
 
-    @test("8 elements: push")
+    @test("8 elements: direct push on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)
@@ -65,7 +94,22 @@ namespace SpreadTrailingElementsOnM
         m.result.push(8)
     end sub
 
-    @test("8 elements: append literal")
+    @test("8 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        __bsc_tmp.push(3)
+        __bsc_tmp.push(4)
+        __bsc_tmp.push(5)
+        __bsc_tmp.push(6)
+        __bsc_tmp.push(7)
+        __bsc_tmp.push(8)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("8 elements: append literal on m.result")
     sub _()
         m.result = []
         m.result.append(defaults)

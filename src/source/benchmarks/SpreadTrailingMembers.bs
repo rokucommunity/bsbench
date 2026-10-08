@@ -3,6 +3,7 @@
 ' Option A: one property set per member      result.a = 1 : result.b = 2
 ' Option B: one append of a literal          result.append({ a: 1, b: 2 })
 ' The crossover point (if any) sets SPREAD_APPEND_THRESHOLD in the compiler.
+' The "no spread" tests at 4 and 8 are a baseline for a hand-written single literal.
 @suite()
 namespace SpreadTrailingMembers
     sub setup()
@@ -38,22 +39,6 @@ namespace SpreadTrailingMembers
         result.append({ a: 1, b: 2 })
     end sub
 
-    @test("3 members: sets")
-    sub _()
-        result = {}
-        result.append(defaults)
-        result.a = 1
-        result.b = 2
-        result.c = 3
-    end sub
-
-    @test("3 members: append literal")
-    sub _()
-        result = {}
-        result.append(defaults)
-        result.append({ a: 1, b: 2, c: 3 })
-    end sub
-
     @test("4 members: sets")
     sub _()
         result = {}
@@ -71,23 +56,15 @@ namespace SpreadTrailingMembers
         result.append({ a: 1, b: 2, c: 3, d: 4 })
     end sub
 
-    @test("6 members: sets")
+    @test("4 members: no spread, single literal")
     sub _()
-        result = {}
-        result.append(defaults)
-        result.a = 1
-        result.b = 2
-        result.c = 3
-        result.d = 4
-        result.e = 5
-        result.f = 6
+        result = { x: 1, y: 2, a: 1, b: 2, c: 3, d: 4 }
     end sub
 
-    @test("6 members: append literal")
+    @test("4 members: no spread, leading literal + append(defaults)")
     sub _()
-        result = {}
+        result = { a: 1, b: 2, c: 3, d: 4 }
         result.append(defaults)
-        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 })
     end sub
 
     @test("8 members: sets")
@@ -109,5 +86,90 @@ namespace SpreadTrailingMembers
         result = {}
         result.append(defaults)
         result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
+    end sub
+
+    @test("8 members: no spread, single literal")
+    sub _()
+        result = { x: 1, y: 2, a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }
+    end sub
+
+    @test("8 members: no spread, leading literal + append(defaults)")
+    sub _()
+        result = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }
+        result.append(defaults)
+    end sub
+
+    @test("16 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+    end sub
+
+    @test("16 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16 })
+    end sub
+
+    @test("32 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+        result.u = 21
+        result.v = 22
+        result.w = 23
+        result.x = 24
+        result.y = 25
+        result.z = 26
+        result.aa = 27
+        result.ab = 28
+        result.ac = 29
+        result.ad = 30
+        result.ae = 31
+        result.af = 32
+    end sub
+
+    @test("32 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22, w: 23, x: 24, y: 25, z: 26, aa: 27, ab: 28, ac: 29, ad: 30, ae: 31, af: 32 })
     end sub
 end namespace

@@ -1,4 +1,5 @@
-' Does the value type change the answer? 4 members each: ints, strings, local variables, nested AAs.
+' Does the value or key kind change the answer? 4 members each: ints, strings, local variables, nested AAs,
+' and non-identifier keys (which lower to `result["k-1"] = 1` instead of a dotted set).
 @suite()
 namespace SpreadTrailingMembersValueKinds
     sub setup()
@@ -75,5 +76,22 @@ namespace SpreadTrailingMembersValueKinds
         result = {}
         result.append(defaults)
         result.append({ a: { id: 1 }, b: { id: 2 }, c: { id: 3 }, d: { id: 4 } })
+    end sub
+
+    @test("string keys: indexed sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result["k-1"] = 1
+        result["k-2"] = 2
+        result["k-3"] = 3
+        result["k-4"] = 4
+    end sub
+
+    @test("string keys: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ "k-1": 1, "k-2": 2, "k-3": 3, "k-4": 4 })
     end sub
 end namespace
