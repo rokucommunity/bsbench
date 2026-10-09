@@ -3,11 +3,18 @@
 ' Option A: one property set per member      result.a = 1 : result.b = 2
 ' Option B: one append of a literal          result.append({ a: 1, b: 2 })
 ' The crossover point (if any) sets SPREAD_APPEND_THRESHOLD in the compiler.
-' The "no spread" tests at 4 and 8 are a baseline for a hand-written single literal.
+' Secondary factors: a no-spread baseline, `m.result` and deeper targets (and building in a local temp instead),
+' value kinds, and non-identifier keys (which lower to `result["k-1"] = 1` instead of a dotted set).
 @suite()
 namespace SpreadTrailingMembers
     sub setup()
         defaults = { x: 1, y: 2 }
+        v1 = 1
+        v2 = "two"
+        v3 = 3.0
+        v4 = true
+        m.store = {}
+        store = {}
     end sub
 
     @test("1 member: sets")
@@ -39,6 +46,22 @@ namespace SpreadTrailingMembers
         result.append({ a: 1, b: 2 })
     end sub
 
+    @test("3 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+    end sub
+
+    @test("3 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3 })
+    end sub
+
     @test("4 members: sets")
     sub _()
         result = {}
@@ -56,15 +79,61 @@ namespace SpreadTrailingMembers
         result.append({ a: 1, b: 2, c: 3, d: 4 })
     end sub
 
-    @test("4 members: no spread, single literal")
+    @test("5 members: sets")
     sub _()
-        result = { x: 1, y: 2, a: 1, b: 2, c: 3, d: 4 }
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
     end sub
 
-    @test("4 members: no spread, leading literal + append(defaults)")
+    @test("5 members: append literal")
     sub _()
-        result = { a: 1, b: 2, c: 3, d: 4 }
+        result = {}
         result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5 })
+    end sub
+
+    @test("6 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+    end sub
+
+    @test("6 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 })
+    end sub
+
+    @test("7 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+    end sub
+
+    @test("7 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7 })
     end sub
 
     @test("8 members: sets")
@@ -88,15 +157,79 @@ namespace SpreadTrailingMembers
         result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
     end sub
 
-    @test("8 members: no spread, single literal")
+    @test("10 members: sets")
     sub _()
-        result = { x: 1, y: 2, a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
     end sub
 
-    @test("8 members: no spread, leading literal + append(defaults)")
+    @test("10 members: append literal")
     sub _()
-        result = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }
+        result = {}
         result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10 })
+    end sub
+
+    @test("12 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+    end sub
+
+    @test("12 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12 })
+    end sub
+
+    @test("14 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+    end sub
+
+    @test("14 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14 })
     end sub
 
     @test("16 members: sets")
@@ -126,6 +259,265 @@ namespace SpreadTrailingMembers
         result = {}
         result.append(defaults)
         result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16 })
+    end sub
+
+    @test("18 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+    end sub
+
+    @test("18 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18 })
+    end sub
+
+    @test("20 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+    end sub
+
+    @test("20 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20 })
+    end sub
+
+    @test("22 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+        result.u = 21
+        result.v = 22
+    end sub
+
+    @test("22 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22 })
+    end sub
+
+    @test("24 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+        result.u = 21
+        result.v = 22
+        result.w = 23
+        result.x = 24
+    end sub
+
+    @test("24 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22, w: 23, x: 24 })
+    end sub
+
+    @test("26 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+        result.u = 21
+        result.v = 22
+        result.w = 23
+        result.x = 24
+        result.y = 25
+        result.z = 26
+    end sub
+
+    @test("26 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22, w: 23, x: 24, y: 25, z: 26 })
+    end sub
+
+    @test("28 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+        result.u = 21
+        result.v = 22
+        result.w = 23
+        result.x = 24
+        result.y = 25
+        result.z = 26
+        result.aa = 27
+        result.ab = 28
+    end sub
+
+    @test("28 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22, w: 23, x: 24, y: 25, z: 26, aa: 27, ab: 28 })
+    end sub
+
+    @test("30 members: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = 1
+        result.b = 2
+        result.c = 3
+        result.d = 4
+        result.e = 5
+        result.f = 6
+        result.g = 7
+        result.h = 8
+        result.i = 9
+        result.j = 10
+        result.k = 11
+        result.l = 12
+        result.m = 13
+        result.n = 14
+        result.o = 15
+        result.p = 16
+        result.q = 17
+        result.r = 18
+        result.s = 19
+        result.t = 20
+        result.u = 21
+        result.v = 22
+        result.w = 23
+        result.x = 24
+        result.y = 25
+        result.z = 26
+        result.aa = 27
+        result.ab = 28
+        result.ac = 29
+        result.ad = 30
+    end sub
+
+    @test("30 members: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22, w: 23, x: 24, y: 25, z: 26, aa: 27, ab: 28, ac: 29, ad: 30 })
     end sub
 
     @test("32 members: sets")
@@ -171,5 +563,399 @@ namespace SpreadTrailingMembers
         result = {}
         result.append(defaults)
         result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16, q: 17, r: 18, s: 19, t: 20, u: 21, v: 22, w: 23, x: 24, y: 25, z: 26, aa: 27, ab: 28, ac: 29, ad: 30, ae: 31, af: 32 })
+    end sub
+
+    @test("no spread, 4 members: single literal")
+    sub _()
+        result = { x: 1, y: 2, a: 1, b: 2, c: 3, d: 4 }
+    end sub
+
+    @test("no spread, 4 members: leading literal + append(defaults)")
+    sub _()
+        result = { a: 1, b: 2, c: 3, d: 4 }
+        result.append(defaults)
+    end sub
+
+    @test("no spread, 8 members: single literal")
+    sub _()
+        result = { x: 1, y: 2, a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }
+    end sub
+
+    @test("no spread, 8 members: leading literal + append(defaults)")
+    sub _()
+        result = { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 }
+        result.append(defaults)
+    end sub
+
+    @test("m.result, 1 member: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+    end sub
+
+    @test("m.result, 1 member: sets on local temp, then assign")
+    sub _()
+        __bsc_tmp = {}
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.a = 1
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 1 member: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1 })
+    end sub
+
+    @test("m.result, 2 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+    end sub
+
+    @test("m.result, 2 members: sets on local temp, then assign")
+    sub _()
+        __bsc_tmp = {}
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.a = 1
+        __bsc_tmp.b = 2
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 2 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2 })
+    end sub
+
+    @test("m.result, 4 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+        m.result.c = 3
+        m.result.d = 4
+    end sub
+
+    @test("m.result, 4 members: sets on local temp, then assign")
+    sub _()
+        __bsc_tmp = {}
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.a = 1
+        __bsc_tmp.b = 2
+        __bsc_tmp.c = 3
+        __bsc_tmp.d = 4
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 4 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2, c: 3, d: 4 })
+    end sub
+
+    @test("m.result, 8 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+        m.result.c = 3
+        m.result.d = 4
+        m.result.e = 5
+        m.result.f = 6
+        m.result.g = 7
+        m.result.h = 8
+    end sub
+
+    @test("m.result, 8 members: sets on local temp, then assign")
+    sub _()
+        __bsc_tmp = {}
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.a = 1
+        __bsc_tmp.b = 2
+        __bsc_tmp.c = 3
+        __bsc_tmp.d = 4
+        __bsc_tmp.e = 5
+        __bsc_tmp.f = 6
+        __bsc_tmp.g = 7
+        __bsc_tmp.h = 8
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 8 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
+    end sub
+
+    @test("m.result, 16 members: sets")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.a = 1
+        m.result.b = 2
+        m.result.c = 3
+        m.result.d = 4
+        m.result.e = 5
+        m.result.f = 6
+        m.result.g = 7
+        m.result.h = 8
+        m.result.i = 9
+        m.result.j = 10
+        m.result.k = 11
+        m.result.l = 12
+        m.result.m = 13
+        m.result.n = 14
+        m.result.o = 15
+        m.result.p = 16
+    end sub
+
+    @test("m.result, 16 members: sets on local temp, then assign")
+    sub _()
+        __bsc_tmp = {}
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.a = 1
+        __bsc_tmp.b = 2
+        __bsc_tmp.c = 3
+        __bsc_tmp.d = 4
+        __bsc_tmp.e = 5
+        __bsc_tmp.f = 6
+        __bsc_tmp.g = 7
+        __bsc_tmp.h = 8
+        __bsc_tmp.i = 9
+        __bsc_tmp.j = 10
+        __bsc_tmp.k = 11
+        __bsc_tmp.l = 12
+        __bsc_tmp.m = 13
+        __bsc_tmp.n = 14
+        __bsc_tmp.o = 15
+        __bsc_tmp.p = 16
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 16 members: append literal")
+    sub _()
+        m.result = {}
+        m.result.append(defaults)
+        m.result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8, i: 9, j: 10, k: 11, l: 12, m: 13, n: 14, o: 15, p: 16 })
+    end sub
+
+    @test("m.store.result, 2 members: sets")
+    sub _()
+        m.store.result = {}
+        m.store.result.append(defaults)
+        m.store.result.a = 1
+        m.store.result.b = 2
+    end sub
+
+    @test("m.store.result, 2 members: append literal")
+    sub _()
+        m.store.result = {}
+        m.store.result.append(defaults)
+        m.store.result.append({ a: 1, b: 2 })
+    end sub
+
+    @test("store[result], 2 members: sets")
+    sub _()
+        store["result"] = {}
+        store["result"].append(defaults)
+        store["result"].a = 1
+        store["result"].b = 2
+    end sub
+
+    @test("store[result], 2 members: append literal")
+    sub _()
+        store["result"] = {}
+        store["result"].append(defaults)
+        store["result"].append({ a: 1, b: 2 })
+    end sub
+
+    @test("m.store.result, 4 members: sets")
+    sub _()
+        m.store.result = {}
+        m.store.result.append(defaults)
+        m.store.result.a = 1
+        m.store.result.b = 2
+        m.store.result.c = 3
+        m.store.result.d = 4
+    end sub
+
+    @test("m.store.result, 4 members: append literal")
+    sub _()
+        m.store.result = {}
+        m.store.result.append(defaults)
+        m.store.result.append({ a: 1, b: 2, c: 3, d: 4 })
+    end sub
+
+    @test("store[result], 4 members: sets")
+    sub _()
+        store["result"] = {}
+        store["result"].append(defaults)
+        store["result"].a = 1
+        store["result"].b = 2
+        store["result"].c = 3
+        store["result"].d = 4
+    end sub
+
+    @test("store[result], 4 members: append literal")
+    sub _()
+        store["result"] = {}
+        store["result"].append(defaults)
+        store["result"].append({ a: 1, b: 2, c: 3, d: 4 })
+    end sub
+
+    @test("m.store.result, 8 members: sets")
+    sub _()
+        m.store.result = {}
+        m.store.result.append(defaults)
+        m.store.result.a = 1
+        m.store.result.b = 2
+        m.store.result.c = 3
+        m.store.result.d = 4
+        m.store.result.e = 5
+        m.store.result.f = 6
+        m.store.result.g = 7
+        m.store.result.h = 8
+    end sub
+
+    @test("m.store.result, 8 members: append literal")
+    sub _()
+        m.store.result = {}
+        m.store.result.append(defaults)
+        m.store.result.append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
+    end sub
+
+    @test("store[result], 8 members: sets")
+    sub _()
+        store["result"] = {}
+        store["result"].append(defaults)
+        store["result"].a = 1
+        store["result"].b = 2
+        store["result"].c = 3
+        store["result"].d = 4
+        store["result"].e = 5
+        store["result"].f = 6
+        store["result"].g = 7
+        store["result"].h = 8
+    end sub
+
+    @test("store[result], 8 members: append literal")
+    sub _()
+        store["result"] = {}
+        store["result"].append(defaults)
+        store["result"].append({ a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7, h: 8 })
+    end sub
+
+    @test("4 string values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = "value1"
+        result.b = "value2"
+        result.c = "value3"
+        result.d = "value4"
+    end sub
+
+    @test("4 string values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: "value1", b: "value2", c: "value3", d: "value4" })
+    end sub
+
+    @test("4 variable values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = v1
+        result.b = v2
+        result.c = v3
+        result.d = v4
+    end sub
+
+    @test("4 variable values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: v1, b: v2, c: v3, d: v4 })
+    end sub
+
+    @test("4 nested AA values: sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.a = { id: 1 }
+        result.b = { id: 2 }
+        result.c = { id: 3 }
+        result.d = { id: 4 }
+    end sub
+
+    @test("4 nested AA values: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ a: { id: 1 }, b: { id: 2 }, c: { id: 3 }, d: { id: 4 } })
+    end sub
+
+    @test("2 string keys: indexed sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result["k-1"] = 1
+        result["k-2"] = 2
+    end sub
+
+    @test("2 string keys: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ "k-1": 1, "k-2": 2 })
+    end sub
+
+    @test("4 string keys: indexed sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result["k-1"] = 1
+        result["k-2"] = 2
+        result["k-3"] = 3
+        result["k-4"] = 4
+    end sub
+
+    @test("4 string keys: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ "k-1": 1, "k-2": 2, "k-3": 3, "k-4": 4 })
+    end sub
+
+    @test("8 string keys: indexed sets")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result["k-1"] = 1
+        result["k-2"] = 2
+        result["k-3"] = 3
+        result["k-4"] = 4
+        result["k-5"] = 5
+        result["k-6"] = 6
+        result["k-7"] = 7
+        result["k-8"] = 8
+    end sub
+
+    @test("8 string keys: append literal")
+    sub _()
+        result = {}
+        result.append(defaults)
+        result.append({ "k-1": 1, "k-2": 2, "k-3": 3, "k-4": 4, "k-5": 5, "k-6": 6, "k-7": 7, "k-8": 8 })
     end sub
 end namespace
