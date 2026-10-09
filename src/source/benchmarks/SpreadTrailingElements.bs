@@ -1,0 +1,777 @@
+' Informs how BrighterScript lowers array elements that follow a spread:
+'     result = [...defaults, 1, 2]
+' Option A: one push per element       result.push(1) : result.push(2)
+' Option B: one append of a literal    result.append([1, 2])
+' The crossover point (if any) sets SPREAD_APPEND_THRESHOLD in the compiler.
+' Secondary factors: an `m.result` target (and building in a local temp instead), and value kinds.
+@suite()
+namespace SpreadTrailingElements
+    sub setup()
+        defaults = [10, 20]
+        v1 = 1
+        v2 = "two"
+        v3 = 3.0
+        v4 = true
+    end sub
+
+    @test("1 element: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+    end sub
+
+    @test("1 element: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1])
+    end sub
+
+    @test("2 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+    end sub
+
+    @test("2 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2])
+    end sub
+
+    @test("3 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+    end sub
+
+    @test("3 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3])
+    end sub
+
+    @test("4 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+    end sub
+
+    @test("4 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4])
+    end sub
+
+    @test("5 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+    end sub
+
+    @test("5 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5])
+    end sub
+
+    @test("6 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+    end sub
+
+    @test("6 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6])
+    end sub
+
+    @test("7 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+    end sub
+
+    @test("7 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7])
+    end sub
+
+    @test("8 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+    end sub
+
+    @test("8 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8])
+    end sub
+
+    @test("10 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+    end sub
+
+    @test("10 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    end sub
+
+    @test("12 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+    end sub
+
+    @test("12 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    end sub
+
+    @test("14 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+    end sub
+
+    @test("14 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14])
+    end sub
+
+    @test("16 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+    end sub
+
+    @test("16 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    end sub
+
+    @test("18 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+    end sub
+
+    @test("18 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18])
+    end sub
+
+    @test("20 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+    end sub
+
+    @test("20 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+    end sub
+
+    @test("22 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+        result.push(21)
+        result.push(22)
+    end sub
+
+    @test("22 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22])
+    end sub
+
+    @test("24 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+        result.push(21)
+        result.push(22)
+        result.push(23)
+        result.push(24)
+    end sub
+
+    @test("24 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24])
+    end sub
+
+    @test("26 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+        result.push(21)
+        result.push(22)
+        result.push(23)
+        result.push(24)
+        result.push(25)
+        result.push(26)
+    end sub
+
+    @test("26 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])
+    end sub
+
+    @test("28 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+        result.push(21)
+        result.push(22)
+        result.push(23)
+        result.push(24)
+        result.push(25)
+        result.push(26)
+        result.push(27)
+        result.push(28)
+    end sub
+
+    @test("28 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28])
+    end sub
+
+    @test("30 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+        result.push(21)
+        result.push(22)
+        result.push(23)
+        result.push(24)
+        result.push(25)
+        result.push(26)
+        result.push(27)
+        result.push(28)
+        result.push(29)
+        result.push(30)
+    end sub
+
+    @test("30 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30])
+    end sub
+
+    @test("32 elements: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(1)
+        result.push(2)
+        result.push(3)
+        result.push(4)
+        result.push(5)
+        result.push(6)
+        result.push(7)
+        result.push(8)
+        result.push(9)
+        result.push(10)
+        result.push(11)
+        result.push(12)
+        result.push(13)
+        result.push(14)
+        result.push(15)
+        result.push(16)
+        result.push(17)
+        result.push(18)
+        result.push(19)
+        result.push(20)
+        result.push(21)
+        result.push(22)
+        result.push(23)
+        result.push(24)
+        result.push(25)
+        result.push(26)
+        result.push(27)
+        result.push(28)
+        result.push(29)
+        result.push(30)
+        result.push(31)
+        result.push(32)
+    end sub
+
+    @test("32 elements: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32])
+    end sub
+
+    @test("m.result, 1 element: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+    end sub
+
+    @test("m.result, 1 element: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 1 element: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1])
+    end sub
+
+    @test("m.result, 2 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+    end sub
+
+    @test("m.result, 2 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 2 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2])
+    end sub
+
+    @test("m.result, 4 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+        m.result.push(3)
+        m.result.push(4)
+    end sub
+
+    @test("m.result, 4 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        __bsc_tmp.push(3)
+        __bsc_tmp.push(4)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 4 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2, 3, 4])
+    end sub
+
+    @test("m.result, 8 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+        m.result.push(3)
+        m.result.push(4)
+        m.result.push(5)
+        m.result.push(6)
+        m.result.push(7)
+        m.result.push(8)
+    end sub
+
+    @test("m.result, 8 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        __bsc_tmp.push(3)
+        __bsc_tmp.push(4)
+        __bsc_tmp.push(5)
+        __bsc_tmp.push(6)
+        __bsc_tmp.push(7)
+        __bsc_tmp.push(8)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 8 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2, 3, 4, 5, 6, 7, 8])
+    end sub
+
+    @test("m.result, 16 elements: push")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.push(1)
+        m.result.push(2)
+        m.result.push(3)
+        m.result.push(4)
+        m.result.push(5)
+        m.result.push(6)
+        m.result.push(7)
+        m.result.push(8)
+        m.result.push(9)
+        m.result.push(10)
+        m.result.push(11)
+        m.result.push(12)
+        m.result.push(13)
+        m.result.push(14)
+        m.result.push(15)
+        m.result.push(16)
+    end sub
+
+    @test("m.result, 16 elements: push on local temp, then assign")
+    sub _()
+        __bsc_tmp = []
+        __bsc_tmp.append(defaults)
+        __bsc_tmp.push(1)
+        __bsc_tmp.push(2)
+        __bsc_tmp.push(3)
+        __bsc_tmp.push(4)
+        __bsc_tmp.push(5)
+        __bsc_tmp.push(6)
+        __bsc_tmp.push(7)
+        __bsc_tmp.push(8)
+        __bsc_tmp.push(9)
+        __bsc_tmp.push(10)
+        __bsc_tmp.push(11)
+        __bsc_tmp.push(12)
+        __bsc_tmp.push(13)
+        __bsc_tmp.push(14)
+        __bsc_tmp.push(15)
+        __bsc_tmp.push(16)
+        m.result = __bsc_tmp
+    end sub
+
+    @test("m.result, 16 elements: append literal")
+    sub _()
+        m.result = []
+        m.result.append(defaults)
+        m.result.append([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    end sub
+
+    @test("4 string values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push("value1")
+        result.push("value2")
+        result.push("value3")
+        result.push("value4")
+    end sub
+
+    @test("4 string values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append(["value1", "value2", "value3", "value4"])
+    end sub
+
+    @test("4 variable values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push(v1)
+        result.push(v2)
+        result.push(v3)
+        result.push(v4)
+    end sub
+
+    @test("4 variable values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([v1, v2, v3, v4])
+    end sub
+
+    @test("4 nested array values: push")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.push([1])
+        result.push([2])
+        result.push([3])
+        result.push([4])
+    end sub
+
+    @test("4 nested array values: append literal")
+    sub _()
+        result = []
+        result.append(defaults)
+        result.append([[1], [2], [3], [4]])
+    end sub
+end namespace
