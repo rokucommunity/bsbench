@@ -1,0 +1,228 @@
+' Compares the two transpile targets BrighterScript uses for `value ?? <alternate>` (and non-assignment ternaries):
+'   - eager: bslib_coalesce(value, <alternate>) (alternate is always evaluated)
+'   - lazy: scope-capturing IIFE (alternate is only evaluated when `value` is invalid)
+' In this suite `value` is invalid, so both forms evaluate the alternate.
+' See CoalesceEagerVsLazySkipped for the suite where the alternate is skipped.
+@suite()
+namespace CoalesceEagerVsLazyUsed
+    sub setup()
+        value = invalid
+        fallback = "fallback"
+        cfg = { key: "value" }
+        count = 5
+        beta = 7
+        xml = CreateObject("roXMLElement")
+        xml.Parse("<a id=""1"" />")
+    end sub
+
+    @test("variable: eager")
+    sub _()
+        result = coalesce(value, fallback)
+    end sub
+
+    @test("variable: lazy")
+    sub _()
+        result = (function(value, fallback)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return fallback
+            end if
+        end function)(value, fallback)
+    end sub
+
+    @test("string literal: eager")
+    sub _()
+        result = coalesce(value, "fallback")
+    end sub
+
+    @test("string literal: lazy")
+    sub _()
+        result = (function(value)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return "fallback"
+            end if
+        end function)(value)
+    end sub
+
+    @test("array literal: eager")
+    sub _()
+        result = coalesce(value, [1, 2, 3])
+    end sub
+
+    @test("array literal: lazy")
+    sub _()
+        result = (function(value)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return [1, 2, 3]
+            end if
+        end function)(value)
+    end sub
+
+    @test("AA literal: eager")
+    sub _()
+        result = coalesce(value, { a: 1, b: 2 })
+    end sub
+
+    @test("AA literal: lazy")
+    sub _()
+        result = (function(value)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return { a: 1, b: 2 }
+            end if
+        end function)(value)
+    end sub
+
+    @test("regex literal: eager")
+    sub _()
+        result = coalesce(value, CreateObject("roRegex", "abc", "i"))
+    end sub
+
+    @test("regex literal: lazy")
+    sub _()
+        result = (function(value)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return CreateObject("roRegex", "abc", "i")
+            end if
+        end function)(value)
+    end sub
+
+    @test("template interpolation: eager")
+    sub _()
+        result = coalesce(value, ("alpha" + CoalesceEagerVsLazyUsed.toStr(beta)))
+    end sub
+
+    @test("template interpolation: lazy")
+    sub _()
+        result = (function(value, beta)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return ("alpha" + CoalesceEagerVsLazyUsed.toStr(beta))
+            end if
+        end function)(value, beta)
+    end sub
+
+    @test("indexed get: eager")
+    sub _()
+        result = coalesce(value, cfg["key"])
+    end sub
+
+    @test("indexed get: lazy")
+    sub _()
+        result = (function(value, cfg)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return cfg["key"]
+            end if
+        end function)(value, cfg)
+    end sub
+
+    @test("dotted get: eager")
+    sub _()
+        result = coalesce(value, cfg.key)
+    end sub
+
+    @test("dotted get: lazy")
+    sub _()
+        result = (function(value, cfg)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return cfg.key
+            end if
+        end function)(value, cfg)
+    end sub
+
+    @test("xml attribute get: eager")
+    sub _()
+        result = coalesce(value, xml@id)
+    end sub
+
+    @test("xml attribute get: lazy")
+    sub _()
+        result = (function(value, xml)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return xml@id
+            end if
+        end function)(value, xml)
+    end sub
+
+    @test("binary: eager")
+    sub _()
+        result = coalesce(value, count + 1)
+    end sub
+
+    @test("binary: lazy")
+    sub _()
+        result = (function(value, count)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return count + 1
+            end if
+        end function)(value, count)
+    end sub
+
+    @test("unary: eager")
+    sub _()
+        result = coalesce(value, -count)
+    end sub
+
+    @test("unary: lazy")
+    sub _()
+        result = (function(value, count)
+            __bsConsequent = value
+            if __bsConsequent <> invalid then
+                return __bsConsequent
+            else
+                return -count
+            end if
+        end function)(value, count)
+    end sub
+
+    'copy of bslib_coalesce
+    function coalesce(consequent, alternate)
+        if consequent <> invalid then
+            return consequent
+        else
+            return alternate
+        end if
+    end function
+
+    'copy of bslib_toString
+    function toStr(value)
+        valueType = type(value)
+        if valueType = "<uninitialized>" then
+            return valueType
+        else if value = invalid then
+            return "<invalid>"
+        else if GetInterface(value, "ifToStr") <> invalid then
+            return value.toStr()
+        else if valueType = "roSGNode"
+            return "Node(" + value.subType() + ")"
+        end if
+        return "<" + valueType + ">"
+    end function
+end namespace
